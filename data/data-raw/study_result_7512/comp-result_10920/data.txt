@@ -1,0 +1,1 @@
+{"langue":"fr","age":49,"metier":"professeure certifiée","sexe":"f","education":"master","domaine":"mathématiques","vision":"excellente"}

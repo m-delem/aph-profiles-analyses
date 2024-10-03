@@ -1,0 +1,1 @@
+{"langue":"fr","age":25,"metier":"psychologue","sexe":"m","education":"master","domaine":"psychologie","vision":"excellente"}

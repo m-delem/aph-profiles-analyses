@@ -1,0 +1,1 @@
+{"langue":"fr","age":38,"metier":"chargée RH","sexe":"f","education":"bac","domaine":"Tertiaire ","vision":"correcte"}

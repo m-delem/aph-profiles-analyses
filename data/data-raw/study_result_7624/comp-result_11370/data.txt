@@ -1,0 +1,1 @@
+{"langue":"fr","age":65,"metier":"Retraitée","sexe":"f","education":"doctorat","domaine":"Biologie","vision":"excellente"}

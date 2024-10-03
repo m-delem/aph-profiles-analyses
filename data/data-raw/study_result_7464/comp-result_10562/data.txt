@@ -1,0 +1,1 @@
+{"langue":"fr","age":24,"metier":"Contractuelle fonction publique","sexe":"f","education":"licence","domaine":"humanités","vision":"excellente"}

@@ -1,0 +1,1 @@
+{"langue":"fr","age":38,"metier":"Ingénieur bâtiment","sexe":"f","education":"master","domaine":"Bâtiment","vision":"excellente"}

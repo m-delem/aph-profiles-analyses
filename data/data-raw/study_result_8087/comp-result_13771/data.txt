@@ -1,0 +1,1 @@
+{"langue":"fr","age":24,"metier":"étudiante en sciences cognitives","sexe":"f","education":"master","domaine":"Informatique/ Sciences Cognitives (neurosciences & psychologie)","vision":"correcte"}

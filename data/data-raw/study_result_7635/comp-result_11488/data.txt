@@ -1,0 +1,1 @@
+{"langue":"fr","age":32,"metier":"Dessinatrice d'animation (Animatrice 2D)","sexe":"f","education":"licence","domaine":"Cinéma d'animation","vision":"correcte"}

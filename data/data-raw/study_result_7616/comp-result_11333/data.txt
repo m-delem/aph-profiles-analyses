@@ -1,0 +1,1 @@
+{"langue":"fr","age":21,"metier":"Assistante SAV chez un promoteur immobilier en alternance","sexe":"f","education":"licence","domaine":"Professions Immobilières","vision":"excellente"}

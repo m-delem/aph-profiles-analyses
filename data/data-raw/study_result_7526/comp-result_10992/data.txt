@@ -1,0 +1,1 @@
+{"langue":"fr","age":48,"metier":"INGENIEUR EN INFORMATIQUE","sexe":"m","education":"master","domaine":"PHYSIQUES ET APPLICATIONS (sciences)","vision":"excellente"}

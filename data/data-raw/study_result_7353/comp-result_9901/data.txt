@@ -1,0 +1,1 @@
+{"langue":"fr","age":40,"metier":"chercheur","sexe":"f","education":"doctorat","domaine":"histoire","vision":"correcte"}

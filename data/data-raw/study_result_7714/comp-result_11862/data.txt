@@ -1,0 +1,1 @@
+{"langue":"fr","age":40,"metier":"Cadre","sexe":"f","education":"master","domaine":"Marketing","vision":"moyenne"}

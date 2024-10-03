@@ -1,0 +1,1 @@
+{"simili_4":"couleur","simili_5":"instrument","simili_6":"art","simili_7":"jeunesse","simili_8":"aliment liquide","simili_9":"énergie","simili_10":"forme","simili_11":"sens","simili_12":"matériaux","simili_13":"énergies renouvelables","simili_14":"adjectifs","simili_15":"opposés","simili_16":"opposés","simili_17":"opposés","simili_18":"opposés"}

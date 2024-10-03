@@ -1,0 +1,1 @@
+{"langue":"fr","age":48,"metier":"comptable","sexe":"f","education":"bac","domaine":"comptabilite","vision":"correcte"}

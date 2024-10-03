@@ -1,0 +1,1 @@
+{"langue":"fr","age":44,"metier":"Professeur des écoles","sexe":"m","education":"master","domaine":"Philosophie","vision":"excellente"}

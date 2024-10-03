@@ -1,0 +1,1 @@
+{"langue":"fr","age":50,"metier":"chauffeur","sexe":"m","education":"brevet","domaine":"generale","vision":"correcte"}

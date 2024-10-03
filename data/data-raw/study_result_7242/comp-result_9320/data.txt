@@ -1,0 +1,1 @@
+{"simili_4":"ce sont des couleurs\n","simili_5":"ce sont des instruments de musique","simili_6":"art","simili_7":"naissance","simili_8":"naturel","simili_9":"energie","simili_10":"forme geometrique","simili_11":"tête ","simili_12":"matière ","simili_13":"électricité ","simili_14":"contraire","simili_15":"inverse","simili_16":"opposé","simili_17":"ordre","simili_18":"état"}

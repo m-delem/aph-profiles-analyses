@@ -1,0 +1,1 @@
+{"langue":"fr","age":46,"metier":"assistante commerciale","sexe":"f","education":"bac","domaine":"commerce","vision":"correcte"}

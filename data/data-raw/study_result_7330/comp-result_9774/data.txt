@@ -1,0 +1,1 @@
+{"vviq":{"vviq_1":2,"vviq_4":1,"vviq_3":1,"vviq_2":2,"vviq_8":2,"vviq_7":2,"vviq_5":2,"vviq_6":2,"vviq_9":3,"vviq_10":2,"vviq_11":2,"vviq_12":3,"vviq_13":3,"vviq_14":2,"vviq_16":2,"vviq_15":3}}

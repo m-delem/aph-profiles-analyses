@@ -1,0 +1,1 @@
+{"langue":"fr","age":20,"metier":"Étudiante","sexe":"f","education":"bac","domaine":"Spécialité mathématiques et SVT","vision":"excellente"}

@@ -1,0 +1,1 @@
+{"langue":"fr","age":32,"metier":"Assistant pédagogique","sexe":"m","education":"master","domaine":"Sciences politiques","vision":"correcte"}

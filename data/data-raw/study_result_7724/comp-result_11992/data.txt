@@ -1,0 +1,1 @@
+{"simili_4":"couleur","simili_5":"instrument de musique","simili_6":"art","simili_7":"naissance","simili_8":"aliment","simili_9":"énergie","simili_10":"forme géométrique","simili_11":"visage","simili_12":"tissu","simili_13":"énergie ","simili_14":"temps","simili_15":"climat","simili_16":"mode d'habitation ","simili_17":"droit","simili_18":"vécu "}

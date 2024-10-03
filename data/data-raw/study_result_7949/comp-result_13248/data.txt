@@ -1,0 +1,1 @@
+{"age":40,"metier":"aide maternelle","sexe":"f","education":"master","domaine":"Commerce","vision":"correcte","langue":"fr"}

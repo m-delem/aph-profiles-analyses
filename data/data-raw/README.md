@@ -1,1 +1,1 @@
-This directory contains all raw data that is external to the project. This README should be updated to describe data sources.
+This folder contains all the raw data as outputted by JATOS using the command "Export". They are JSON formatted .txt in a nested folder structure. The code to unfold this and convert the data to .csv is in `scripts/jatos_data_extraction.R`.

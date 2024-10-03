@@ -1,0 +1,1 @@
+{"langue":"fr","age":31,"metier":"Consultante senior Data","sexe":"f","education":"master","domaine":"Ecole de commerce (MSc in Management)","vision":"excellente"}

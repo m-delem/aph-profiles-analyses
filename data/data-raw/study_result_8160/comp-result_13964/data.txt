@@ -1,0 +1,1 @@
+{"langue":"fr","age":29,"metier":"Chercheuse en biologie (fin de thèse)","sexe":"f","education":"doctorat","domaine":"Biologie moléculaire et cellulaire","vision":"excellente"}

@@ -1,0 +1,1 @@
+{"langue":"fr","age":21,"metier":"Etudiante","sexe":"f","education":"bac","domaine":"Bac S - Spé ISN","vision":"excellente"}

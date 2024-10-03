@@ -1,0 +1,1 @@
+{"simili_4":"couleurs","simili_5":"instruments","simili_6":"art","simili_7":"début de la vie","simili_8":"aliments","simili_9":"énergie","simili_10":"géométrie","simili_11":"parties du corps","simili_12":"textiles","simili_13":"énergie","simili_14":"temporalité","simili_15":"eau","simili_16":"mouvement","simili_17":"contraires","simili_18":"perception"}

@@ -1,0 +1,1 @@
+{"langue":"fr","age":21,"metier":"Étudiante ","sexe":"f","education":"licence","domaine":"économie","vision":"correcte"}

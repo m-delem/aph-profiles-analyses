@@ -1,0 +1,1 @@
+{"langue":"fr","age":37,"metier":"Inspectrice de la répression des fraudes","sexe":"f","education":"master","domaine":"Droit","vision":"excellente"}

@@ -1,0 +1,1 @@
+{"langue":"fr","age":34,"metier":"Gestionnaire de paie","sexe":"f","education":"master","domaine":"Psychologie","vision":"correcte"}

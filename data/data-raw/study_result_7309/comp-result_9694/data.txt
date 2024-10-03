@@ -1,0 +1,1 @@
+{"langue":"fr","age":24,"metier":"animateur","sexe":"f","education":"bac","domaine":"Science","vision":"excellente"}

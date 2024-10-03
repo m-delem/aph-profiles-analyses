@@ -1,0 +1,1 @@
+{"langue":"fr","age":23,"metier":"étudiant","sexe":"m","education":"other","education-Comment":"DUT","domaine":"Génie Electriquet et Informatique Industriel","vision":"correcte"}

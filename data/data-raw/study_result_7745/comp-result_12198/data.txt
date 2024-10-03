@@ -1,0 +1,1 @@
+{"langue":"fr","age":41,"metier":"sans emploi","sexe":"f","education":"other","domaine":"littéraire option cinéma audiovisuel +  DEAMP","education-Comment":"Diplôme d état aide Medico psychologique","vision":"excellente"}

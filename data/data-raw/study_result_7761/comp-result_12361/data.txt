@@ -1,0 +1,1 @@
+{"langue":"fr","age":22,"metier":"Etudiant","sexe":"f","education":"master","domaine":"LLCER","vision":"faible"}

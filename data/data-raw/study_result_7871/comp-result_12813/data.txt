@@ -1,0 +1,1 @@
+{"langue":"fr","age":22,"metier":"étudiante","sexe":"f","education":"licence","domaine":"Sciences humaines ","vision":"moyenne"}

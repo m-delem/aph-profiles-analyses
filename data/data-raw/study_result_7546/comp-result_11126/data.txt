@@ -1,0 +1,1 @@
+{"langue":"fr","age":21,"metier":"Etudiante","sexe":"f","education":"licence","domaine":"Mathématiques","vision":"correcte"}

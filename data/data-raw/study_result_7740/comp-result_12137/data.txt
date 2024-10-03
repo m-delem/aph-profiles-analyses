@@ -1,0 +1,1 @@
+{"langue":"fr","age":23,"metier":"Product Manager","sexe":"f","education":"master","domaine":"Cognitique","vision":"correcte"}

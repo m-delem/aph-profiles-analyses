@@ -1,0 +1,1 @@
+{"langue":"fr","age":28,"metier":"social","sexe":"f","education":"licence","domaine":"LLCER Anglais","vision":"correcte"}

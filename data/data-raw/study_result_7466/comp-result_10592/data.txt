@@ -1,0 +1,1 @@
+{"langue":"fr","age":35,"metier":"assistante de direction","sexe":"f","education":"licence","domaine":"LLCE Espagnol","vision":"excellente"}

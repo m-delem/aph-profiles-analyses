@@ -1,0 +1,1 @@
+{"langue":"fr","age":29,"metier":"Ingénieur en cybersécurité","sexe":"m","education":"master","domaine":"Informatique","vision":"correcte"}

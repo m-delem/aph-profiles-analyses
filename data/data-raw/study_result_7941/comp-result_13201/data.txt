@@ -1,0 +1,1 @@
+{"simili_4":"c'est une couleur","simili_5":"instrument","simili_7":"vivant","simili_6":"art","simili_8":"aliments","simili_9":"vient de la Terre","simili_10":"forme géométrique","simili_11":"visage","simili_12":"tissus","simili_13":"energie","simili_14":"contraire","simili_15":"contraire","simili_16":"contraire","simili_17":"contraire","simili_18":"contraire"}

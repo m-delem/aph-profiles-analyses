@@ -1,0 +1,1 @@
+{"langue":"fr","age":23,"metier":"Etudiant","sexe":"f","education":"licence","domaine":"Sociologie","vision":"correcte"}

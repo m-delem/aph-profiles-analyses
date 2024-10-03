@@ -1,0 +1,1 @@
+{"langue":"fr","age":27,"metier":"Développeur informatique","sexe":"m","education":"licence","domaine":"Informatique","vision":"correcte"}

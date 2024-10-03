@@ -1,0 +1,1 @@
+{"langue":"fr","age":50,"metier":"SECRETAIRE","sexe":"f","education":"other","education-Comment":"BEP","domaine":"SECRETAIRE","vision":"correcte"}

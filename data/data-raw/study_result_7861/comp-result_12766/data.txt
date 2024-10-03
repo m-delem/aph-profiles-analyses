@@ -1,0 +1,1 @@
+{"langue":"fr","age":45,"metier":"Game Designer","sexe":"m","education":"master","domaine":"Informatique","vision":"excellente"}

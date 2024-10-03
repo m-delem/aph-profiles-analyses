@@ -1,0 +1,1 @@
+{"simili_4":"couleurs","simili_5":"instruments","simili_6":"art","simili_7":"nouveaux","simili_8":"petit-déjeuner","simili_9":"combustibles","simili_10":"formes","simili_11":"organes","simili_12":"matières","simili_13":"énergies renouvelables","simili_14":"contraires","simili_15":"catastrophes","simili_16":"contraires","simili_17":"contraires","simili_18":"opposés"}

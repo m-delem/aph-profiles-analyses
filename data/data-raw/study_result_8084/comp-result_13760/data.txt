@@ -1,0 +1,1 @@
+{"simili_4":"couleur","simili_5":"musique","simili_6":"art","simili_7":"nouveau","simili_8":"production","simili_9":"fonctionner ","simili_10":"géométrie","simili_11":"visage","simili_12":"matière","simili_13":"construction ","simili_14":"temps","simili_15":"temps","simili_16":"train de vie","simili_17":"éducation","simili_18":"monde"}

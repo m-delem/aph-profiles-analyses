@@ -24,10 +24,14 @@ library("pacman")
 # packages to load (and install if needed) -------------------------------
 pacman::p_load(
   here,       # easy file paths
+  fs,         # listing files
   see,        # theme_modern and okabeito palette
   report,     # reporting various info 
   labelled,   # labelled data
-  reticulate, # python integration
+  fs,         # listing files
+  readxl,     # reading excel files
+  jsonlite,   # reading json files
+  openxlsx,   # exporting xlsx files
   tidyverse   # modern R ecosystem
 )
 

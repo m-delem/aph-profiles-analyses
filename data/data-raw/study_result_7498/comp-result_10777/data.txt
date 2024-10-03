@@ -1,0 +1,1 @@
+{"langue":"fr","age":22,"metier":"Etudiante (master recherche histoire)","sexe":"f","education":"licence","domaine":"Licence pluridisciplinaire en sciences humaines et sociales (spé histoire et philo)","vision":"moyenne"}

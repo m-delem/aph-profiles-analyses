@@ -1,0 +1,1 @@
+{"langue":"fr","age":29,"metier":"Fondateur d'une société technologique","sexe":"m","education":"master","domaine":"Business","vision":"excellente"}

@@ -1,0 +1,1 @@
+{"langue":"fr","age":25,"metier":"Développeur web","education":"master","sexe":"m","vision":"correcte","domaine":"informatique"}

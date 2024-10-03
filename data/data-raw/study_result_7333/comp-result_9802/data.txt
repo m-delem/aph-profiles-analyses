@@ -1,0 +1,1 @@
+{"langue":"fr","age":45,"metier":"gestionnaire risques professionnels à la CPAM","sexe":"f","education":"master","domaine":"Sciences du Langage","vision":"correcte"}

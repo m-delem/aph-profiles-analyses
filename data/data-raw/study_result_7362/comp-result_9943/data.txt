@@ -1,0 +1,1 @@
+{"langue":"fr","age":21,"metier":"Etudiante en école d'ingénieur d'agronomie","sexe":"f","education":"licence","domaine":"biologie","vision":"excellente"}

@@ -1,0 +1,1 @@
+{"simili_4":"couleur","simili_5":"musique","simili_6":"art","simili_7":"naissance","simili_8":"liquide","simili_9":"énergie","simili_10":"forme","simili_11":"visage","simili_12":"matière","simili_13":"énergie","simili_14":"durée","simili_15":"climat","simili_16":"vie","simili_17":"action","simili_18":"état"}

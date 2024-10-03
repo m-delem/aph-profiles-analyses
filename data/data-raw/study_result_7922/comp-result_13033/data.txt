@@ -1,0 +1,1 @@
+{"langue":"fr","age":38,"metier":"professeur","sexe":"f","education":"master","domaine":"lettres modernes","vision":"excellente"}

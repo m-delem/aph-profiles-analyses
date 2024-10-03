@@ -1,0 +1,1 @@
+{"langue":"fr","age":26,"metier":"Assistante de service social","sexe":"f","education":"licence","domaine":"Social","vision":"correcte"}

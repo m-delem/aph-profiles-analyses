@@ -1,0 +1,1 @@
+{"age":40,"metier":"Employé de banque","sexe":"f","education":"licence","domaine":"banque","vision":"excellente","langue":"fr"}

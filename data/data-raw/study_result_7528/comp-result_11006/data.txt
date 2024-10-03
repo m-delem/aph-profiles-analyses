@@ -1,0 +1,1 @@
+{"langue":"fr","age":32,"metier":"Animateur 3D","sexe":"m","education":"licence","domaine":"Infographie 3D","vision":"correcte"}

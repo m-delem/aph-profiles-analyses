@@ -1,0 +1,1 @@
+{"langue":"fr","age":49,"metier":"infirmière libérale","sexe":"f","education":"other","education-Comment":"infirmière D.E.","domaine":"para médicale","vision":"correcte"}

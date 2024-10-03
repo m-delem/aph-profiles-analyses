@@ -1,0 +1,1 @@
+{"langue":"fr","age":47,"metier":"Conseillère pédagogique","sexe":"f","education":"other","education-Comment":"Maîtrise / master1","domaine":"Biologie / métiers de l'enseignement","vision":"excellente"}

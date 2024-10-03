@@ -1,0 +1,1 @@
+{"simili_4":"couleur","simili_5":"instriment","simili_6":"art","simili_7":"jeune","simili_8":"animal","simili_9":"matiere premiere","simili_10":"forme","simili_11":"organe","simili_12":"matiere","simili_13":"production energie","simili_14":"inverse","simili_15":"climat","simili_16":"inverse","simili_17":"inverse","simili_18":"commence par R"}

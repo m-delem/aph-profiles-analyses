@@ -1,0 +1,1 @@
+{"langue":"fr","age":26,"metier":"Ingénieur (de recherche)","sexe":"f","education":"master","domaine":"étude des matériaux, spécialité céramique","vision":"correcte"}

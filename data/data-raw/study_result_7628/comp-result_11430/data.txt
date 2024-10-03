@@ -1,0 +1,1 @@
+{"langue":"fr","age":52,"metier":"Infirmiere","sexe":"f","education":"licence","domaine":"Paramédical","vision":"correcte"}

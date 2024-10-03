@@ -1,0 +1,1 @@
+{"langue":"fr","age":40,"metier":"artisanne","sexe":"f","education":"other","domaine":"gestion des entreprises artisanales ","vision":"excellente"}

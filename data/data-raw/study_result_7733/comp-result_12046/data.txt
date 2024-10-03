@@ -1,0 +1,1 @@
+{"langue":"fr","age":25,"metier":"En recherche d'emploi","sexe":"f","education":"master","domaine":"Innovation en design numérique","vision":"correcte"}

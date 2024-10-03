@@ -1,0 +1,1 @@
+{"langue":"other","langue-Comment":"Portugais","age":52,"metier":"Responsable IT","sexe":"f","education":"licence","domaine":"Physique","vision":"correcte"}

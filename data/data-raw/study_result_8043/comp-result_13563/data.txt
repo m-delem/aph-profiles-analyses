@@ -1,0 +1,1 @@
+{"langue":"fr","age":36,"metier":"éducatrice spécialisée","sexe":"f","education":"licence","domaine":"éducation spécialisée / informatique - multimédia / psychologie","vision":"correcte"}

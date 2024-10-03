@@ -1,0 +1,1 @@
+{"langue":"fr","age":43,"metier":"coordinatrice relations internationales","sexe":"f","education":"master","domaine":"Français Langue Etrangère","vision":"correcte"}

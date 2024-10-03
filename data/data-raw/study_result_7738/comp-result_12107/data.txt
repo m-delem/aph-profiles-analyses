@@ -1,0 +1,1 @@
+{"langue":"fr","age":50,"metier":"Technicien Qualité Fournisseur","sexe":"m","education":"licence","domaine":"Gestion Administrative","vision":"moyenne"}

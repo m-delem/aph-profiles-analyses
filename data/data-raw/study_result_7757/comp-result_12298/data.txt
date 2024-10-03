@@ -1,0 +1,1 @@
+{"langue":"fr","age":30,"metier":"Développeur web","sexe":"m","education":"licence","domaine":"Informatique et Arts du spectacle (deux licences)","vision":"correcte"}

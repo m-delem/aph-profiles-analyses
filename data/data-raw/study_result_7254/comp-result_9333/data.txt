@@ -1,0 +1,1 @@
+{"langue":"fr","metier":"pharmacien","sexe":"f","education":"doctorat","domaine":"pharmacie","vision":"correcte","age":37}

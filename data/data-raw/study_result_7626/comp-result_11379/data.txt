@@ -1,0 +1,1 @@
+{"langue":"fr","age":60,"metier":"Retraitée ex analystes de données","sexe":"f","education":"licence","domaine":"Techniques de Commercialisation + Licences en Langues Etrangères Appliquées","vision":"excellente"}

@@ -1,0 +1,1 @@
+{"langue":"fr","age":19,"sexe":"f","education":"licence","vision":"correcte","metier":null,"domaine":null}

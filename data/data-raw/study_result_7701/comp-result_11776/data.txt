@@ -1,0 +1,1 @@
+{"langue":"fr","age":39,"metier":"professeur d'anglais et cuisinière","sexe":"f","education":"doctorat","domaine":"traduction littéraire anglais -> francais","vision":"excellente"}

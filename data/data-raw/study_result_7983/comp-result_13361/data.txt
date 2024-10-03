@@ -1,0 +1,1 @@
+{"age":40,"metier":"administratrice","langue":"fr","education":"licence","domaine":"administration de projets culturels","vision":"moyenne","sexe":"f"}

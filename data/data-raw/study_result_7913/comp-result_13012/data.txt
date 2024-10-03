@@ -1,0 +1,1 @@
+{"langue":"fr","age":49,"metier":"AIDE SOIGNANTE","sexe":"f","education":"other","education-Comment":"BEP","domaine":"SANITAIRE ET SOCIALE","vision":"moyenne"}

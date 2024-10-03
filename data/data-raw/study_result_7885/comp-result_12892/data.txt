@@ -1,0 +1,1 @@
+{"langue":"fr","age":53,"metier":"Designer web","sexe":"f","education":"other","education-Comment":"Diplome National Arts et Techniques","domaine":"art, design, architecture","vision":"moyenne"}

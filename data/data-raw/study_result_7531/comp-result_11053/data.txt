@@ -1,0 +1,1 @@
+{"langue":"fr","age":22,"metier":"Etudiante en psychologie","sexe":"f","education":"licence","domaine":"psychologie","vision":"excellente"}

@@ -1,0 +1,1 @@
+{"langue":"fr","age":36,"metier":"CHARGE CLIENTELE","sexe":"m","education":"licence","domaine":"CHIMIE","vision":"excellente"}

@@ -1,0 +1,1 @@
+{"langue":"other","langue-Comment":"Portugais","age":44,"metier":"vendeur magasinier","sexe":"m","education":"bac","domaine":"force de vente","vision":"correcte"}

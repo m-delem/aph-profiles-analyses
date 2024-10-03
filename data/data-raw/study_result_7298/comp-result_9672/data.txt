@@ -1,0 +1,1 @@
+{"simili_4":"Couleur","simili_5":"Musique","simili_6":"Art","simili_7":"Très jeune","simili_8":"Liquide","simili_9":"Energie","simili_10":"Forme","simili_11":"Visage","simili_12":"Tissu","simili_13":"Source","simili_14":"Court ","simili_15":"Nature","simili_16":"Personne","simili_17":"Ordre","simili_18":"Vie"}

@@ -1,0 +1,1 @@
+{"langue":"en","age":23,"metier":"Etudiant","sexe":"other","sexe-Comment":"Non-binaire","education":"master","domaine":"Linguistique","vision":"correcte"}
