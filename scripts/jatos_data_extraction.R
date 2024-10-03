@@ -5,7 +5,7 @@ source(here("scripts/_setup.R"))
 # Retrieving metadata ----------------------------------------------------------
 
 df_meta <- 
-  read_xlsx("data/data-raw/metadata.xlsx") |> 
+  read_xlsx(here("data/data-raw/metadata.xlsx")) |> 
   mutate(
     Duration = Duration |> 
       format(
@@ -235,23 +235,24 @@ df_final <-
   ) |> 
   mutate(
     # cumulative scores by scale
-    vviq = rowSums(across(starts_with("vviq_")), na.rm = TRUE),
-    osivq_o = rowSums(across(starts_with("osivq_o_")), na.rm = TRUE),
-    osivq_s = rowSums(across(starts_with("osivq_s_")), na.rm = TRUE),
-    osivq_v = rowSums(across(starts_with("osivq_v_")), na.rm = TRUE),
-    psiq_vis  = round((rowSums(across(starts_with("psiq_vis")),  na.rm = TRUE)/3),  digits = 2),
-    psiq_aud  = round((rowSums(across(starts_with("psiq_aud")),  na.rm = TRUE)/3),  digits = 2),
-    psiq_od   = round((rowSums(across(starts_with("psiq_od")),   na.rm = TRUE)/3),   digits = 2),
-    psiq_gout = round((rowSums(across(starts_with("psiq_gout")), na.rm = TRUE)/3), digits = 2),
-    psiq_tou  = round((rowSums(across(starts_with("psiq_tou")),  na.rm = TRUE)/3),  digits = 2),
-    psiq_sens = round((rowSums(across(starts_with("psiq_sens")), na.rm = TRUE)/3), digits = 2),
-    psiq_feel = round((rowSums(across(starts_with("psiq_feel")), na.rm = TRUE)/3), digits = 2),
+    vviq = sum_items("vviq_"),
+    osivq_o = sum_items("osivq_o_"),
+    osivq_s = sum_items("osivq_s_"),
+    osivq_v = sum_items("osivq_v_"),
+    psiq_vis  = round((sum_items("psiq_vis")/3), digits = 2),
+    psiq_aud  = round((sum_items("psiq_aud")/3), digits = 2),
+    psiq_od   = round((sum_items("psiq_od")/3),  digits = 2),
+    psiq_gout = round((sum_items("psiq_gou")/3), digits = 2),
+    psiq_tou  = round((sum_items("psiq_tou")/3), digits = 2),
+    psiq_sens = round((sum_items("psiq_sen")/3), digits = 2),
+    psiq_feel = round((sum_items("psiq_fee")/3), digits = 2),
     .keep = "unused"
   ) |> 
   mutate(
     # grouping by VVIQ according to convention
     group = ifelse(vviq <= 32, "Aphantasic", "Control"),
     group = factor(group, levels = c("Control", "Aphantasic")),
+    
     # education levels have been coded by adapting the French grades
     # to the International Standard Classification of Education (ISCED)
     education = case_match(
@@ -268,8 +269,10 @@ df_final <-
         "Post-secondary", 
         "Bachelor", 
         "Master", 
-        "Doctorate"))
+        "Doctorate"
+      ))
     ),
+    across(contains("_code"), as.numeric),
     # Fields of education have already been coded according to the 10 broad 
     # fields defined by the ISCED-F 2013
     # Occupations have already been coded according to the International 
@@ -288,6 +291,13 @@ df_final <-
       26 ~ 9,
     )
   ) |>
+  # Reordering field and occupation categories
+  arrange(field_code) |> 
+  mutate(field = fct_reorder(field, field_code)) |>
+  arrange(occupation_code) |>
+  mutate(occupation = fct_reorder(occupation, occupation_code)) |>
+  # Back to sorting by id
+  arrange(id) |>
   select(
     id, age, sex, group,
     education, field, field_code,
@@ -301,29 +311,9 @@ df_final <-
   ) |> 
   mutate(
     across(sex:occupation, as.factor),
-    across(c(age, contains("_code"), vviq:score_comprehension), as.numeric)
+    across(c(age, vviq:score_comprehension), as.numeric),
+    across(where(is.numeric), ~ round(., 2))
   )
-
-# some more recoding
-field_levels <- 
-  df_final |> 
-  arrange(field_code) |> 
-  pull(field) |> 
-  unique()
-
-occupation_levels <- 
-  df_final |> 
-  arrange(occupation_code) |> 
-  pull(occupation) |>
-  unique()
-
-df_final <-
-  df_final |>
-  mutate(
-    field = factor(field, levels = field_levels),
-    occupation = factor(occupation, levels = occupation_levels)
-  ) |> 
-  ungroup()
 
 
 # Exporting in various formats -------------------------------------------------

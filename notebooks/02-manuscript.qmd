@@ -1,0 +1,83 @@
+---
+title: "Uncovering spatial and verbal cognitive profiles in aphantasia through unsupervised clustering"
+abstract: 'Mental images are a ubiquitous phenomenon for many people. In recent years, however, attention has focused on a condition defined by the absence of mental images - aphantasia. Individuals with aphantasia are said to perform as well as typical imagers in most areas. Interestingly, several studies have proposed that individuals with aphantasia might have a more "semantic and abstract" mode of functioning, although this hypothesis is still largely unexplored. The present study aims to better understand the cognitive profile of individuals with aphantasia, by examining their propensity and performance in semantic and/or abstract processing. The participants completed several questionnaires and behavioural tasks assessing various aspects of cognition: sensory and spatial imagery, verbal strategies, verbal and non-verbal reasoning, and verbal and spatial working memory. While initial comparisons suggested very few differences between individuals with aphantasia and controls, redefining the groups using an unsupervised clustering algorithm revealed three clusters with unique characteristics, and two very distinct profiles of individuals with aphantasia, one focused on spatial representations, and the other on verbal processing. A mixed cluster of individuals with aphantasia and controls who reported using mainly spatial imagery performed better than the other clusters in reasoning and working memory tasks; a cluster of individuals with aphantasia who preferred verbal processing performed slightly worse; and a cluster of controls who focused on visual imagery performed worse than the other two. The striking contrast between this last control cluster and the other two also suggests that visual imagery may impair abstract reasoning. This study shows that individuals with aphantasia should not be systematically grouped based on visual imagery, but viewed through the lens of individual differences and characterised according to various aspects of their cognitive profile. This diversified approach could provide a balanced view of aphantasia and help us to understand the mechanisms underlying the fascinating spectrum of individual differences in mental imagery.'
+keywords: 
+  - Aphantasia 
+  - mental imagery
+  - reasoning
+  - working memory
+  - individual differences
+  - unsupervised clustering
+  - machine learning
+author: 
+  - name: Maël Delem
+    orcid: 0009-0005-8518-1991
+    email: mael.delem@univ-lyon2.fr
+    corresponding: true
+    url: https://emc.univ-lyon2.fr/equipes/memoire-emotion-et-attention-mea/delem-mael
+    affiliations:
+    - id: emc
+      name: Study of Cognitive Mechanisms (EMC) Laboratory, Université Lumière Lyon 2
+      city: Lyon
+      country: France
+      url: https://emc.univ-lyon2.fr
+  - name: Sema Turkben
+    affiliations:
+    - ref: emc
+  - name: Denis Cousineau
+    orcid: 0000-0001-5908-0402
+    affiliations:
+    - ref: irc
+      name: Institut de recherche sur le cerveau, Université d'Ottawa
+      city: Ottawa
+      country: Canada
+      url: https://www.uottawa.ca
+  - name: Eddy Cavalli
+    orcid: 0000-0003-3944-1973
+    affiliations:
+    - ref: emc
+  - name: Gaën Plancher
+    orcid: 0000-0002-0178-6207
+    affiliations:
+    - ref: emc
+    - id: iuf
+      name: Institut Universitaire de France (IUF)
+      city: Paris
+      country: France
+      url: https://www.iufrance.fr
+    email: gaen.plancher@univ-lyon2.fr
+format:
+  docx: 
+    reference-doc: "../utils/docx/custom-reference-doc-numbered.docx"
+---
+
+**Keywords:** Aphantasia, mental imagery, reasoning, working memory, individual differences, unsupervised clustering, machine learning
+
+{{< pagebreak >}}
+
+# Introduction
+
+--------------------------------------------------------------------------------
+
+The manuscript.
+
+--------------------------------------------------------------------------------
+
+# Data and code availability {.unnumbered}
+
+All the materials and implementations of the questionnaires and tasks, the anonymised data, the analysis scripts, and in-depth analysis notebooks are all freely available on the Open Science Framework (<https://osf.io/7vsx6/?view_only=d44f765247b44e89a0c614d32bf1a1f3>).
+
+# Author contributions {.unnumbered}
+
+**Conceptualization**: RP, EC, VR, CA, RV, GP. **Data curation**: RP, MD, VR. **Formal analysis**: MD. **Funding acquisition**: GP, EC. **Investigation**: VR, CA. **Methodology**: RP, EC, VR, CA, RV, GP. **Project administration**: GP, EC. **Resources**: VR, CA, GP. **Software**: MD. **Supervision**: GP, EC. **Visualization**: MD. **Writing - Original Draft Preparation**: RP, MD, EC, VR, GP. **Writing - Review & Editing**: All authors.
+
+# Declaration of interest {.unnumbered}
+
+None.
+
+{{< pagebreak >}}
+
+# References {.unnumbered}
+
+::: {#refs}
+:::

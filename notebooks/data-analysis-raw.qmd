@@ -33,174 +33,21 @@ The `parameters` R package was used to compute clustering indices. The `mclust` 
 ```{r}
 #| label: importing-data
 
-
-# df keeping only the group and quantitative variables
-df1_quant <- df0 |> select(group, age, vviq:score_comprehension)
-
-min <- 0
-max <- 1
-
-# df with normalized quantitative variables
-df2_norm <- 
-  df1_quant |> 
-  # normalization
-  mutate(
-    age  = rescale(age, to = c(min, max), range = c(min(age),max(age))),
-    vviq = rescale(vviq, to = c(min, max), range = c(16,80)),
-    score_raven  = rescale(score_raven, to = c(min, max), range = c(0,18)),
-    score_sri    = rescale(score_sri, to = c(min, max), range = c(0,30)),
-    span_spatial = rescale(span_spatial, to = c(min, max), range = c(0,max(span_spatial))),
-    span_digit   = rescale(span_digit, to = c(min, max), range = c(0,max(span_digit))),
-    wcst_accuracy = rescale(wcst_accuracy, to = c(min, max), range = c(0,100)),
-    score_similitudes = rescale(score_similitudes, to = c(min, max), range = c(0,36)),
-    score_comprehension = rescale(score_comprehension, to = c(min, max), range = c(0,40)),
-  ) |> 
-  mutate(
-    across(starts_with("osivq"), ~ rescale(.x, to = c(min, max), range = c(15, 75)))
-  ) |> 
-  mutate(
-    across(starts_with("psiq"),  ~ rescale(.x, to = c(min, max), range = c( 1, 10)))
-  ) |> 
-  mutate(across(age:score_similitudes, ~ round(as.numeric(.x), digits = 3)))
 ```
 
 # VVIQ group analysis
 
 ## Modelling
 
-We first analysed the data in light of the VVIQ groups, examining differences between aphantasics and phantasics. In order to model our variables with the VVIQ groups, we adjusted generalized linear models also controlling the effect of age on all variables to isolate the group effect: 
-
-$$Variable = \alpha  + \beta_{1} \cdot Group \times \beta_{2} \cdot Age + \epsilon$$
-
-\newpage
-
 ```{r}
-#| label: groups-models
-#| eval: false
+#| label: models-groups
 
-groups_models <-
-  df1_quant |>
-  pivot_longer(
-    !c(group,age),
-    names_to = "Variable", 
-    values_to = "value") |>  
-  mutate(
-    Variable = fct_inorder(Variable),
-    Variable = fct_recode(
-      Variable,
-      "VVIQ" = "vviq",
-      "OSIVQ-Object" = "osivq_o",
-      "OSIQ-Spatial" = "osivq_s",
-      "OSIQ-Verbal"  = "osivq_v",
-      "Psi-Q Vision" = "psiq_vis",
-      "Psi-Q Audition" = "psiq_aud",
-      "Psi-Q Smell" = "psiq_od",
-      "Psi-Q Taste" = "psiq_gout",
-      "Psi-Q Touch"  = "psiq_tou",
-      "Psi-Q Sensations" = "psiq_sens",
-      "Psi-Q Feelings" = "psiq_feel",
-      "Raven matrices"   = "score_raven",
-      "SRI" = "score_sri",
-      "Digit span" = "span_digit",
-      "Spatial span" = "span_spatial",
-      "WCST" = "wcst_accuracy",
-      "Similitudes test" = "score_similitudes",
-      "Reading comprehension" = "score_comprehension"
-    )
-  ) |> 
-  rename("Age" = age, "Group" = group) |>
-  group_by(Variable) |> 
-  nest() |> 
-  rowwise() |> 
-  mutate(
-    stats = list(
-      data |> 
-        group_by(Group) |> 
-        summarise(
-          stats = paste0(
-            round(mean(value), digits = 2), 
-            " (", round(sd(value), digits = 2), ")")
-        ) |> 
-        pivot_wider(
-          names_from = Group,
-          values_from = stats
-        )
-    ),
-    models_inclusion = list(
-      generalTestBF(value ~ Group * Age, data = data) |>
-        bayesfactor_inclusion() |>
-        as_tibble()
-    ),
-    models_bf = list(models_inclusion$log_BF),
-    models_post = list(
-      stan_glm(
-        value ~ Group * Age, 
-        data = data,
-        iter = 10000,
-        refresh = 0
-      )
-    ),
-    contrasts = list(
-      estimate_contrasts(
-        models_post,
-        contrast = "Group",
-        test = "bf",
-        bf_prior = models_post,
-        refresh = 0,
-        verbose = FALSE
-      ) |> 
-      as.data.frame() |> 
-      mutate(across(where(is.numeric), ~ round(.x, digits = 2))) |>
-      select(!c(Level1, Level2)) |> 
-      rename(`$log(BF_{10})$` = log_BF) |> 
-      unite(
-        "95% CI",
-        c(CI_low, CI_high),
-        sep = ", ",
-      ) |> 
-      mutate(`95% CI` = paste("[", `95% CI`, "]"))
-    )
-  ) |> 
-  unnest_wider(stats) |> 
-  unnest_wider(models_bf, names_sep = "_") |> 
-  unnest_wider(contrasts) |> 
-  mutate(across(where(is.numeric), ~ round(.x, digits = 2))) |> 
-  rename(
-    `Group` = models_bf_1,
-    `Age` = models_bf_2,
-    `Group $\\times$ Age` = models_bf_3
-  )
-
-head(groups_models)
-```
-
-```{r}
-#| label: groups-models-export
-#| eval: false
-
-saveRDS(groups_models, "analyses-results/models-groups.RDS")
-```
-
-```{r}
-#| label: groups-models-import
-
-groups_models <- readRDS(file = "analyses-results/models-groups.RDS")
 ```
 
 ```{r}
 #| label: groups-models-table
 #| eval: false
 
-groups_models |> 
-  select(
-    Variable, 
-    Phantasic, Aphantasic, 
-    # `Group`, `Age`, `Group $\\times$ Age`, 
-    Difference,  `95% CI`, `$log(BF_{10})$`
-    ) |>
-  display() |> 
-  format()
-  # knitr::kable(row.names = FALSE)
 ```
 
 ## Visualization

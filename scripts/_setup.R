@@ -24,7 +24,7 @@ library("pacman")
 # packages to load (and install if needed) -------------------------------
 pacman::p_load(
   here,       # easy file paths
-  fs,         # listing files
+  glue,       # string interpolation
   see,        # theme_modern and okabeito palette
   report,     # reporting various info 
   labelled,   # labelled data
@@ -34,26 +34,29 @@ pacman::p_load(
   jsonlite,   # reading json files
   openxlsx,   # exporting xlsx files
   # ─── modelling ───────────────────────
-  mclust,         # mixture clustering
-  rstanarm,       # bayesian models
-  BayesFactor,    # BFs
-  emmeans,        # marginal estimates  
-  easystats,      # data analysis framework
-  NbClust,        # number of clusters
-  scales,         # data transformation
+  mclust,      # mixture clustering
+  rstanarm,    # bayesian models
+  BayesFactor, # BFs
+  emmeans,     # marginal estimates  
+  easystats,   # data analysis framework
+  NbClust,     # number of clusters
+  scales,      # data transformation
   #  data visualization ──────────────
   # plot types and geoms
-  factoextra,            # multivariate data plots
-  # ricardo-bion/ggradar,  # radar plots
+  factoextra, # multivariate data plots
+  ggradar,    # radar plots
   # layout and options
-  ggtext,         # text in ggplot
-  latex2exp,      # LaTeX in ggplot
-  patchwork,      # layout control
+  ggtext,     # text in ggplot
+  latex2exp,  # LaTeX in ggplot
+  patchwork,  # layout control
   
   # Should remain last to avoid conflicts with other packages
   tidyverse   # modern R ecosystem
 )
 
+# The ggradar package comes from GitHub and needs special treatment
+# if (!require("devtools")) install.packages("devtools")
+# if (!require("ggradar")) devtools::install_github("ricardo-bion/ggradar")
 
 # Custom functions shared across scripts ----------------------------------
 source(here("scripts/_functions.R"))

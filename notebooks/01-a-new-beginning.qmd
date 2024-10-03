@@ -1,0 +1,157 @@
+---
+title: New Analysis Report
+subtitle: Uncovering spatial and verbal cognitive profiles in aphantasia through unsupervised clustering
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(here)
+source(here("scripts/_setup.R"))
+
+# load data
+df <- readRDS(here("data/data-processed/data_tidied.rds"))
+```
+
+{{< include ../scripts/_chunks.qmd >}}
+
+:::: {.content-visible when-format="html"}
+::: {.callout-note collapse="true"}
+# Packages and setup
+```r
+{{< include ../scripts/_setup.R >}}
+```
+:::
+::::
+
+# VVIQ group analysis
+
+## Modelling
+
+We first analysed the data in light of the VVIQ groups, examining differences between aphantasics and controls In order to model our variables with the VVIQ groups, we adjusted generalized linear models also controlling the effect of age on all variables to isolate the group effect: 
+
+$$Variable = \alpha  + \beta_{1} \cdot Group \times \beta_{2} \cdot Age + \epsilon$$
+
+\newpage
+
+```{r}
+#| label: group-models
+
+if (!file.exists(here("data/r-data-structures/group_models.rds"))) {
+  group_models <-
+    df |>
+    select(group, age, vviq:score_comprehension) |> 
+    get_long_format() |>
+    group_by(Variable) |> 
+    nest() |> 
+    rowwise() |> 
+    mutate(
+      stats = list(
+        data |> 
+          group_by(Group) |> 
+          reframe(stats = glue("{round(mean(value), digits = 2)} ({round(sd(value), digits = 2)})")) |> 
+          pivot_wider(
+            names_from = Group,
+            values_from = stats
+          )
+      ),
+      models_inclusion = list(
+        generalTestBF(value ~ Group * Age, data = data) |>
+          bayesfactor_inclusion() |> 
+          rownames_as_column(var = "Variable")
+      ),
+      models_bf = list(models_inclusion$log_BF),
+      models_post = list(
+        stan_glm(
+          value ~ Group * Age, 
+          data = data,
+          chains = 4,
+          iter   = 10000,
+          refresh = 100
+          )
+      ),
+      contrasts = list(
+        estimate_contrasts(
+          models_post,
+          contrast = "Group",
+          test = "bf",
+          bf_prior = models_post,
+          refresh = 100
+          # verbose = FALSE
+        ) |> 
+        as.data.frame() |> 
+        mutate(across(where(is.numeric), ~ round(., digits = 2))) |>
+        select(!c(Level1, Level2)) |> 
+        rename(`$log(BF_{10})$` = log_BF) |> 
+        unite(
+          "95% CI",
+          c(CI_low, CI_high),
+          sep = ", ",
+        ) |> 
+        mutate(`95% CI` = paste0("[", `95% CI`, "]"))
+      )
+    ) |> 
+    unnest_wider(stats) |> 
+    unnest_wider(models_bf, names_sep = "_") |> 
+    unnest_wider(contrasts) |> 
+    mutate(across(where(is.numeric), ~ round(., digits = 2))) |> 
+    rename(
+      `Group` = models_bf_1,
+      `Age` = models_bf_2,
+      `Group $\\times$ Age` = models_bf_3
+    )
+  
+  saveRDS(group_models, "data/r-data-structures/group_models.rds")
+} else {
+  group_models <- readRDS("data/r-data-structures/group_models.rds")
+}
+
+# head(models_groups)
+```
+
+```{r}
+#| label: group-models-table
+
+group_models |> 
+  select(
+    Variable, 
+    Control, Aphantasic, 
+    # `Group`, `Age`, `Group $\\times$ Age`, # main effects' inclusion BF
+    Difference,  `95% CI`, `$log(BF_{10})$`
+    ) |>
+  display() |> 
+  format()
+```
+
+
+
+
+
+
+
+
+
+:::: {.content-visible when-format="html"}
+
+&nbsp;
+&nbsp;
+&nbsp;
+
+::: {.callout-note collapse="true"}
+# Session information for reproducibility
+
+```{r}
+#| label: session-information
+#| echo: false
+
+cat("═════════════════════════════════════════════════════════════════════════")
+report_system(session = sessionInfo())
+cat("Packages used:")
+report_packages(session = sessionInfo())
+cat("═════════════════════════════════════════════════════════════════════════")
+```
+:::
+::::
+
+

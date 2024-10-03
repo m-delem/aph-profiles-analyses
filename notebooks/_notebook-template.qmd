@@ -6,8 +6,7 @@ title: Notebook Template
 #| label: setup
 #| include: false
 
-library(here)
-source(here("scripts/_setup.R"))
+source("../scripts/_setup.R")
 ```
 
 {{< include ../scripts/_chunks.qmd >}}

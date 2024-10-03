@@ -1,97 +1,97 @@
 id,age,sex,group,education,field,field_code,occupation,occupation_code,vviq,osivq_o,osivq_s,osivq_v,psiq_vis,psiq_aud,psiq_od,psiq_gout,psiq_tou,psiq_sens,psiq_feel,score_raven,score_sri,span_spatial,span_digit,wcst_accuracy,score_similarities,score_comprehension
-7210,25,m,Control,Master,"Social sciences, journalism, information",1,Health,5,65,45,45,54,8,7.67,8,7.33,8.33,8.67,8,14,27,5.428571428571429,6.071428571428571,78,30,24
-7213,22,f,Control,Master,"Social sciences, journalism, information",1,Student,3,59,47,45,47,7.67,9,6,8.67,9,9,7,17,26,3.7857142857142856,6.142857142857143,72,27,23
-7238,52,f,Control,Bachelor,"Natural sciences, mathematics, statistics",2,"Information, Communications",8,43,44,46,44,7,7.33,7,6.67,7,6,7,11,22,2.7857142857142856,3.9285714285714284,67,26,24
-7242,48,f,Control,Post-secondary,"Business, Administration, Law",3,"Business, Administration",7,73,46,35,23,7.67,8.33,9,7,8.67,7.33,8,7,15,2.142857142857143,3.5,25,20,16
-7254,37,f,Aphantasic,Doctorate,Health and Welfare,4,Health,5,16,32,30,50,1,1,1,1,1,1,1,12,16,3.357142857142857,3.0714285714285716,45,22,20
-7257,36,m,Control,Bachelor,"Natural sciences, mathematics, statistics",2,"Business, Administration",7,55,64,48,47,6.67,8,7,3.33,5,7,8.67,12,26,4,3.5714285714285716,23,29,9
-7261,26,f,Aphantasic,Master,"Engineering, manufacturing, construction",5,Science and Engineering,4,19,33,34,39,2.33,10,5.33,6.33,10,10,10,14,26,4.428571428571429,4.071428571428571,69,22,28
-7264,20,f,Control,Post-secondary,Generic programmes,6,Student,3,47,55,53,54,8.33,10,8.67,10,10,9.33,10,15,27,4.428571428571429,4.857142857142857,73,26,24
-7266,49,f,Aphantasic,Other,Health and Welfare,4,Health,5,16,21,36,52,1,1.33,1,1,4,3,1,14,25,2.9285714285714284,3.642857142857143,69,21,23
-7286,22,f,Control,Other,"Agriculture, forestry, fisheries, veterinary",7,Student,3,43,51,32,54,4.67,4,6.33,3,7.33,6.67,8.67,14,18,3.5,2.857142857142857,72,19,18
-7292,38,m,Aphantasic,Bachelor,"Information, communication technologies",8,"Information, Communications",8,16,16,45,34,1,1,1,1,1,1,5.33,17,27,3.9285714285714284,4.642857142857143,70,24,15
-7298,29,m,Control,Master,"Information, communication technologies",8,"Information, Communications",8,57,62,58,38,10,9.33,8.67,6,10,7.33,10,12,20,0.42857142857142855,4.357142857142857,45,17,11
-7309,24,f,Aphantasic,Post-secondary,Generic programmes,6,"Social, Cultural, Legal",9,16,18,32,45,1,8,5,9.33,9.67,6.33,7,16,26,4.571428571428571,4.357142857142857,64,30,21
-7319,38,f,Control,Post-secondary,"Business, Administration, Law",3,"Business, Administration",7,49,56,33,43,6,5.33,2.33,4.33,5.67,4,6,10,14,3.142857142857143,3.5714285714285716,70,21,12
-7330,20,f,Control,Post-secondary,Generic programmes,6,Student,3,34,36,63,35,3,6.67,2,2,5.33,6,2,14,27,3.7142857142857144,4.428571428571429,73,21,17
-7333,45,f,Aphantasic,Master,"Arts, humanities",9,"Business, Administration",7,26,29,21,70,5,3.33,1,1,1,5,1.67,15,21,3.2857142857142856,7.357142857142857,70,25,18
-7335,44,f,Aphantasic,Bachelor,"Arts, humanities",9,Health,5,19,20,33,64,1,6,2.67,2.33,2,1.67,1.67,12,20,3.5,3.142857142857143,73,28,24
-7353,40,f,Aphantasic,Doctorate,"Arts, humanities",9,Science and Engineering,4,16,17,32,45,1,1,1,1,1,1,1,12,21,3.0714285714285716,3.2142857142857144,45,27,15
-7362,21,f,Aphantasic,Bachelor,"Natural sciences, mathematics, statistics",2,Student,3,16,22,37,53,1,1,1,1,2,1,1,17,25,4.285714285714286,5.928571428571429,73,19,23
-7365,23,m,Control,Master,"Information, communication technologies",8,"Information, Communications",8,38,57,42,31,9.33,7,5.67,6.67,9.67,7.33,7,9,25,3.0714285714285716,4.571428571428571,78,20,16
-7367,34,f,Control,Master,"Social sciences, journalism, information",1,"Business, Administration",7,58,49,47,48,10,10,10,10,10,10,10,12,14,3.5,3.9285714285714284,75,16,9
-7399,22,f,Aphantasic,Bachelor,"Social sciences, journalism, information",1,Student,3,16,22,23,23,1,1,1,1,1,2,1.33,8,18,2,2.5,69,28,5
-7415,47,f,Aphantasic,Master,"Engineering, manufacturing, construction",5,Health,5,16,24,46,39,1,1,1,1,1,1,1,15,22,3.2857142857142856,3.7857142857142856,67,25,18
-7421,20,f,Control,Post-secondary,"Social sciences, journalism, information",1,Student,3,75,63,35,54,9.33,9.33,9.33,9.33,10,9.33,10,18,25,4.642857142857143,4.142857142857143,72,26,27
-7435,22,f,Control,Bachelor,"Engineering, manufacturing, construction",5,Student,3,67,64,43,54,9.67,8.67,9,9,10,9,8,8,19,2.5714285714285716,3.357142857142857,67,23,15
-7437,27,m,Aphantasic,Bachelor,"Information, communication technologies",8,"Information, Communications",8,16,21,56,31,1,1,1,1,1,1,1,14,27,4,6.285714285714286,72,26,22
-7442,20,f,Control,Post-secondary,"Arts, humanities",9,Student,3,66,63,34,44,8.33,9,8.33,8.33,8.67,8.33,8,9,16,3.857142857142857,3.2857142857142856,55,19,14
-7445,25,f,Aphantasic,Bachelor,Services,10,Student,3,20,24,45,36,2.67,8,5,6.33,6,7.33,6.67,14,21,3.642857142857143,4.571428571428571,66,28,27
-7448,22,f,Control,Bachelor,"Social sciences, journalism, information",1,Student,3,53,44,50,39,8.33,3.33,1.33,2,2.33,2,4,17,28,3.857142857142857,4.357142857142857,73,30,23
-7450,25,f,Control,Master,"Natural sciences, mathematics, statistics",2,Student,3,51,33,55,45,8.33,7.33,10,7.67,10,9.33,9.67,17,27,4.214285714285714,4.428571428571429,64,24,17
-7458,32,m,Control,Master,"Social sciences, journalism, information",1,Teaching,6,57,45,44,56,7,8.33,7.33,8,8,7.67,7,15,26,3,3.5714285714285716,72,24,5
-7460,40,f,Aphantasic,Bachelor,"Business, Administration, Law",3,"Business, Administration",7,16,24,39,38,1,1,1,1,1,1,1,17,27,4.428571428571429,4.785714285714286,70,29,23
-7464,24,f,Aphantasic,Bachelor,"Arts, humanities",9,"Business, Administration",7,16,23,27,57,1,1,1,1,1,1.33,2.33,12,16,3.5714285714285716,4.428571428571429,36,20,20
-7466,35,f,Aphantasic,Bachelor,"Arts, humanities",9,"Business, Administration",7,24,39,36,43,5,8,5.33,7,8,8,8,9,20,2,3.9285714285714284,56,24,9
-7468,43,f,Aphantasic,Master,"Arts, humanities",9,"Social, Cultural, Legal",9,16,18,38,63,1,1,1,1,1,1,1,15,22,4,5.5,72,25,15
-7470,34,f,Aphantasic,Bachelor,"Arts, humanities",9,No answer,1,32,40,38,43,4,7,1.67,3.67,4,6,2.67,13,26,4.428571428571429,4.428571428571429,13,28,22
-7480,28,f,Control,Bachelor,"Arts, humanities",9,"Social, Cultural, Legal",9,65,48,36,35,9,10,4.67,3.33,10,10,10,14,22,3.4285714285714284,3.642857142857143,70,13,18
-7496,23,m,Aphantasic,Other,"Engineering, manufacturing, construction",5,Student,3,16,25,41,50,1,1.33,1,1,1,8.67,10,15,25,4.357142857142857,4.785714285714286,61,28,27
-7498,22,f,Aphantasic,Bachelor,"Arts, humanities",9,Student,3,17,18,35,59,3,6.33,1,1.67,2.67,2.67,8,12,22,3.357142857142857,4.071428571428571,69,24,21
-7501,19,m,Aphantasic,Post-secondary,Generic programmes,6,Student,3,32,20,44,60,3,5,1,2,3.67,2,2,12,17,3.5,3.7857142857142856,27,23,21
-7502,31,f,Aphantasic,Master,"Business, Administration, Law",3,"Information, Communications",8,20,25,48,35,1.67,5,3,3,6,4.67,9.67,15,26,4.5,5.5,69,32,18
-7505,35,m,Aphantasic,Master,"Information, communication technologies",8,Science and Engineering,4,16,19,58,54,1,1,1,1,1,1,1,13,26,3.357142857142857,4,69,21,22
-7512,49,f,Aphantasic,Master,"Natural sciences, mathematics, statistics",2,Teaching,6,16,27,63,42,2,2,1,1,1,1.67,2,14,27,3.5714285714285716,5.857142857142857,77,26,25
-7526,48,m,Control,Master,"Natural sciences, mathematics, statistics",2,"Information, Communications",8,34,58,64,42,8,8,8,7.67,7.67,8,8,16,25,4.714285714285714,4.857142857142857,72,27,26
-7528,32,m,Aphantasic,Bachelor,"Arts, humanities",9,"Information, Communications",8,16,24,51,34,1,1,1,1,1,1,1,18,29,4.571428571428571,5.571428571428571,75,21,15
-7531,22,f,Aphantasic,Bachelor,"Social sciences, journalism, information",1,Student,3,20,17,42,58,1.67,4,1,1,3.67,5,7.67,14,22,3.7857142857142856,3.4285714285714284,78,22,24
-7543,23,other,Control,Master,"Arts, humanities",9,Student,3,46,32,43,40,7.67,4,1.67,3.67,6.67,5.33,8,15,26,4.5,4.785714285714286,77,28,27
-7546,21,f,Aphantasic,Bachelor,"Natural sciences, mathematics, statistics",2,Student,3,16,44,43,67,1,1,1,1,1,1,2.33,13,26,5.428571428571429,4.357142857142857,75,20,22
-7552,46,f,Aphantasic,Post-secondary,"Business, Administration, Law",3,"Business, Administration",7,16,28,27,35,1,1,1,1,1,1,1,13,16,2.357142857142857,3,72,16,12
-7557,23,f,Control,Bachelor,"Social sciences, journalism, information",1,Student,3,74,69,45,48,10,10,10,10,10,10,8.67,18,24,0.5,4.785714285714286,67,33,21
-7616,21,f,Control,Bachelor,"Business, Administration, Law",3,"Business, Administration",7,69,67,43,47,8.67,6.67,2,5.33,8,9,7,12,12,3.5,3.0714285714285716,67,18,12
-7624,65,f,Control,Doctorate,"Natural sciences, mathematics, statistics",2,Science and Engineering,4,61,52,44,46,8,8,5.33,5.33,7.67,6.33,5.67,14,21,3.0714285714285716,4.071428571428571,53,23,14
-7626,60,f,Aphantasic,Bachelor,"Business, Administration, Law",3,"Information, Communications",8,16,21,40,38,1,1,1,1,1,1,1.67,17,22,3.4285714285714284,3.2857142857142856,75,21,17
-7628,52,f,Aphantasic,Bachelor,Health and Welfare,4,Health,5,20,44,30,54,4,7,3.33,3,3,5,5.33,13,15,2.7142857142857144,2.7857142857142856,73,26,20
-7635,32,f,Control,Bachelor,"Arts, humanities",9,"Social, Cultural, Legal",9,64,65,36,33,9.67,8,9.33,4.67,9.67,9,8.67,15,25,3.7142857142857144,4.642857142857143,73,26,14
-7640,22,f,Aphantasic,Master,"Business, Administration, Law",3,Student,3,20,24,35,50,3,5,4.67,5,5.33,5.67,6,13,20,4.714285714285714,4.071428571428571,53,23,15
-7681,25,m,Control,Master,"Information, communication technologies",8,"Information, Communications",8,51,36,39,39,7.33,7,8.67,8.33,7.67,7.33,6,14,17,3.2857142857142856,5.571428571428571,69,23,17
-7701,39,f,Control,Doctorate,"Arts, humanities",9,Teaching,6,66,57,38,44,9,8.67,7.67,9.67,9,8.67,9.33,17,26,3.4285714285714284,5.785714285714286,66,26,28
-7714,40,f,Aphantasic,Master,"Business, Administration, Law",3,"Business, Administration",7,16,27,34,71,1,1,1,1,1,1,1,17,24,2,3.0714285714285716,72,33,23
-7722,50,m,Control,Upper secondary,Generic programmes,6,"Business, Administration",7,61,44,43,34,8,8,6,6.67,8,8,5.67,14,26,2.857142857142857,3.5,56,24,16
-7724,22,m,Control,Master,"Engineering, manufacturing, construction",5,Student,3,58,48,47,34,7.67,8.67,3.67,7,8,7.33,6.33,13,26,4.428571428571429,3.9285714285714284,66,25,18
-7731,37,f,Control,Master,"Business, Administration, Law",3,"Social, Cultural, Legal",9,62,46,30,41,9,6.67,6,8.33,9,9,8,10,21,2.0714285714285716,3.5714285714285716,67,26,24
-7733,25,f,Control,Master,"Arts, humanities",9,Unemployed,2,50,57,32,37,7.33,8.67,9.33,6,9,9,4,13,14,2.5,3.357142857142857,70,17,24
-7736,50,f,Control,Other,"Business, Administration, Law",3,"Business, Administration",7,72,59,25,52,9,10,9,10,10,9.67,10,10,12,2.2142857142857144,3.857142857142857,23,24,28
-7738,50,m,Control,Bachelor,"Business, Administration, Law",3,"Information, Communications",8,39,46,59,38,5,4,7,2.33,4,4.33,1,12,24,2.7857142857142856,3.2857142857142856,72,28,14
-7740,23,f,Aphantasic,Master,"Social sciences, journalism, information",1,"Business, Administration",7,27,21,37,61,2.67,2.67,1,1,6,8,6,11,21,2.7142857142857144,1.8571428571428572,66,19,18
-7742,20,f,Control,Bachelor,"Social sciences, journalism, information",1,Student,3,54,62,44,39,8,7,6.33,6,6.33,5.67,6.67,8,20,1.4285714285714286,2.857142857142857,66,16,6
-7745,41,f,Aphantasic,Other,"Arts, humanities",9,Unemployed,2,16,29,34,52,1,1,1,3.67,1,1,1,11,19,3.0714285714285716,4.571428571428571,66,12,5
-7747,47,f,Aphantasic,Other,Education,11,Teaching,6,16,15,40,51,1,1,1,1,1,1,1,14,23,3,2.7142857142857144,67,24,21
-7755,22,f,Control,Master,"Natural sciences, mathematics, statistics",2,Student,3,47,56,49,40,7.33,6.33,6.67,6,9,8,7,13,18,2.857142857142857,4,67,20,9
-7757,30,m,Control,Bachelor,"Information, communication technologies",8,"Information, Communications",8,64,49,46,45,10,10,8.67,10,9.33,9,7.33,17,26,4.428571428571429,5.785714285714286,72,32,26
-7761,22,f,Control,Master,"Arts, humanities",9,Student,3,47,61,25,39,9,7.33,3.67,4,5.33,5,6.67,6,18,0.7857142857142857,2.2142857142857144,52,16,5
-7785,26,f,Control,Bachelor,Health and Welfare,4,"Social, Cultural, Legal",9,46,52,57,42,7,7.33,6,4,5,4,4.33,12,27,4,4.142857142857143,78,26,12
-7790,22,f,Control,Bachelor,"Social sciences, journalism, information",1,Student,3,68,54,45,50,9,8.33,7.67,7.67,8,6,8.33,8,18,3.857142857142857,3.142857142857143,72,17,17
-7820,21,f,Control,Bachelor,"Social sciences, journalism, information",1,Student,3,62,58,29,45,9.67,9,8.33,8.33,7.33,8,7,13,16,3,3.5714285714285716,66,22,24
-7833,27,f,Aphantasic,Master,"Agriculture, forestry, fisheries, veterinary",7,"Business, Administration",7,16,16,40,50,1,3,1,1,1,4,5,14,25,3.642857142857143,3.5,78,19,18
-7861,45,m,Aphantasic,Master,"Information, communication technologies",8,"Information, Communications",8,16,24,51,50,1,1,1,1,1,1,1,18,25,3.857142857142857,7,78,25,18
-7871,22,f,Control,Bachelor,"Social sciences, journalism, information",1,Student,3,62,65,46,54,9.67,7,7.33,7.67,8.67,8.33,8.67,6,15,2.7142857142857144,3,56,22,9
-7885,53,f,Control,Other,"Arts, humanities",9,"Information, Communications",8,63,55,50,45,8,8.33,9.67,8.33,9.67,10,9,14,24,3.642857142857143,2.857142857142857,77,27,26
-7909,20,f,Aphantasic,Post-secondary,Generic programmes,6,Student,3,20,27,35,64,4.33,10,7.67,8.33,7.67,8.33,9,10,16,3.2142857142857144,4.071428571428571,72,29,17
-7913,49,f,Control,Other,Health and Welfare,4,Health,5,68,53,35,45,9,10,7.33,5.33,9.33,8.33,10,7,14,1,3.2142857142857144,31,13,10
-7922,38,f,Aphantasic,Master,"Arts, humanities",9,Teaching,6,16,22,38,45,1,1,2,1,1,1,5,16,22,2.7142857142857144,3.9285714285714284,52,23,15
-7934,40,f,Control,Other,"Business, Administration, Law",3,"Business, Administration",7,55,59,51,47,10,10,4,5,10,10,10,8,18,3,3.7142857142857144,38,23,24
-7941,19,f,Control,Bachelor,Generic programmes,6,No answer,1,74,67,51,30,9.67,9.33,7.67,8,10,10,10,12,16,5.857142857142857,5.785714285714286,38,16,12
-7943,38,f,Control,Master,"Engineering, manufacturing, construction",5,Science and Engineering,4,65,47,52,55,8.67,10,6.67,6.67,10,10,10,16,22,0.35714285714285715,5.571428571428571,73,16,11
-7949,40,f,Aphantasic,Master,"Business, Administration, Law",3,Health,5,17,33,31,40,1,1,1,1,2,1.67,4,13,17,3,3.2857142857142856,72,22,13
-7976,23,f,Control,Post-secondary,"Business, Administration, Law",3,Student,3,75,70,37,52,10,10,8.67,10,10,10,10,12,13,2.142857142857143,3.142857142857143,48,25,5
-7983,40,f,Aphantasic,Bachelor,"Arts, humanities",9,"Business, Administration",7,27,23,46,52,3.67,2,1,2.67,4,2.67,4.33,13,21,3.142857142857143,3.2857142857142856,66,26,22
-8034,44,m,Control,Post-secondary,"Business, Administration, Law",3,"Business, Administration",7,55,47,48,39,9.67,9.33,8,9.33,10,9.33,8.33,13,25,3,2.9285714285714284,66,24,17
-8043,36,f,Control,Bachelor,Education,11,Teaching,6,65,57,47,31,8.67,7.67,6.67,7.33,9,7.33,9,15,23,2.857142857142857,6,78,32,10
-8052,29,m,Aphantasic,Master,"Business, Administration, Law",3,"Business, Administration",7,16,22,49,61,1,1,1,1,1,1,1,16,25,3.5714285714285716,3.357142857142857,50,26,17
-8084,23,f,Control,Post-secondary,"Business, Administration, Law",3,Student,3,62,67,29,43,10,10,10,9.67,10,10,10,12,21,0.5714285714285714,4.857142857142857,30,15,11
-8087,24,f,Aphantasic,Master,"Social sciences, journalism, information",1,Student,3,17,26,41,55,2,2.33,1.33,1,1,2.33,2.67,15,28,2.9285714285714284,4.428571428571429,70,35,21
-8117,44,m,Control,Master,"Arts, humanities",9,Teaching,6,68,69,50,43,8.67,10,9.67,10,10,10,10,16,23,3.642857142857143,3.2857142857142856,73,32,23
-8119,21,f,Aphantasic,Post-secondary,Generic programmes,6,Student,3,16,20,37,53,1,1,1,2,3.33,1.67,3,15,26,3.642857142857143,3.642857142857143,75,21,19
-8160,29,f,Aphantasic,Doctorate,"Natural sciences, mathematics, statistics",2,Science and Engineering,4,16,23,47,56,1,1,1,1,1,1,1,16,25,4,6,66,26,26
+7210,25,m,Control,Master,"Social sciences, journalism, information",3,Health,5,65,45,45,54,8,7.67,8,7.33,8.33,8.67,8,14,27,5.43,6.07,78,30,24
+7213,22,f,Control,Master,"Social sciences, journalism, information",3,Student,3,59,47,45,47,7.67,9,6,8.67,9,9,7,17,26,3.79,6.14,72,27,23
+7238,52,f,Control,Bachelor,"Natural sciences, mathematics, statistics",5,"Information, Communications",8,43,44,46,44,7,7.33,7,6.67,7,6,7,11,22,2.79,3.93,67,26,24
+7242,48,f,Control,Post-secondary,"Business, Administration, Law",4,"Business, Administration",7,73,46,35,23,7.67,8.33,9,7,8.67,7.33,8,7,15,2.14,3.5,25,20,16
+7254,37,f,Aphantasic,Doctorate,Health and Welfare,9,Health,5,16,32,30,50,1,1,1,1,1,1,1,12,16,3.36,3.07,45,22,20
+7257,36,m,Control,Bachelor,"Natural sciences, mathematics, statistics",5,"Business, Administration",7,55,64,48,47,6.67,8,7,3.33,5,7,8.67,12,26,4,3.57,23,29,9
+7261,26,f,Aphantasic,Master,"Engineering, manufacturing, construction",7,Science and Engineering,4,19,33,34,39,2.33,10,5.33,6.33,10,10,10,14,26,4.43,4.07,69,22,28
+7264,20,f,Control,Post-secondary,Generic programmes,0,Student,3,47,55,53,54,8.33,10,8.67,10,10,9.33,10,15,27,4.43,4.86,73,26,24
+7266,49,f,Aphantasic,Other,Health and Welfare,9,Health,5,16,21,36,52,1,1.33,1,1,4,3,1,14,25,2.93,3.64,69,21,23
+7286,22,f,Control,Other,"Agriculture, forestry, fisheries, veterinary",8,Student,3,43,51,32,54,4.67,4,6.33,3,7.33,6.67,8.67,14,18,3.5,2.86,72,19,18
+7292,38,m,Aphantasic,Bachelor,"Information, communication technologies",6,"Information, Communications",8,16,16,45,34,1,1,1,1,1,1,5.33,17,27,3.93,4.64,70,24,15
+7298,29,m,Control,Master,"Information, communication technologies",6,"Information, Communications",8,57,62,58,38,10,9.33,8.67,6,10,7.33,10,12,20,0.43,4.36,45,17,11
+7309,24,f,Aphantasic,Post-secondary,Generic programmes,0,"Social, Cultural, Legal",9,16,18,32,45,1,8,5,9.33,9.67,6.33,7,16,26,4.57,4.36,64,30,21
+7319,38,f,Control,Post-secondary,"Business, Administration, Law",4,"Business, Administration",7,49,56,33,43,6,5.33,2.33,4.33,5.67,4,6,10,14,3.14,3.57,70,21,12
+7330,20,f,Control,Post-secondary,Generic programmes,0,Student,3,34,36,63,35,3,6.67,2,2,5.33,6,2,14,27,3.71,4.43,73,21,17
+7333,45,f,Aphantasic,Master,"Arts, humanities",2,"Business, Administration",7,26,29,21,70,5,3.33,1,1,1,5,1.67,15,21,3.29,7.36,70,25,18
+7335,44,f,Aphantasic,Bachelor,"Arts, humanities",2,Health,5,19,20,33,64,1,6,2.67,2.33,2,1.67,1.67,12,20,3.5,3.14,73,28,24
+7353,40,f,Aphantasic,Doctorate,"Arts, humanities",2,Science and Engineering,4,16,17,32,45,1,1,1,1,1,1,1,12,21,3.07,3.21,45,27,15
+7362,21,f,Aphantasic,Bachelor,"Natural sciences, mathematics, statistics",5,Student,3,16,22,37,53,1,1,1,1,2,1,1,17,25,4.29,5.93,73,19,23
+7365,23,m,Control,Master,"Information, communication technologies",6,"Information, Communications",8,38,57,42,31,9.33,7,5.67,6.67,9.67,7.33,7,9,25,3.07,4.57,78,20,16
+7367,34,f,Control,Master,"Social sciences, journalism, information",3,"Business, Administration",7,58,49,47,48,10,10,10,10,10,10,10,12,14,3.5,3.93,75,16,9
+7399,22,f,Aphantasic,Bachelor,"Social sciences, journalism, information",3,Student,3,16,22,23,23,1,1,1,1,1,2,1.33,8,18,2,2.5,69,28,5
+7415,47,f,Aphantasic,Master,"Engineering, manufacturing, construction",7,Health,5,16,24,46,39,1,1,1,1,1,1,1,15,22,3.29,3.79,67,25,18
+7421,20,f,Control,Post-secondary,"Social sciences, journalism, information",3,Student,3,75,63,35,54,9.33,9.33,9.33,9.33,10,9.33,10,18,25,4.64,4.14,72,26,27
+7435,22,f,Control,Bachelor,"Engineering, manufacturing, construction",7,Student,3,67,64,43,54,9.67,8.67,9,9,10,9,8,8,19,2.57,3.36,67,23,15
+7437,27,m,Aphantasic,Bachelor,"Information, communication technologies",6,"Information, Communications",8,16,21,56,31,1,1,1,1,1,1,1,14,27,4,6.29,72,26,22
+7442,20,f,Control,Post-secondary,"Arts, humanities",2,Student,3,66,63,34,44,8.33,9,8.33,8.33,8.67,8.33,8,9,16,3.86,3.29,55,19,14
+7445,25,f,Aphantasic,Bachelor,Services,10,Student,3,20,24,45,36,2.67,8,5,6.33,6,7.33,6.67,14,21,3.64,4.57,66,28,27
+7448,22,f,Control,Bachelor,"Social sciences, journalism, information",3,Student,3,53,44,50,39,8.33,3.33,1.33,2,2.33,2,4,17,28,3.86,4.36,73,30,23
+7450,25,f,Control,Master,"Natural sciences, mathematics, statistics",5,Student,3,51,33,55,45,8.33,7.33,10,7.67,10,9.33,9.67,17,27,4.21,4.43,64,24,17
+7458,32,m,Control,Master,"Social sciences, journalism, information",3,Teaching,6,57,45,44,56,7,8.33,7.33,8,8,7.67,7,15,26,3,3.57,72,24,5
+7460,40,f,Aphantasic,Bachelor,"Business, Administration, Law",4,"Business, Administration",7,16,24,39,38,1,1,1,1,1,1,1,17,27,4.43,4.79,70,29,23
+7464,24,f,Aphantasic,Bachelor,"Arts, humanities",2,"Business, Administration",7,16,23,27,57,1,1,1,1,1,1.33,2.33,12,16,3.57,4.43,36,20,20
+7466,35,f,Aphantasic,Bachelor,"Arts, humanities",2,"Business, Administration",7,24,39,36,43,5,8,5.33,7,8,8,8,9,20,2,3.93,56,24,9
+7468,43,f,Aphantasic,Master,"Arts, humanities",2,"Social, Cultural, Legal",9,16,18,38,63,1,1,1,1,1,1,1,15,22,4,5.5,72,25,15
+7470,34,f,Aphantasic,Bachelor,"Arts, humanities",2,No answer,1,32,40,38,43,4,7,1.67,3.67,4,6,2.67,13,26,4.43,4.43,13,28,22
+7480,28,f,Control,Bachelor,"Arts, humanities",2,"Social, Cultural, Legal",9,65,48,36,35,9,10,4.67,3.33,10,10,10,14,22,3.43,3.64,70,13,18
+7496,23,m,Aphantasic,Other,"Engineering, manufacturing, construction",7,Student,3,16,25,41,50,1,1.33,1,1,1,8.67,10,15,25,4.36,4.79,61,28,27
+7498,22,f,Aphantasic,Bachelor,"Arts, humanities",2,Student,3,17,18,35,59,3,6.33,1,1.67,2.67,2.67,8,12,22,3.36,4.07,69,24,21
+7501,19,m,Aphantasic,Post-secondary,Generic programmes,0,Student,3,32,20,44,60,3,5,1,2,3.67,2,2,12,17,3.5,3.79,27,23,21
+7502,31,f,Aphantasic,Master,"Business, Administration, Law",4,"Information, Communications",8,20,25,48,35,1.67,5,3,3,6,4.67,9.67,15,26,4.5,5.5,69,32,18
+7505,35,m,Aphantasic,Master,"Information, communication technologies",6,Science and Engineering,4,16,19,58,54,1,1,1,1,1,1,1,13,26,3.36,4,69,21,22
+7512,49,f,Aphantasic,Master,"Natural sciences, mathematics, statistics",5,Teaching,6,16,27,63,42,2,2,1,1,1,1.67,2,14,27,3.57,5.86,77,26,25
+7526,48,m,Control,Master,"Natural sciences, mathematics, statistics",5,"Information, Communications",8,34,58,64,42,8,8,8,7.67,7.67,8,8,16,25,4.71,4.86,72,27,26
+7528,32,m,Aphantasic,Bachelor,"Arts, humanities",2,"Information, Communications",8,16,24,51,34,1,1,1,1,1,1,1,18,29,4.57,5.57,75,21,15
+7531,22,f,Aphantasic,Bachelor,"Social sciences, journalism, information",3,Student,3,20,17,42,58,1.67,4,1,1,3.67,5,7.67,14,22,3.79,3.43,78,22,24
+7543,23,other,Control,Master,"Arts, humanities",2,Student,3,46,32,43,40,7.67,4,1.67,3.67,6.67,5.33,8,15,26,4.5,4.79,77,28,27
+7546,21,f,Aphantasic,Bachelor,"Natural sciences, mathematics, statistics",5,Student,3,16,44,43,67,1,1,1,1,1,1,2.33,13,26,5.43,4.36,75,20,22
+7552,46,f,Aphantasic,Post-secondary,"Business, Administration, Law",4,"Business, Administration",7,16,28,27,35,1,1,1,1,1,1,1,13,16,2.36,3,72,16,12
+7557,23,f,Control,Bachelor,"Social sciences, journalism, information",3,Student,3,74,69,45,48,10,10,10,10,10,10,8.67,18,24,0.5,4.79,67,33,21
+7616,21,f,Control,Bachelor,"Business, Administration, Law",4,"Business, Administration",7,69,67,43,47,8.67,6.67,2,5.33,8,9,7,12,12,3.5,3.07,67,18,12
+7624,65,f,Control,Doctorate,"Natural sciences, mathematics, statistics",5,Science and Engineering,4,61,52,44,46,8,8,5.33,5.33,7.67,6.33,5.67,14,21,3.07,4.07,53,23,14
+7626,60,f,Aphantasic,Bachelor,"Business, Administration, Law",4,"Information, Communications",8,16,21,40,38,1,1,1,1,1,1,1.67,17,22,3.43,3.29,75,21,17
+7628,52,f,Aphantasic,Bachelor,Health and Welfare,9,Health,5,20,44,30,54,4,7,3.33,3,3,5,5.33,13,15,2.71,2.79,73,26,20
+7635,32,f,Control,Bachelor,"Arts, humanities",2,"Social, Cultural, Legal",9,64,65,36,33,9.67,8,9.33,4.67,9.67,9,8.67,15,25,3.71,4.64,73,26,14
+7640,22,f,Aphantasic,Master,"Business, Administration, Law",4,Student,3,20,24,35,50,3,5,4.67,5,5.33,5.67,6,13,20,4.71,4.07,53,23,15
+7681,25,m,Control,Master,"Information, communication technologies",6,"Information, Communications",8,51,36,39,39,7.33,7,8.67,8.33,7.67,7.33,6,14,17,3.29,5.57,69,23,17
+7701,39,f,Control,Doctorate,"Arts, humanities",2,Teaching,6,66,57,38,44,9,8.67,7.67,9.67,9,8.67,9.33,17,26,3.43,5.79,66,26,28
+7714,40,f,Aphantasic,Master,"Business, Administration, Law",4,"Business, Administration",7,16,27,34,71,1,1,1,1,1,1,1,17,24,2,3.07,72,33,23
+7722,50,m,Control,Upper secondary,Generic programmes,0,"Business, Administration",7,61,44,43,34,8,8,6,6.67,8,8,5.67,14,26,2.86,3.5,56,24,16
+7724,22,m,Control,Master,"Engineering, manufacturing, construction",7,Student,3,58,48,47,34,7.67,8.67,3.67,7,8,7.33,6.33,13,26,4.43,3.93,66,25,18
+7731,37,f,Control,Master,"Business, Administration, Law",4,"Social, Cultural, Legal",9,62,46,30,41,9,6.67,6,8.33,9,9,8,10,21,2.07,3.57,67,26,24
+7733,25,f,Control,Master,"Arts, humanities",2,Unemployed,2,50,57,32,37,7.33,8.67,9.33,6,9,9,4,13,14,2.5,3.36,70,17,24
+7736,50,f,Control,Other,"Business, Administration, Law",4,"Business, Administration",7,72,59,25,52,9,10,9,10,10,9.67,10,10,12,2.21,3.86,23,24,28
+7738,50,m,Control,Bachelor,"Business, Administration, Law",4,"Information, Communications",8,39,46,59,38,5,4,7,2.33,4,4.33,1,12,24,2.79,3.29,72,28,14
+7740,23,f,Aphantasic,Master,"Social sciences, journalism, information",3,"Business, Administration",7,27,21,37,61,2.67,2.67,1,1,6,8,6,11,21,2.71,1.86,66,19,18
+7742,20,f,Control,Bachelor,"Social sciences, journalism, information",3,Student,3,54,62,44,39,8,7,6.33,6,6.33,5.67,6.67,8,20,1.43,2.86,66,16,6
+7745,41,f,Aphantasic,Other,"Arts, humanities",2,Unemployed,2,16,29,34,52,1,1,1,3.67,1,1,1,11,19,3.07,4.57,66,12,5
+7747,47,f,Aphantasic,Other,Education,1,Teaching,6,16,15,40,51,1,1,1,1,1,1,1,14,23,3,2.71,67,24,21
+7755,22,f,Control,Master,"Natural sciences, mathematics, statistics",5,Student,3,47,56,49,40,7.33,6.33,6.67,6,9,8,7,13,18,2.86,4,67,20,9
+7757,30,m,Control,Bachelor,"Information, communication technologies",6,"Information, Communications",8,64,49,46,45,10,10,8.67,10,9.33,9,7.33,17,26,4.43,5.79,72,32,26
+7761,22,f,Control,Master,"Arts, humanities",2,Student,3,47,61,25,39,9,7.33,3.67,4,5.33,5,6.67,6,18,0.79,2.21,52,16,5
+7785,26,f,Control,Bachelor,Health and Welfare,9,"Social, Cultural, Legal",9,46,52,57,42,7,7.33,6,4,5,4,4.33,12,27,4,4.14,78,26,12
+7790,22,f,Control,Bachelor,"Social sciences, journalism, information",3,Student,3,68,54,45,50,9,8.33,7.67,7.67,8,6,8.33,8,18,3.86,3.14,72,17,17
+7820,21,f,Control,Bachelor,"Social sciences, journalism, information",3,Student,3,62,58,29,45,9.67,9,8.33,8.33,7.33,8,7,13,16,3,3.57,66,22,24
+7833,27,f,Aphantasic,Master,"Agriculture, forestry, fisheries, veterinary",8,"Business, Administration",7,16,16,40,50,1,3,1,1,1,4,5,14,25,3.64,3.5,78,19,18
+7861,45,m,Aphantasic,Master,"Information, communication technologies",6,"Information, Communications",8,16,24,51,50,1,1,1,1,1,1,1,18,25,3.86,7,78,25,18
+7871,22,f,Control,Bachelor,"Social sciences, journalism, information",3,Student,3,62,65,46,54,9.67,7,7.33,7.67,8.67,8.33,8.67,6,15,2.71,3,56,22,9
+7885,53,f,Control,Other,"Arts, humanities",2,"Information, Communications",8,63,55,50,45,8,8.33,9.67,8.33,9.67,10,9,14,24,3.64,2.86,77,27,26
+7909,20,f,Aphantasic,Post-secondary,Generic programmes,0,Student,3,20,27,35,64,4.33,10,7.67,8.33,7.67,8.33,9,10,16,3.21,4.07,72,29,17
+7913,49,f,Control,Other,Health and Welfare,9,Health,5,68,53,35,45,9,10,7.33,5.33,9.33,8.33,10,7,14,1,3.21,31,13,10
+7922,38,f,Aphantasic,Master,"Arts, humanities",2,Teaching,6,16,22,38,45,1,1,2,1,1,1,5,16,22,2.71,3.93,52,23,15
+7934,40,f,Control,Other,"Business, Administration, Law",4,"Business, Administration",7,55,59,51,47,10,10,4,5,10,10,10,8,18,3,3.71,38,23,24
+7941,19,f,Control,Bachelor,Generic programmes,0,No answer,1,74,67,51,30,9.67,9.33,7.67,8,10,10,10,12,16,5.86,5.79,38,16,12
+7943,38,f,Control,Master,"Engineering, manufacturing, construction",7,Science and Engineering,4,65,47,52,55,8.67,10,6.67,6.67,10,10,10,16,22,0.36,5.57,73,16,11
+7949,40,f,Aphantasic,Master,"Business, Administration, Law",4,Health,5,17,33,31,40,1,1,1,1,2,1.67,4,13,17,3,3.29,72,22,13
+7976,23,f,Control,Post-secondary,"Business, Administration, Law",4,Student,3,75,70,37,52,10,10,8.67,10,10,10,10,12,13,2.14,3.14,48,25,5
+7983,40,f,Aphantasic,Bachelor,"Arts, humanities",2,"Business, Administration",7,27,23,46,52,3.67,2,1,2.67,4,2.67,4.33,13,21,3.14,3.29,66,26,22
+8034,44,m,Control,Post-secondary,"Business, Administration, Law",4,"Business, Administration",7,55,47,48,39,9.67,9.33,8,9.33,10,9.33,8.33,13,25,3,2.93,66,24,17
+8043,36,f,Control,Bachelor,Education,1,Teaching,6,65,57,47,31,8.67,7.67,6.67,7.33,9,7.33,9,15,23,2.86,6,78,32,10
+8052,29,m,Aphantasic,Master,"Business, Administration, Law",4,"Business, Administration",7,16,22,49,61,1,1,1,1,1,1,1,16,25,3.57,3.36,50,26,17
+8084,23,f,Control,Post-secondary,"Business, Administration, Law",4,Student,3,62,67,29,43,10,10,10,9.67,10,10,10,12,21,0.57,4.86,30,15,11
+8087,24,f,Aphantasic,Master,"Social sciences, journalism, information",3,Student,3,17,26,41,55,2,2.33,1.33,1,1,2.33,2.67,15,28,2.93,4.43,70,35,21
+8117,44,m,Control,Master,"Arts, humanities",2,Teaching,6,68,69,50,43,8.67,10,9.67,10,10,10,10,16,23,3.64,3.29,73,32,23
+8119,21,f,Aphantasic,Post-secondary,Generic programmes,0,Student,3,16,20,37,53,1,1,1,2,3.33,1.67,3,15,26,3.64,3.64,75,21,19
+8160,29,f,Aphantasic,Doctorate,"Natural sciences, mathematics, statistics",5,Science and Engineering,4,16,23,47,56,1,1,1,1,1,1,1,16,25,4,6,66,26,26
