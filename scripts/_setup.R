@@ -28,10 +28,27 @@ pacman::p_load(
   see,        # theme_modern and okabeito palette
   report,     # reporting various info 
   labelled,   # labelled data
+  # ─── data management ─────────────────
   fs,         # listing files
   readxl,     # reading excel files
   jsonlite,   # reading json files
   openxlsx,   # exporting xlsx files
+  # ─── modelling ───────────────────────
+  mclust,         # mixture clustering
+  rstanarm,       # bayesian models
+  BayesFactor,    # BFs
+  emmeans,        # marginal estimates  
+  easystats,      # data analysis framework
+  NbClust,        # number of clusters
+  scales,         # data transformation
+  #  data visualization ──────────────
+  # plot types and geoms
+  factoextra,            # multivariate data plots
+  # ricardo-bion/ggradar,  # radar plots
+  # layout and options
+  ggtext,         # text in ggplot
+  latex2exp,      # LaTeX in ggplot
+  patchwork,      # layout control
   
   # Should remain last to avoid conflicts with other packages
   tidyverse   # modern R ecosystem

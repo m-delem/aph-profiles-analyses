@@ -14,33 +14,6 @@ The code generating all the computations, figures, tables, etc. can be found in 
 #| label: setup
 #| output: false
 
-# now putting packages on our library's shelves:
-shelf(
-  # ─── modelling ───────────────────────
-  mclust,         # mixture clustering
-  rstanarm,       # bayesian models
-  BayesFactor,    # BFs
-  emmeans,        # marginal estimates  
-  easystats,      # data analysis framework
-  NbClust,
-  scales,         # data transformation
-  
-  # ─── data management ─────────────────
-  readxl,         # importing xlsx
-  
-  #  data visualization ──────────────
-  # plot types and geoms
-  factoextra,            # multivariate data plots
-  ricardo-bion/ggradar,  # radar plots
-  # layout and options
-  ggtext,         # text in ggplot
-  latex2exp,      # LaTeX in ggplot
-  patchwork,      # layout control
-  
-  # ─── essential package collections ───
-  tidyverse,      # modern R ecosystem
-)
-
 # ─── Colour-blind friendly palettes ───
 pal_duo  <- c("#56B4E9", "#009E73")
 pal_trio <- c("#56B4E9", "#E69F00", "#009E73")
@@ -60,98 +33,6 @@ The `parameters` R package was used to compute clustering indices. The `mclust` 
 ```{r}
 #| label: importing-data
 
-# metadata
-df_meta <- 
-  read_xlsx("data/metadata.xlsx") |> 
-  mutate(
-    Duration = Duration |> 
-      format(
-        format = "%H:%M:%S",
-        digits = 0
-      ) |> 
-      lubridate::as.difftime(),
-    Median = median(Duration),
-    MAD = mad(Duration)
-  ) |> 
-  select(Duration, Median, MAD, everything())
-
-# raw data
-df0 <- 
-  read_xlsx("data/data-n96.xlsx") |>  
-  select(
-    id, age, sex, group, 
-    education, field, field_code,
-    occupation, occupation_code,
-    vviq:score_comprehension
-    ) |> 
-  # recoding factors
-  mutate(
-    group = factor(group, levels = c("Phantasic", "Aphantasic")),
-    # education levels have been coded by adapting the French grades
-    # to the International Standard Classification of Education (ISCED)
-    education = case_match(
-      education, 
-      "other"  ~ "Other",
-      "brevet" ~  "Upper secondary",
-      "bac" ~ "Post-secondary",
-      "licence" ~ "Bachelor",
-      "master" ~ "Master",
-      "doctorat" ~ "Doctorate",
-      .ptype = factor(levels = c(
-        "Other", 
-        "Upper secondary", 
-        "Post-secondary", 
-        "Bachelor", 
-        "Master", 
-        "Doctorate"))
-    ),
-    # Fields of education have already been coded according to the 10 broad 
-    # fields defined by the ISCED-F 2013
-    # Occupations have already been coded according to the International 
-    # Standard Classification of Occupations (ISCO-08)
-    # I'll recode from 1 to 9 for the sake of clarity
-    occupation_code = case_match(
-      occupation_code,
-      0  ~ 1,
-      1  ~ 2,
-      2  ~ 3,
-      21 ~ 4,
-      22 ~ 5,
-      23 ~ 6,
-      24 ~ 7,
-      25 ~ 8,
-      26 ~ 9,
-    )
-  ) |> 
-  # setting categories as factors
-  mutate(across(c(
-    sex:field, occupation,
-    field_code, occupation_code
-    ), as.factor)) |>
-  # everything else as numeric
-  mutate(across(c(
-    age, 
-    # field_code, occupation_code, 
-    vviq:score_comprehension), as.numeric))
-
-# some more recoding
-field_levels <- 
-  df0 |> 
-  arrange(field_code) |> 
-  pull(field) |> 
-  unique()
-occupation_levels <- 
-  df0 |> 
-  arrange(occupation_code) |> 
-  pull(occupation) |>
-  unique()
-
-df0 <- 
-  df0 |> 
-  mutate(
-    field = factor(field, levels = field_levels),
-    occupation = factor(occupation, levels = occupation_levels)
-  )
 
 # df keeping only the group and quantitative variables
 df1_quant <- df0 |> select(group, age, vviq:score_comprehension)
