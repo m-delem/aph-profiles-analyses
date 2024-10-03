@@ -32,6 +32,8 @@ pacman::p_load(
   readxl,     # reading excel files
   jsonlite,   # reading json files
   openxlsx,   # exporting xlsx files
+  
+  # Should remain last to avoid conflicts with other packages
   tidyverse   # modern R ecosystem
 )
 

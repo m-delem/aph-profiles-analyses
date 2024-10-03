@@ -2,6 +2,22 @@ library(here)
 source(here("scripts/_setup.R"))
 
 
+# Retrieving metadata ----------------------------------------------------------
+
+df_meta <- 
+  read_xlsx("data/data-raw/metadata.xlsx") |> 
+  mutate(
+    Duration = Duration |> 
+      format(
+        format = "%H:%M:%S",
+        digits = 0
+      ) |> 
+      lubridate::as.difftime(),
+    `Start Time` = as.character(`Start Time`),
+    `Last Seen` = as.character(`Last Seen`)
+  )
+
+
 # Extracting and tidying raw data ----------------------------------------------
 
 df <-
@@ -129,7 +145,7 @@ df_questionnaires <-
     field = domaine
   ) |> 
   select(c(
-    id:vviq, osviq, 
+    id, age, sex, education, vviq, osviq, 
     contains("raven"), contains("sri"),
     vis_1:feel_3
   )
@@ -178,11 +194,16 @@ df_comprehension <-
   select(starts_with("question"))
 
 
+# Retrieving manually scored data ----------------------------------------------
+
+df_scored_manually <- read_xlsx("data/data-processed/data_scored_manually.xlsx")
+
+
 # All scores and classification ------------------------------------------------
 
 df_final <-
+  df_questionnaires |> 
   left_join(
-    df_questionnaires,
     df_wcst,
     by = "id"
   ) |> 
@@ -194,6 +215,10 @@ df_final <-
         names_from = exp_id,
         values_from = avg_span
       ),
+    by = "id"
+  ) |>
+  left_join(
+    df_scored_manually,
     by = "id"
   ) |>
   rename(
@@ -226,27 +251,92 @@ df_final <-
   mutate(
     # grouping by VVIQ according to convention
     group = ifelse(vviq <= 32, "Aphantasic", "Control"),
-    group = as.factor(group)
+    group = factor(group, levels = c("Control", "Aphantasic")),
+    # education levels have been coded by adapting the French grades
+    # to the International Standard Classification of Education (ISCED)
+    education = case_match(
+      education, 
+      "other"  ~ "Other",
+      "brevet" ~  "Upper secondary",
+      "bac" ~ "Post-secondary",
+      "licence" ~ "Bachelor",
+      "master" ~ "Master",
+      "doctorat" ~ "Doctorate",
+      .ptype = factor(levels = c(
+        "Other", 
+        "Upper secondary", 
+        "Post-secondary", 
+        "Bachelor", 
+        "Master", 
+        "Doctorate"))
+    ),
+    # Fields of education have already been coded according to the 10 broad 
+    # fields defined by the ISCED-F 2013
+    # Occupations have already been coded according to the International 
+    # Standard Classification of Occupations (ISCO-08)
+    # I'll recode from 1 to 9 for the sake of clarity
+    occupation_code = case_match(
+      occupation_code,
+      0  ~ 1,
+      1  ~ 2,
+      2  ~ 3,
+      21 ~ 4,
+      22 ~ 5,
+      23 ~ 6,
+      24 ~ 7,
+      25 ~ 8,
+      26 ~ 9,
+    )
   ) |>
   select(
-    id, group, age:vision,
+    id, age, sex, group,
+    education, field, field_code,
+    occupation, occupation_code,
     vviq, osivq_o, osivq_s, osivq_v, 
     starts_with("psiq"), 
     score_raven, score_sri,
     span_spatial, span_digit,
-    wcst_accuracy
+    wcst_accuracy,
+    score_similarities, score_comprehension
+  ) |> 
+  mutate(
+    across(sex:occupation, as.factor),
+    across(c(age, contains("_code"), vviq:score_comprehension), as.numeric)
   )
 
+# some more recoding
+field_levels <- 
+  df_final |> 
+  arrange(field_code) |> 
+  pull(field) |> 
+  unique()
 
-# Exporting back to Excel -------------------------------------------------
+occupation_levels <- 
+  df_final |> 
+  arrange(occupation_code) |> 
+  pull(occupation) |>
+  unique()
 
+df_final <-
+  df_final |>
+  mutate(
+    field = factor(field, levels = field_levels),
+    occupation = factor(occupation, levels = occupation_levels)
+  ) |> 
+  ungroup()
+
+
+# Exporting in various formats -------------------------------------------------
+
+# Excel, all clean data
 write.xlsx(
   list(
-    "data"  = df_final,
+    "data_final"  = df_final,
     "similarities" = df_similarities,
-    "comprehension" = df_comprehension
+    "comprehension" = df_comprehension,
+    "metadata" = df_meta
   ),
-  "data/data-transformed/data_tidied.xlsx",
+  "data/data-processed/data_tidied.xlsx",
   asTable = TRUE,
   colNames = TRUE,
   colWidths = "auto",
@@ -254,3 +344,8 @@ write.xlsx(
   tableStyle = "TableStyleMedium16"
 )
 
+# CSV, main data only
+write_csv(df_final, "data/data-processed/data_tidied.csv")
+
+# RDS, main data with correct variable types
+saveRDS(df_final, "data/data-processed/data_tidied.rds")
