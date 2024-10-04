@@ -230,7 +230,11 @@ group_violins <-
   get_long_format() |> 
   group_by(Group, Variable) |>
   reframe(value = value, mean = mean(value), sd = sd(value)) |> 
-  mutate(Variable = fct_relevel(Variable, levels(group_signif_effects))) |>
+  mutate(
+    Variable = 
+      Variable |> 
+      str_replace("Reading comprehension", "Reading\ncomprehension") |>
+      fct_relevel(levels(group_signif_effects))) |>
   
   # ─── Geoms ────────────────────────────────────────────────────
   ggplot(aes(y = value, x = Group, color = Group, fill = Group)) +
@@ -273,14 +277,16 @@ group_violins <-
   facet_wrap(~Variable, nrow = 3) +
 
   # Custom theme
-  theme_violins()
+  theme_violins(
+    txt_size_legend = 18,
+    panel_spacing_y = 0.1)
 ```
 
 ::: {#suppfig-group-violin-plots}
 ```{r}
 #| label: show-group-violin-plots
-#| fig-width: 14
-#| fig-height: 9
+#| fig-width: 13
+#| fig-height: 8
 
 print(group_violins)
 
@@ -842,8 +848,6 @@ if (params$save_figures) {
 
 ```{r}
 #| label: cluster-violin-plots
-#| fig-width: 14
-#| fig-height: 9
 
 # legend
 name   = "Cluster:  "
@@ -860,7 +864,30 @@ txt_y = 16
 # transparency
 alpha_violins = .3
 
-df_cluster |>
+y_star_low = 1.05
+y_line_low = 1.03
+y_star_high = 1.14
+y_line_high = 1.12
+
+cluster_signif_l2 <- factor(c("WCST", "Reading comprehension")) |> fct_inorder()
+cluster_signif_l3 <- factor(c(
+    "VVIQ","Visual imagery", "Spatial imagery", 
+    "Non-verbal reasoning", "Verbal reasoning", 
+    "Spatial span", "Digit span")) |> fct_inorder()
+
+cluster_signif_t2 <- factor(c("Verbal reasoning")) |> fct_inorder()
+cluster_signif_t3 <- factor(c(
+    "VVIQ","Visual imagery", "Verbal strategies", 
+    "Non-verbal reasoning", "Spatial span")) |> fct_inorder()
+
+cluster_signif_r1 <- factor(c("Spatial span")) |> fct_inorder()
+cluster_signif_r2 <- factor(c("Verbal reasoning")) |> fct_inorder()
+cluster_signif_r3 <- factor(c(
+    "VVIQ","Visual imagery", "Spatial imagery", "Verbal strategies", 
+    "Non-verbal reasoning", "Digit span")) |> fct_inorder()
+
+cluster_violins <-
+  df_cluster |>
   bind_cols(
     df |> 
       scale_quantitative_vars() |>  
@@ -875,7 +902,6 @@ df_cluster |>
   group_by(cluster, Variable) |> 
   mutate(
     cluster = fct_relabel(cluster, ~ paste("Cluster", .)),
-    # Variable = fct_relevel(Variable, levels(Variable)),
     mean = round(mean(value), digits = 2),
     sd = round(sd(value), digits = 2)
   ) |> 
@@ -884,14 +910,20 @@ df_cluster |>
     Variable = Variable |> 
       str_to_title() |> 
       str_replace_all("_", " ") |> 
-      str_replace_all(c("Wcst" = "WCST", "Vviq" = "VVIQ")) |> 
+      str_replace_all(c(
+        "Non verbal reasoning" = "Non-verbal reasoning",
+        "Span spatial" = "Spatial span",
+        "Span digit" = "Digit span",
+        "Vviq" = "VVIQ",
+        "Wcst accuracy" = "WCST", 
+        "Score comprehension" = "Reading comprehension"
+        )) |> 
       fct_inorder() |> 
       fct_relevel("VVIQ")
   ) |> 
   
+  # -------------------- Geoms
   ggplot(aes(y = value, x = cluster, color = cluster, fill = cluster)) +
-
-  # ─── Geoms ───
   geom_line(
     aes(
       x = cluster,
@@ -916,31 +948,92 @@ df_cluster |>
     linewidth = lw
     ) +
   
-  # ─── Scales ──────
+  # -------------------- Significance labels
+  # Left
+  add_significance(
+    cluster_signif_l2, stars = "**",
+    x_star = 1.5, y_star = y_star_low - .075,
+    x_line = 1, x_line_end = 1.95, y_line = y_line_low - .075
+    ) +
+  add_significance(
+    cluster_signif_l3, stars = "***",
+    x_star = 1.5, y_star = y_star_low,
+    x_line = 1, x_line_end = 1.95, y_line = y_line_low
+    ) +
+  # Right
+  add_significance(
+    cluster_signif_r1, stars = "*",
+    x_star = 2.5, y_star = y_star_low,
+    x_line = 2.05, x_line_end = 3, y_line = y_line_low
+    ) +
+  add_significance(
+    cluster_signif_r2, stars = "**",
+    x_star = 2.5, y_star = y_star_low,
+    x_line = 2.05, x_line_end = 3, y_line = y_line_low
+    ) +
+  add_significance(
+    cluster_signif_r3, stars = "***",
+    x_star = 2.5, y_star = y_star_low,
+    x_line = 2.05, x_line_end = 3, y_line = y_line_low
+    ) +
+  # Top
+  add_significance(
+    cluster_signif_t2, stars = "**",
+    x_star = 2, y_star = y_star_high,
+    x_line = 1, x_line_end = 3, y_line = y_line_high
+    ) +
+  add_significance(
+    cluster_signif_t3, stars = "***",
+    x_star = 2, y_star = y_star_high,
+    x_line = 1, x_line_end = 3, y_line = y_line_high
+    ) +
+  
+  # -------------------- Scales
   scale_y_continuous(
     expand = c(0, 0), 
     limits = y_scale,
     breaks = seq(0, 1, .2)
     ) +
   scale_color_manual(
-    values = pal, 
+    values = pal_trio, 
     name   = name,
     labels = labels
     )+
   scale_fill_manual(
-    values = pal, 
+    values = pal_trio, 
     name = name,
     labels = labels
     ) +
-    
+    labs(
+      x = NULL,
+      y = "Standardised scores"
+    ) +
+
   # Facet
   facet_wrap(~Variable, nrow = nrows) +
-  
+
   # Custom theme
-  theme_violins()
+  theme_violins(
+    txt_size_legend = 18,
+    panel_spacing_y = 0.1
+  )
 ```
 
+::: {#suppfig-cluster-violin-plots}
+```{r}
+#| label: show-cluster-violin-plots
+#| fig-width: 13
+#| fig-height: 7
 
+print(cluster_violins)
+
+if (params$save_figures) {
+  ggsave(here("figures/cluster-violins.png"), cluster_violins, dpi = 600)
+}
+```
+:::
+
+# Education, filed and occupation
 
 
 

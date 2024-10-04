@@ -42,14 +42,16 @@ plot_radar <- function(df, new_params) {
 
 add_significance <- function(
     variables, 
-    stars = "*", size_star = 6, y_star = 1.08, 
-    y_bar = 1.05, lw = 0.5){
+    stars = "*", size_star = 6, 
+    x_star = 1.5, y_star = 1.08, 
+    x_line = 1, x_line_end = 2,
+    y_line = 1.05, lw = 0.5){
   
   list(
     geom_text(
       data = data.frame(Variable = variables),
       inherit.aes = FALSE,
-      x = 1.5,
+      x = x_star,
       y = y_star,
       color = "black",
       label = stars,
@@ -58,10 +60,10 @@ add_significance <- function(
     geom_segment(
       data = data.frame(Variable = variables),
       inherit.aes = FALSE,
-      x = 1,
-      xend = 2,
-      y = y_bar,
-      yend = y_bar,
+      x = x_line,
+      xend = x_line_end,
+      y = y_line,
+      yend = y_line,
       color = "black",
       linewidth = lw
     )
@@ -74,7 +76,8 @@ add_significance <- function(
 theme_violins <- function(
     txt_size_sub_plots = 14,
     txt_size_legend = 18,
-    legend_margins = c(0, 0, 10, 0),
+    legend_margins = c(0, 0, 0, 0),
+    panel_spacing_y = 0.2,
     lw = 0.5
 ){
   list(
@@ -91,7 +94,7 @@ theme_violins <- function(
       panel.grid.major.y = element_line(),
       panel.grid.minor.y = element_line(),
       panel.spacing.x  = unit(0, "in"),
-      panel.spacing.y  = unit(0.3, "in"),
+      panel.spacing.y  = unit(panel_spacing_y, "in"),
       strip.text = element_text(size = txt_size_sub_plots, face = "plain"),
       strip.background = element_rect(
         fill = "grey95",

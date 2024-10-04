@@ -24,7 +24,7 @@ scale_quantitative_vars <- function(df){
       span_digit   = rescale(span_digit,   c(min, max), c(0,max(span_digit))),
       wcst_accuracy = rescale(wcst_accuracy, c(min, max), c(0,100)),
       score_similarities = rescale(score_similarities,   c(min, max), c(0,36)),
-      score_comprehension = rescale(score_comprehension, c(min, max), c(0,40)),
+      score_comprehension = rescale(score_comprehension, c(min, max), c(0,max(score_comprehension) + 3)),
       across(contains("osivq"), ~ rescale(., c(min, max), c(15, 75))),
       across(contains("psiq"),  ~ rescale(., c(min, max), c(1, 10))),
       across(any_of(c(
