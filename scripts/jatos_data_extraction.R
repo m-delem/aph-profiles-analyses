@@ -1,5 +1,6 @@
 library(here)
 source(here("scripts/_setup.R"))
+source(here("scripts/data_handling.R"))
 
 
 # Retrieving metadata ----------------------------------------------------------
@@ -199,7 +200,7 @@ df_comprehension <-
 df_scored_manually <- read_xlsx("data/data-processed/data_scored_manually.xlsx")
 
 
-# All scores and classification ------------------------------------------------
+# Merginig all scores and classifications --------------------------------------
 
 df_final <-
   df_questionnaires |> 
@@ -313,7 +314,8 @@ df_final <-
     across(sex:occupation, as.factor),
     across(c(age, vviq:score_comprehension), as.numeric),
     across(where(is.numeric), ~ round(., 2))
-  )
+  ) |> 
+  ungroup()
 
 
 # Exporting in various formats -------------------------------------------------

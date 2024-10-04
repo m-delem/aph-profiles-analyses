@@ -23,77 +23,6 @@ $$Variable = \alpha  + \beta_{1}(Group_{Aphantasic}) + \beta_{2}(Group_{Phantasi
 ```{r}
 #| label: groups-means
 
-# means and sds of all outcomes
-tbl_groups_means <-
-  df1_quant |> 
-  select(-age) |>  
-  pivot_longer(
-    !group,
-    names_to = "Variable", 
-    values_to = "value") |>  
-  group_by(group, Variable) |>  
-  summarise(stats = paste(
-    round(mean(value), digits = 2), 
-    " (", round(sd(value), digits = 2),")")
-    ) |> 
-  pivot_wider(
-    names_from = group,
-    values_from = stats
-  ) |>  
-  mutate(
-    Variable = case_when(
-      # 1
-      Variable == "osivq_o" ~ "OSVIQ-Object",
-      # 2
-      Variable == "osivq_s" ~ "OSIQ-Spatial",
-      # 3
-      Variable == "osivq_v" ~ "OSIQ-Verbal",
-      # 4
-      Variable == "psiq_aud" ~ "Psi-Q Audition",
-      # 5
-      Variable == "psiq_feel" ~ "Psi-Q Feelings",
-      # 6
-      Variable == "psiq_gout" ~ "Psi-Q Taste",
-      # 7
-      Variable == "psiq_od" ~ "Psi-Q Smell",
-      # 8
-      Variable == "psiq_sens" ~ "Psi-Q Sensations",
-      # 9
-      Variable == "psiq_tou" ~ "Psi-Q Touch",
-      # 10
-      Variable == "psiq_vis" ~ "Psi-Q Vision",
-      # 11
-      Variable == "score_comprehension" ~ "Reading comprehension",
-      # 12
-      Variable == "score_raven" ~ "Raven matrices",
-      # 13
-      Variable == "score_similitudes" ~ "Similitudes test",
-      # 14
-      Variable == "score_sri" ~ "SRI",
-      # 15
-      Variable == "span_digit" ~ "Digit span",
-      # 16
-      Variable == "span_spatial" ~ "Spatial span",
-      # 17
-      Variable == "vviq" ~ "VVIQ",
-      # 18
-      Variable == "wcst_accuracy" ~ "WCST"
-    )
-  ) |> 
-  slice(
-    # vviq,osviq o,s,v
-    17,1,2,3,
-    # psiq vis,aud,od,gout,tou,sens,feel
-    10,4,7,6,9,8,5,
-    # raven, sri
-    12,14,
-    # spatial, digit
-    16,15,
-    # simili, comp
-    13, 11,
-    # wcst
-    18
-  )
 ```
 
 
@@ -101,322 +30,44 @@ tbl_groups_means <-
 #| label: tbl-groups-means
 #| eval: false
 
-# the table
-tbl_groups_means |> knitr::kable(row.names = FALSE)
 ```
 
 ```{r}
 #| label: groups-models
 #| eval: false
 
-models_groups <-
-  tibble(variable = seq(1, 18, 1)) |> 
-  rowwise() |> 
-  mutate(
-    # creating sub-tables for modelling efficiently
-    df = list(df1_quant[,c(1, 2, variable+2)]),
-    # fitting 4 models for each variable
-    models = list(list(
-      mod_0 = stan_glm(
-        df[, 3][[1]] ~ 1, 
-        data = df,
-        diagnostic_file = file.path(tempdir(), "df0.csv"),
-        refresh = FALSE
-        ),
-      mod_1 = stan_glm(
-        df[, 3][[1]] ~ group, 
-        data = df,
-        diagnostic_file = file.path(tempdir(), "df1.csv"),
-        refresh = FALSE
-        ),
-      mod_2 = stan_glm(
-        df[, 3][[1]] ~ age, 
-        data = df,
-        diagnostic_file = file.path(tempdir(), "df2.csv"),
-        refresh = FALSE
-        ),
-      mod_3 = stan_glm(
-        df[, 3][[1]] ~ group + age, 
-        data = df,
-        diagnostic_file = file.path(tempdir(), "df3.csv"),
-        refresh = FALSE
-        ),
-      mod_4 = stan_glm(
-        df[, 3][[1]] ~ group * age, 
-        data = df,
-        diagnostic_file = file.path(tempdir(), "df4.csv"),
-        refresh = FALSE
-        )
-      )),
-    # comparing the models for the effect of Group
-    bf_models = list(bayesfactor_models(models)),
-    # comparing the models for the effect of Group
-    bf_inclusion = list(
-      bf_models |> 
-      bayesfactor_inclusion() |> 
-      as.data.frame() |>  
-      mutate(log_BF = round(log_BF, digits = 2))
-      )
-    ) |> 
-  ungroup()
 ```
 
 ```{r}
 #| label: groups-models-import
 
-models_groups <- readRDS(file = "analyses-results/models-groups.RDS")
 ```
 
 ```{r}
 #| label: tbl-groups-models
-#| tbl-cap: "Means and standard deviations of the scores of each VVIQ group for every variable. The $log(BF_{inclusion})$ statistic quantifies the evidence for each effect in the Bayesian Linear Models fitted on each outcome."
 
-models_groups_stats <-
-  models_groups |>
-  rowwise() |> 
-  mutate(bf_inclusion = list(
-    bf_inclusion |> 
-    rownames_as_column(var = "variable") |> 
-    pivot_longer(2:4, names_to = "stat", values_to = "value") |> 
-    unite(stats, variable, stat, sep = "_") |> 
-    pivot_wider(names_from = stats, values_from = value)
-  )) |> 
-  unnest_wider(bf_inclusion) |> 
-  select(-c(variable, models, bf_models)) |> 
-  bind_cols(tbl_groups_means) |> 
-  select(10:12, everything())
-
-tbl_groups_models <-
-  models_groups_stats |> 
-  select(2, 3, 13, 7, 10, 1) |> 
-  rename(
-    `Group <br> ($log(BF_{inclusion})$)` = group_log_BF,
-    `Age <br> ($log(BF_{inclusion})$)` = age_log_BF,
-    `Group $\\times$ Age <br> ($log(BF_{inclusion})$)` = `age:group_log_BF`,
-  )
-
-tbl_groups_models |> knitr::kable(row.names = FALSE)
 ```
 
 ```{r}
 #| label: functions-posthoc
 
-fn_model_fit <- function(df, outcome, predictor){
-  stan_glm(
-    outcome ~ predictor, 
-    data = df,
-    iter = 10000,
-    refresh = 0
-  ) 
-}
-
-fn_model_contrasts <- function(model){
-  estimate_contrasts(
-    model,
-    test = "bf",
-    bf_prior = model,
-    refresh = 0,
-    verbose = FALSE
-  ) |> 
-  as.data.frame() |> 
-  mutate(across(where(is.numeric), ~ round(.x, digits = 2))) |>
-  rename(
-    "Group 1" = Level1,
-    "Group 2" = Level2,
-    `$log(BF_{10})$` = log_BF
-  ) |> 
-  unite(
-    "95% CI",
-    c(CI_low, CI_high),
-    sep = ", ",
-  ) |> 
-  mutate(`95% CI` = paste("[", `95% CI`, "]"))|> 
-  knitr::kable(row.names = FALSE)
-}
 ```
 
 #### Post-hocs
 
 ```{r}
 #| label: groups-posthoc-contrasts
-#| eval: false
 
-model_group_vviq <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$vviq,
-  predictor = df1_quant$group
-  )
-
-model_group_osivq_o <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$osivq_o,
-  predictor = df1_quant$group
-  )
-
-model_group_osivq_s <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$osivq_s,
-  predictor = df1_quant$group
-  )
-
-model_group_osivq_v <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$osivq_v,
-  predictor = df1_quant$group
-  )
-
-model_group_psiq_vis <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$psiq_vis,
-  predictor = df1_quant$group
-  )
-
-model_group_psiq_aud <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$psiq_aud,
-  predictor = df1_quant$group
-  )
-
-model_group_psiq_od <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$psiq_od,
-  predictor = df1_quant$group
-  )
-
-model_group_psiq_gout <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$psiq_gout,
-  predictor = df1_quant$group
-  )
-
-model_group_psiq_tou <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$psiq_tou,
-  predictor = df1_quant$group
-  )
-
-model_group_psiq_sens <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$psiq_sens,
-  predictor = df1_quant$group
-  )
-
-model_group_psiq_feel <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$psiq_feel,
-  predictor = df1_quant$group
-  )
-
-model_group_raven <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$score_raven,
-  predictor = df1_quant$group
-  )
-
-model_group_sri <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$score_sri,
-  predictor = df1_quant$group
-  )
-
-model_group_similitudes <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$score_similitudes,
-  predictor = df1_quant$group
-  )
-
-model_group_comprehension <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$score_comprehension,
-  predictor = df1_quant$group
-  )
-
-model_group_span_spatial <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$span_spatial,
-  predictor = df1_quant$group
-  )
-
-model_group_span_digit <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$span_digit,
-  predictor = df1_quant$group
-  )
-
-model_group_wcst <- fn_model_fit(
-  df = df1_quant,
-  outcome = df1_quant$wcst_accuracy,
-  predictor = df1_quant$group
-  )
-
-contrast_group_vviq <- fn_model_contrasts(model_group_vviq)
-contrast_group_osivq_o <- fn_model_contrasts(model_group_osivq_o)
-contrast_group_osivq_s <- fn_model_contrasts(model_group_osivq_s)
-contrast_group_osivq_v <- fn_model_contrasts(model_group_osivq_v)
-contrast_group_psiq_vis <- fn_model_contrasts(model_group_psiq_vis)
-contrast_group_psiq_aud <- fn_model_contrasts(model_group_psiq_aud)
-contrast_group_psiq_od <- fn_model_contrasts(model_group_psiq_od)
-contrast_group_psiq_gout <- fn_model_contrasts(model_group_psiq_gout)
-contrast_group_psiq_tou <- fn_model_contrasts(model_group_psiq_tou)
-contrast_group_psiq_sens <- fn_model_contrasts(model_group_psiq_sens)
-contrast_group_psiq_feel <- fn_model_contrasts(model_group_psiq_feel)
-contrast_group_raven <- fn_model_contrasts(model_group_raven)
-contrast_group_sri <- fn_model_contrasts(model_group_sri)
-contrast_group_similitudes <- fn_model_contrasts(model_group_similitudes)
-contrast_group_comprehension <- fn_model_contrasts(model_group_comprehension)
-contrast_group_span_spatial <- fn_model_contrasts(model_group_span_spatial)
-contrast_group_span_digit <- fn_model_contrasts(model_group_span_digit)
-contrast_group_wcst <- fn_model_contrasts(model_group_wcst)
-
-models_groups_contrasts <- list(
-  contrast_group_vviq,
-  contrast_group_osivq_o,
-  contrast_group_osivq_s,
-  contrast_group_osivq_v,
-  contrast_group_psiq_vis,
-  contrast_group_psiq_aud,
-  contrast_group_psiq_od,
-  contrast_group_psiq_gout,
-  contrast_group_psiq_tou,
-  contrast_group_psiq_sens,
-  contrast_group_psiq_feel,
-  contrast_group_raven,
-  contrast_group_sri,
-  contrast_group_similitudes,
-  contrast_group_comprehension,
-  contrast_group_span_spatial,
-  contrast_group_span_digit,
-  contrast_group_wcst
-)
 ```
 
 ```{r}
 #| label: import-groups-contrasts
 
-models_groups_contrasts <- readRDS(file = "analyses-results/models-groups-contrasts.RDS")
 ```
 
 ```{r}
 #| label: tbl-groups-contrasts
 
-models_groups_contrasts[[1]]
-models_groups_contrasts[[2]]
-models_groups_contrasts[[3]]
-models_groups_contrasts[[4]]
-models_groups_contrasts[[5]]
-models_groups_contrasts[[6]]
-models_groups_contrasts[[7]]
-models_groups_contrasts[[8]]
-models_groups_contrasts[[9]]
-models_groups_contrasts[[10]]
-models_groups_contrasts[[11]]
-models_groups_contrasts[[12]]
-models_groups_contrasts[[13]]
-models_groups_contrasts[[14]]
-models_groups_contrasts[[15]]
-models_groups_contrasts[[16]]
-models_groups_contrasts[[17]]
-models_groups_contrasts[[18]]
 ```
 
 ## Visualization
@@ -425,126 +76,22 @@ models_groups_contrasts[[18]]
 
 ```{r}
 #| label: fig-groups-radar-sensory
-#| fig-cap: "Radar chart of the standardized means of the two groups on sensory imagery variables."
 
-groups_radar_sensory <-
-  df2_norm |>  
-  select(group, vviq, osivq_o, psiq_vis:psiq_feel) |>
-  group_by(group) |> 
-  summarise(across(everything(), mean)) |> 
-  ggradar(
-    base.size = 10,
-    font.radar = "serif",
-    values.radar = c("0","0.5","1"),
-    axis.labels = c(
-      "VVIQ","OSIVQ-Object",
-      "Psi-Q Visual", "Psi-Q Audition", "Psi-Q Smell", "Psi-Q Taste",
-      "Psi-Q Touch", "Psi-Q\nSensations", "Psi-Q Feelings"
-    ),
-    grid.label.size = 4,
-    plot.extent.x.sf = 1.25,
-    plot.extent.y.sf = 1.15,
-    grid.min = 0, grid.mid = .5, grid.max = 1,
-    label.gridline.min = FALSE,
-    group.line.width = .5, group.point.size = 3,
-    background.circle.transparency = .1,
-    legend.title = "",
-    group.colours = pal_duo,
-    axis.label.size = 5.5,
-    fill = TRUE,
-    fill.alpha = 0.05,
-  ) +
-  theme_bw(base_family = "serif") +
-  theme(
-    axis.text.x =  element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.text.y =  element_blank(),
-    axis.ticks.y = element_blank(),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.text = element_text(size = 20),
-    legend.title = element_text(size = 20)
-  )
-
-# radar_groups_sensory
 ```
 
 ```{r}
 #| label: fig-groups-radar-others
-#| fig-cap: "Radar chart of the standardized means of the two groups on questionnaire and test scores."
 
-groups_radar_others <-
-  df2_norm |>  
-  select(group, osivq_s, osivq_v, score_raven:score_comprehension) |>
-  group_by(group) |> 
-  summarise(across(everything(), mean)) |> 
-  ggradar(
-    base.size = 10,
-    font.radar = "serif",
-    values.radar = c("0","0.5","1"),
-    axis.labels = c(
-      "OSIVQ-Spatial","OSIVQ-Verbal",
-      "RSPM-18", "SRI", "Spatial span", "Digit span",
-      "WCST", "Similitudes", "Reading\ncomprehension"
-    ),
-    grid.label.size = 4,
-    plot.extent.x.sf = 1.25,
-    plot.extent.y.sf = 1.15,
-    grid.min = 0, grid.mid = .5, grid.max = 1,
-    label.gridline.min = FALSE,
-    group.line.width = .5, group.point.size = 3,
-    background.circle.transparency = .1,
-    legend.title = "",
-    group.colours = pal_duo,
-    axis.label.size = 5.5,
-    fill = TRUE,
-    fill.alpha = 0.05,
-  ) +
-  theme_bw(base_family = "serif") +
-  theme(
-    axis.text.x =  element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.text.y =  element_blank(),
-    axis.ticks.y = element_blank(),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.border = element_blank(),
-    legend.position = "bottom",
-    legend.text = element_text(size = 20),
-    legend.title = element_text(size = 20)
-  )
-
-# radar_groups_others
 ```
 
 ```{r}
 #| label: fig-groups-radars
 
-groups_radars <-
-  ggarrange(
-    groups_radar_sensory, 
-    groups_radar_others,
-    common.legend = TRUE,
-    legend = "bottom",
-  font.label = list(size = 20, color = "black", face = "bold", family = "serif")
-  )
-
-groups_radars
 ```
 
 ```{r}
 #| label: export-radars
-#| eval: false
- 
-ggexport(
-  groups_radars,
-  filename = "plots/groups-figures.png",
-  width = 3600,
-  height = 1600,
-  res = 300
-)
+
 ```
 
 ### Violins
@@ -552,385 +99,54 @@ ggexport(
 ```{r}
 #| label: function-clean-names
 
-fn_clean_names <- function(df){
-  df |>  
-  mutate(
-    Variable = case_match(
-      Variable,
-      "osivq_o" ~ "OSVIQ-Object",
-      "osivq_s" ~ "OSIVQ-Spatial",
-      "osivq_v" ~ "OSIVQ-Verbal",
-      "psiq_aud" ~ "Psi-Q Audition",
-      "psiq_feel" ~ "Psi-Q Feelings",
-      "psiq_gout" ~ "Psi-Q Taste",
-      "psiq_od" ~ "Psi-Q Smell",
-      "psiq_sens" ~ "Psi-Q Sensations",
-      "psiq_tou" ~ "Psi-Q Touch",
-      "psiq_vis" ~ "Psi-Q Vision",
-      "score_comprehension" ~ "Reading\ncomprehension",
-      "score_raven" ~ "Raven matrices",
-      "score_similitudes" ~ "Similitudes test",
-      "score_sri" ~ "SRI",
-      "span_digit" ~ "Digit span",
-      "span_spatial" ~ "Spatial span",
-      "vviq" ~ "VVIQ",
-      "wcst_accuracy" ~ "WCST",
-      .default = Variable
-      ),
-    Variable = factor(Variable, levels = c(
-      "VVIQ","Psi-Q Vision",
-      "Psi-Q Audition", "Psi-Q Smell", "Psi-Q Taste",
-      "Psi-Q Touch", "Psi-Q Sensations", "Psi-Q Feelings",
-      "OSVIQ-Object", "OSIVQ-Spatial", "OSIVQ-Verbal",
-      "Raven matrices", "SRI", "Spatial span", "Digit span",
-      "Similitudes test", "WCST", "Reading\ncomprehension"
-      ))
-  ) 
-}
 ```
 
 ```{r}
 #| label: function-violins-facet
 
-dw = 1
-txt_size = 32
-
-fn_violins_facet <- function(df){
-  df |>
-  pivot_longer(
-    -group,
-    names_to = "Variable",
-    values_to = "score"
-  ) |>
-  group_by(group, Variable) |> 
-  mutate(mean = mean(score), sd = sd(score)) |> 
-  fn_clean_names() |> 
-  ggplot(aes(y = score, x = group, color = group, fill = group)) +
-  geom_violinhalf(
-    alpha = .3,
-    scale = "width"
-    ) +
-  geom_line(
-    aes(
-      x = group,
-      y = mean,
-      group = 1
-      ),
-    color = "grey80",
-    linewidth = 1.2
-    ) +
-  geom_pointrange2(
-    aes(
-      x = group, 
-      y = mean,
-      ymin = if_else(mean - sd <= 0, 0, mean - sd),
-      ymax = if_else(mean + sd >= 1, 1, mean + sd),
-      group = group
-      ),
-    show.legend = FALSE,
-    color = "black",
-    size = 1.2,
-    linewidth = 1.2
-    ) +
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 1)) +
-  scale_color_manual(values = pal_duo, name = "") +
-  scale_fill_manual(values = pal_duo, name = "") +
-  facet_wrap(~Variable, nrow = 3) +
-  labs(
-    x = NULL,
-    y = "Standardised scores"
-  ) +
-  theme_minimal(base_size = txt_size) +
-  theme(
-    legend.position = "top",
-    legend.text = element_text(size = txt_size + 2),
-    legend.title = element_text(size = txt_size + 2),
-    axis.text.x = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.spacing.x = unit(0, "in"),
-    panel.spacing.y = unit(0.3, "in"),
-    strip.background = element_rect(
-      fill = "grey95",
-      color = "grey80",
-      linewidth = .5
-    ),
-    panel.border = element_rect(color = "grey80", fill = NA)
-  )
-}
 ```
 
 ```{r}
 #| label: fig-groups-violins
 
-groups_violins <-
-  df2_norm |> 
-  select(1, 3:20) |> 
-  fn_violins_facet()
-
-# violins_all
 ```
 
 ```{r}
 #| label: export-groups-violins
-#| eval: false
 
-ggexport(
-  groups_violins,
-  filename = "plots/groups-violins.png",
-  width = 6000,
-  height = 4500,
-  res = 300
-)
 ```
 
 # Cluster analysis
 
-## Variable reduction
-
 ```{r}
 #| label: variables-reduction
 
-df3_reduced <-
-  df2_norm |> 
-  select(!c(psiq_aud:psiq_feel, age)) |> 
-  mutate(
-    # merging the normalized vviq, osviq-o, and psiq scores
-    visual_imagery = round((16*vviq + 15*osivq_o + 3*psiq_vis)/34,  digits = 3),
-    # merging SRI and Raven relative to their number of items
-    non_verbal_reasoning = round((30*score_sri + 18*score_raven)/48,digits = 3),
-    .keep = "unused"
-    ) |> 
-  rename(
-    spatial_imagery   = osivq_s,
-    verbal_strategies = osivq_v,
-    verbal_reasoning  = score_similitudes,
-    ) |> 
-  # reordering
-  select(
-    group, 
-    visual_imagery,
-    spatial_imagery,
-    verbal_strategies,
-    non_verbal_reasoning,
-    verbal_reasoning,
-    span_spatial,
-    span_digit
-    )
 ```
-
-## Number of clusters
-
-### Agreement method
 
 ```{r}
 #| label: nc
 
-nc <- n_clusters(df3_reduced[,2:8])
-
-nc_df <-
-  nc |>
-  as.data.frame() |> 
-  rename("nc" = n_Clusters)
 ```
-
-### Evolution of the number of clusters
 
 ```{r}
 #| label: df-sequential
-#| eval: false
 
-# computing indices for all sequential dataframes starting from 57 participants
-df4_sequential <- tribble(
-  ~ n, ~ df, ~ nclusters
-)
-
-temp_df <- df4_sequential
-
-for(i in seq(57, 112, by = 1)){
-  temp_df <- tribble(
-  ~ n, ~ df, ~ nclusters,
-    i,  df3_reduced |> slice(1:i), 0
-  )
-  df4_sequential <- bind_rows(df4_sequential, temp_df)
-}
-
-df4_sequential <-
-  df4_sequential |> 
-  rowwise() |> 
-  mutate(nclusters = list(n_clusters(df[,2:8])))
 ```
 
 ```{r}
 #| label: df-nc-sequential
 
-df4_sequential <- readRDS(file = "analyses-results/df-sequential-nclusters.RDS")
-
-df5_nc_sequential <-
-  df4_sequential |> 
-  unnest(nclusters) |> 
-  group_by(n, n_Clusters) |> 
-  count(name = "number_of_methods") |> 
-  pivot_wider(
-    names_from = n_Clusters,
-    values_from = number_of_methods,
-    values_fill = 0
-  ) |> 
-  select(n, "1","2","3","4","5","6","7","8","9")
 ```
-
-### Visualizations
 
 ```{r}
 #| label: fig-nclusters
-#| fig-cap: "Consensus among 29 clustering indices and methods on the optimal number of clusters."
 
-txt_size2 <- 22
-
-nc_plot <-
-  ggplot() +
-  geom_bar(
-    data = nc_df |> mutate(nc = as.factor(nc)),
-    aes(x = nc, color = nc, fill = nc), 
-    alpha = .2
-    ) +
-  geom_bar(
-    data = nc_df |> filter(nc == 3) |> mutate(nc = as.factor(nc)),
-    aes(x = nc),
-    color = "#009E73",
-    fill = "#009E73",
-    linewidth = 1,
-    alpha = .4
-    ) +
-  scale_y_continuous(
-    limits = c(0, 18),
-    breaks = seq(1,17,1),
-    labels = c(1,"","","", 5,"","","","", 10,"","","","", 15, "", ""),
-    expand = c(0, 0),
-    oob = squish
-    ) +
-  scale_color_manual(guide = "none", values = c(
-  "#E69F00", "#56B4E9", "#009E73", "#F5C710", "#0072B2", 
-  "#D55E00", "#CC79A7", "#6c0009", "#f1afad", "#318a4a")) +
-  scale_fill_manual(guide = "none", values = c(
-  "#E69F00", "#56B4E9", "#009E73", "#F5C710", "#0072B2", 
-  "#D55E00", "#CC79A7", "#6c0009", "#f1afad", "#318a4a")) +
-  theme(
-    panel.grid.major.y = element_line(),
-    axis.title = element_text(size = txt_size2),
-    axis.text = element_text(size = txt_size2)
-  ) +
-  labs(
-    x = "Recommended number of clusters (N = 96)",
-    # y = "Number of clustering indices"
-    y = NULL
-  )
-
-# nc_plot
-
-nc_evolution <- 
-  df5_nc_sequential |> 
-  pivot_longer(
-    !n,
-    names_to = "number_of_clusters",
-    values_to = "number_of_methods"
-  ) |> 
-  ggplot(aes(
-    x = n,
-    y = number_of_methods,
-    group = number_of_clusters,
-    color = number_of_clusters,
-    fill = number_of_clusters
-    )) +
-  geom_line(alpha = .3, na.rm = TRUE) +
-  geom_smooth(
-    formula = y ~ x,  
-    method = "loess", 
-    alpha = .1, 
-    na.rm = TRUE,
-    span = .5
-    ) +
-  # geom_vline(xintercept = 96, color = "grey60", linetype = 2) +
-  scale_x_continuous(
-    breaks = c(
-      60, 
-      # 67, 
-      70, 
-      80, 
-      90, 
-      96
-      # 100
-      ),
-    labels = c(
-      "60", 
-      # "67", 
-      "70", 
-      "80", 
-      "90", 
-      "96"
-      # "100"
-      ),
-    expand = c(0, 0),
-    limits = c(60, 98)
-    ) +
-  scale_y_continuous(
-    limits = c(0, 18),
-    breaks = seq(1,17,1),
-    labels = c(1,"","","", 5,"","","","", 10,"","","","", 15, "", ""),
-    expand = c(0, 0),
-    oob = squish
-    ) +
-  scale_color_manual(name = "Recommended\nnumber of\nclusters", values = c(
-  "#E69F00", "#56B4E9", "#009E73", "#F5C710", "#0072B2", 
-  "#D55E00", "#CC79A7", "#6c0009", "#f1afad", "#318a4a")) +
-  scale_fill_manual(name = "Recommended\nnumber of\nclusters", values = c(
-  "#E69F00", "#56B4E9", "#009E73", "#F5C710", "#0072B2", 
-  "#D55E00", "#CC79A7", "#6c0009", "#f1afad", "#318a4a")) +
-  theme_modern() +
-  theme(
-    axis.text.x = element_markdown(
-      color = c(
-        "black",  
-        # "red", 
-        "black", 
-        "black", 
-        "black", 
-        "black")),
-    panel.grid.major.y = element_line(),
-    axis.title = element_text(size = txt_size2),
-    axis.text = element_text(size = txt_size2),
-    # legend.position = "right",
-    legend.position = "left",
-    legend.justification = "top",
-    legend.title = element_text(size = txt_size2 - 6),
-    legend.title.align = 0,
-    legend.text = element_text(size = txt_size2 - 2),
-    legend.text.align = 1
-  ) +
-  labs(
-    x = "Sample size",
-    # y = NULL
-    y = "Number of clustering indices"
-  )
-
-# nc_evolution
-
-nc_figures <- nc_evolution + nc_plot + plot_layout(width = c(1, 1))
-
-# nc_figures
 ```
 
 
 ```{r}
 #| label: export-nc-figures
-#| eval: false
 
-ggexport(
-  nc_figures,
-  filename = "plots/clusters-n.png",
-  width = 6000,
-  height = 2000,
-  res = 300
-)
 ```
 
 ## Computing clusters

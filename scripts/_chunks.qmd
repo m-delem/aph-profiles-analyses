@@ -8,6 +8,7 @@ Median and MAD of experiment length:
 
 ```{r}
 #| label: median-mad-duration
+#| include: false
 
 # metadata
 read_xlsx("data/data-raw/metadata.xlsx") |> 

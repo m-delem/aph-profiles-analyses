@@ -63,13 +63,37 @@ The manuscript.
 
 --------------------------------------------------------------------------------
 
-# Data and code availability {.unnumbered}
+# Research transparency statement {.unnumbered}
 
-All the materials and implementations of the questionnaires and tasks, the anonymised data, the analysis scripts, and in-depth analysis notebooks are all freely available on the Open Science Framework (<https://osf.io/7vsx6/?view_only=d44f765247b44e89a0c614d32bf1a1f3>).
+All the following elements required to reproduce the study and analyses are publicly available on the Open Science Framework (<https://osf.io/7vsx6/?view_only=d44f765247b44e89a0c614d32bf1a1f3>): all online study materials in raw form and as JATOS server-ready files; all anonymised primary data and pre-processed tidy data; all analysis code in scripts and notebooks with extensive commentary. Rendered analysis notebooks contain supplementary information on the exploratory analysis process and results. No artificial intelligence assisted technologies were used in this research or the creation of this article.
 
 # Author contributions {.unnumbered}
 
-**Conceptualization**: RP, EC, VR, CA, RV, GP. **Data curation**: RP, MD, VR. **Formal analysis**: MD. **Funding acquisition**: GP, EC. **Investigation**: VR, CA. **Methodology**: RP, EC, VR, CA, RV, GP. **Project administration**: GP, EC. **Resources**: VR, CA, GP. **Software**: MD. **Supervision**: GP, EC. **Visualization**: MD. **Writing - Original Draft Preparation**: RP, MD, EC, VR, GP. **Writing - Review & Editing**: All authors.
+**Conceptualisation**: MD, ST, EC, GP.
+
+**Data curation**: MD.
+
+**Formal analysis**: MD.
+
+**Funding acquisition**: GP.
+
+**Investigation**: MD, ST.
+
+**Methodology**: MD, ST, DC, EC, GP.
+
+**Project administration**: GP, EC.
+
+**Resources**: MD, ST, EC, DC.
+
+**Software**: MD.
+
+**Supervision**: GP, EC.
+
+**Visualisation**: MD.
+
+**Writing - Original Draft Preparation**: MD.
+
+**Writing - Review \& Editing**: GP, EC.
 
 # Declaration of interest {.unnumbered}
 
