@@ -21,19 +21,19 @@ renv::restore()
 # if (!require("pacman")) install.packages("pacman") # already in renv.lock
 library("pacman")
 
-# packages to load (and install if needed) -------------------------------
+# packages to load (and install if needed)
 pacman::p_load(
   here,     # easy file paths
   glue,     # string interpolation
   see,      # theme_modern and okabeito palette
   report,   # reporting various info 
   labelled, # labelled data
-  # ─── data management ─────────────────
+  # data management
   fs,       # listing files
   readxl,   # reading excel files
   jsonlite, # reading json files
   openxlsx, # exporting xlsx files
-  # ─── modelling ───────────────────────
+  # modelling
   mclust,      # mixture clustering
   rstanarm,    # bayesian models
   BayesFactor, # BFs
@@ -42,7 +42,7 @@ pacman::p_load(
   NbClust,     # number of clusters
   scales,      # data transformation
   logspline,   # density estimation
-  #  data visualization ──────────────
+  #  data visualization
   # plot types and geoms
   factoextra, # multivariate data plots
   ggradar,    # radar plots

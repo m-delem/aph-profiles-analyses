@@ -69,31 +69,7 @@ All the following elements required to reproduce the study and analyses are publ
 
 # Author contributions {.unnumbered}
 
-**Conceptualisation**: MD, ST, EC, GP.
-
-**Data curation**: MD.
-
-**Formal analysis**: MD.
-
-**Funding acquisition**: GP.
-
-**Investigation**: MD, ST.
-
-**Methodology**: MD, ST, DC, EC, GP.
-
-**Project administration**: GP, EC.
-
-**Resources**: MD, ST, EC, DC.
-
-**Software**: MD.
-
-**Supervision**: GP, EC.
-
-**Visualisation**: MD.
-
-**Writing - Original Draft Preparation**: MD.
-
-**Writing - Review \& Editing**: GP, EC.
+**Conceptualisation**: MD, ST, EC, GP. **Data curation**: MD. **Formal analysis**: MD. **Funding acquisition**: GP. **Investigation**: MD, ST. **Methodology**: MD, ST, DC, EC, GP. **Project administration**: GP, EC. **Resources**: MD, ST, EC, DC. **Software**: MD. **Supervision**: GP, EC. **Visualisation**: MD. **Writing - Original Draft Preparation**: MD. **Writing - Review \& Editing**: GP, EC.
 
 # Declaration of interest {.unnumbered}
 

@@ -1,0 +1,1643 @@
+---
+title: Data Analysis Report
+subtitle: Uncovering spatial and verbal cognitive profiles in aphantasia through unsupervised clustering
+# setting for proper numbering of sections
+crossref: 
+  chapters: true
+  custom:
+    - kind: float
+      key: suppfig
+      reference-prefix: Figure S
+      space-before-numbering: false
+    - kind: float
+      key: supptbl
+      reference-prefix: Table S
+      space-before-numbering: false
+supptbl-cap-location: top
+echo: false # do not show the code unless explicitly asked
+params:
+  save_figures: true
+format: html
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(here)
+source(here("scripts/_setup.R"))
+source(here("scripts/data_handling.R"))
+source(here("scripts/plotting_functions.R"))
+
+
+# load data
+df <- readRDS(here("data/data-processed/data_tidied.rds"))
+```
+
+:::: {.content-visible when-format="html"}
+::: {.callout-note collapse="true"}
+# Packages and setup
+
+``` r
+{{< include ../scripts/_setup.R >}}
+```
+:::
+::::
+
+# VVIQ group analysis
+
+## Modelling
+
+We first analysed the data in light of the VVIQ groups, examining differences between aphantasics and controls In order to model our variables with the VVIQ groups, we adjusted generalized linear models also controlling the effect of age on all variables to isolate the group effect:
+
+$$Variable = \alpha  + \beta_{1} \cdot Group \times \beta_{2} \cdot Age + \epsilon$$
+
+```{r}
+#| label: group-models
+#| echo: true
+#| code-summary: Modelling groups
+
+# Recompute all of these models only if the saved RDS file does not exist
+if (!file.exists(here("data/r-data-structures/group_models.rds"))) {
+  group_models <-
+    df |>
+    select(group, age, vviq:score_comprehension) |> 
+    get_long_format() |>
+    group_by(Variable) |> 
+    nest() |> 
+    rowwise() |> 
+    mutate(
+      stats = list(
+        data |> 
+          group_by(Group) |> 
+          reframe(stats = glue("{round(mean(value), digits = 2)} ({round(sd(value), digits = 2)})")) |> 
+          pivot_wider(
+            names_from = Group,
+            values_from = stats
+          )
+      ),
+      models_inclusion = list(
+        generalTestBF(value ~ Group * Age, data = data) |>
+          bayesfactor_inclusion() |> 
+          rownames_as_column(var = "Variable")
+      ),
+      models_bf = list(models_inclusion$log_BF),
+      models_post = list(
+        stan_glm(
+          value ~ Group * Age, 
+          data = data,
+          chains = 4,
+          iter   = 10000,
+          refresh = 100
+          )
+      ),
+      contrasts = list(
+        estimate_contrasts(
+          models_post,
+          contrast = "Group",
+          test = "bf",
+          bf_prior = models_post,
+          refresh = 100
+        ) |> 
+        as.data.frame() |> 
+        mutate(across(where(is.numeric), ~ round(., digits = 2))) |>
+        select(!c(Level1, Level2)) |> 
+        rename(`$log(BF_{10})$` = log_BF) |> 
+        unite(
+          "95% CI",
+          c(CI_low, CI_high),
+          sep = ", ",
+        ) |> 
+        mutate(`95% CI` = paste0("[", `95% CI`, "]"))
+      )
+    ) |> 
+    unnest_wider(stats) |> 
+    unnest_wider(models_bf, names_sep = "_") |> 
+    unnest_wider(contrasts) |> 
+    mutate(across(where(is.numeric), ~ round(., digits = 2))) |> 
+    rename(
+      `Group` = models_bf_1,
+      `Age` = models_bf_2,
+      `Group $\\times$ Age` = models_bf_3
+    )
+  
+  saveRDS(group_models, "data/r-data-structures/group_models.rds")
+} else {
+  group_models <- readRDS("data/r-data-structures/group_models.rds")
+}
+
+# head(models_groups)
+```
+
+::: {#supptbl-group-modelling-results}
+```{r}
+#| label: show-group-models-table
+
+group_models |> 
+  select(
+    Variable, 
+    Control, Aphantasic, 
+    # `Group`, `Age`, `Group $\\times$ Age`, # main effects' inclusion BF
+    Difference,  `95% CI`, `$log(BF_{10})$`
+    ) |>
+  display()
+```
+
+Means and standard deviations of the scores of each VVIQ group for every variable. The score differences, their 95% Credible Interval and weight of evidence are reported for each variable.
+:::
+
+\newpage
+
+## Visualizations
+
+```{r}
+#| label: group-radar-plots
+
+group_radar_sensory <-
+  df |>  
+  scale_vars() |> 
+  select(group, vviq, osivq_o, contains("psiq")) |>
+  group_by(group) |> 
+  reframe(across(everything(), ~ round(mean(.), digits = 2))) |> 
+  plot_radar(new_params = list(axis.labels = c(
+      "VVIQ","OSIVQ-Object",
+      "Psi-Q Visual", "Psi-Q Audition", 
+      "Psi-Q Smell", "Psi-Q Taste",
+      "Psi-Q Touch", "Psi-Q\nSensations", 
+      "Psi-Q Feelings"
+    )))
+
+group_radar_others <-
+  df |>  
+  scale_vars() |> 
+  select(group, osivq_s, osivq_v, score_raven:score_comprehension) |>
+  group_by(group) |> 
+  reframe(across(everything(), ~ round(mean(.), digits = 2))) |> 
+  plot_radar(new_params = list(axis.labels = c(
+        "OSIVQ-Spatial","OSIVQ-Verbal",
+        "Raven\nmatrices", "SRI", 
+        "Spatial span", "Digit span",
+        "WCST", "Similarities", "Reading\ncomprehension"
+      )))
+
+margins <- c(0, 0, 0, 0)
+txt_size_legend <- 18
+
+group_radar_joint <-
+  group_radar_sensory + group_radar_others +
+    plot_layout(
+      guides = "collect",
+      widths = c(1, 1)
+      ) & 
+    theme(
+      legend.position = "top", 
+      legend.title = element_text(size = txt_size_legend),
+      legend.text  = element_text(size  = txt_size_legend),
+      legend.box.margin = margin(margins)
+      )
+```
+
+::: {#suppfig-group-radar-plots}
+```{r}
+#| label: show-group-radar-plots
+#| fig-width: 12
+#| fig-height: 5
+
+print(group_radar_joint)
+
+if (params$save_figures) {
+  ggsave(here("figures/group-radars.png"), group_radar_joint, dpi = 600)
+}
+```
+
+Radar charts of the standardized means of the two groups on sensory imagery variables and questionnaire and test scores. For most variables, the scales represent the standardized score ranges: the center of the chart is the minimum possible score at each task, 0.5 is the midpoint, and 1 is the maximum possible score. For the memory spans, the center of the chart is a span of 0 and the maximum is the highest span achieved by the participants.
+:::
+
+```{r}
+#| label: group-violin-plots
+
+group_signif_effects <- factor(c(
+    "VVIQ","Psi-Q Vision",
+    "Psi-Q Audition", "Psi-Q Smell", "Psi-Q Taste",
+    "Psi-Q Touch", "Psi-Q Sensations", "Psi-Q Feelings",
+    "OSIVQ-Object")) |> fct_inorder()
+
+lw <- 1
+labels <- c(" Control    ", " Aphantasic")
+
+group_violins <-
+  df |> 
+  scale_vars() |>
+  get_long_format() |> 
+  group_by(Group, Variable) |>
+  reframe(value = value, mean = mean(value), sd = sd(value)) |> 
+  mutate(
+    Variable = 
+      Variable |> 
+      str_replace("Reading comprehension", "Reading\ncomprehension") |>
+      fct_relevel(levels(group_signif_effects))) |>
+  
+  # Geoms
+  ggplot(aes(y = value, x = Group, color = Group, fill = Group)) +
+  geom_violinhalf(alpha = .3, scale = "width") +
+  geom_line(
+    aes(x = Group, y = mean, group = 1),
+    color = "grey80",
+    linewidth = lw
+    ) +
+  geom_pointrange2(
+    aes(
+      x = Group, 
+      y = mean,
+      ymin = if_else(mean - sd <= 0, 0, mean - sd),
+      ymax = if_else(mean + sd >= 1, 1, mean + sd),
+      group = Group
+      ),
+    show.legend = FALSE,
+    color = "black",
+    size  = lw,
+    linewidth = lw
+  ) +
+  add_significance(group_signif_effects, stars = "***") +
+  add_significance(factor("OSIVQ-Verbal"), stars = "**") +
+  
+  # Scales
+  scale_y_continuous(
+    expand = c(0, 0), 
+    limits = c(0, 1.2),
+    breaks = seq(0, 1, .2)
+    ) +
+  scale_color_manual(values = pal_duo, name = "",labels = labels) +
+  scale_fill_manual(values = pal_duo, name = "", labels = labels) +
+  labs(
+    x = NULL,
+    y = "Standardised scores"
+  ) +
+  
+  # Facet
+  facet_wrap(~Variable, nrow = 3) +
+
+  # Custom theme
+  theme_violins(
+    txt_size_legend = 18,
+    panel_spacing_y = 0.1)
+```
+
+::: {#suppfig-group-violin-plots}
+```{r}
+#| label: show-group-violin-plots
+#| fig-width: 13
+#| fig-height: 8
+
+print(group_violins)
+
+if (params$save_figures) {
+  ggsave(here("figures/group-violins.png"), group_violins, dpi = 600)
+}
+```
+
+Standardised scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been rescaled and standardised between 0 and 1 to be represented on the same scale. The coloured shapes represent the distribution of the scores in each group. The black dots represent the mean of each group, while the black bars represent the standard deviations. The stars represent weight of evidence thresholds in favour of a difference between the groups: \* = "*Substantial evidence*", \*\* = "*Strong evidence*", \*\*\* = "*Decisive evidence*".
+:::
+
+# Cluster analysis
+
+## Variable reduction
+
+Before clustering the data, making sure that variables are not redundant, i.e., that they are not too highly correlated with each other, is essential for good model fit and interpretation of the results [@fopVariableSelectionMethods2018; @zakharovApplicationKmeansClustering2016]. First, we checked the correlations between all the variables. Then, if several variables were redundant, we merged them into a single variable. The results of this analysis are displayed in @suppfig-correlation-plots. Based on this evaluation and domain knowledge, we decided to merge the visual imagery variables (VVIQ, OSIQ-Object and Psi-Q visual), drop the rest of the Psi-Q variables that were very highly correlated with the visual imagery scores, and merge the Raven Matrices and SRI scores. This process left us with 7 variables to cluster, which satisfied various criteria proposed in the literature [see e.g., @psutkaSampleSizeMaximumlikelihood2019; @zakharovApplicationKmeansClustering2016].
+
+```{r}
+#| label: correlation-plots
+
+correlations <- 
+  df |>
+  scale_vars() |> 
+  select(vviq:score_comprehension) |> 
+  correlation(p_adjust = "bonferroni") |> 
+  mutate(
+    across(
+      c(Parameter1, Parameter2),
+      ~case_match(
+        .x,
+        "vviq" ~ "VVIQ",
+        "osivq_o" ~ "OSVIQ\nObject",
+        "osivq_s" ~ "OSVIQ\nSpatial",
+        "osivq_v" ~ "OSVIQ\nVerbal",
+        "psiq_vis" ~ "Psi-Q\nVisual",
+        "psiq_aud" ~ "Psi-Q\nAudition",
+        "psiq_od" ~ "Psi-Q\nSmell",
+        "psiq_gout" ~ "Psi-Q\nTaste",
+        "psiq_tou" ~ "Psi-Q\nTouch",
+        "psiq_sens" ~ "Psi-Q\nSensations",
+        "psiq_feel" ~ "Psi-Q\nFeelings",
+        "score_raven" ~ "Raven\nMatrices",
+        "score_sri" ~ "SRI",
+        "span_spatial" ~ "Spatial\nspan",
+        "span_digit" ~ "Digit\nspan",
+        "wcst_accuracy" ~ "WCST",
+        "score_similarities" ~ "Similarities",
+        "score_comprehension" ~ "Reading"
+      )
+    )
+  )
+
+correlation_matrix <-
+  correlations |> 
+    summary() |> 
+    plot() +
+    scale_fill_gradient2(
+      limits = c(-1, 1),
+      low = "firebrick2",
+      mid = "white",
+      high = "#009e73"
+    ) +
+    labs(title = NULL) + 
+    theme(legend.position = "none")
+
+correlation_graph <-
+  correlations |> 
+  filter(p < 0.05) |>
+  plot() +
+  scale_edge_colour_gradient2(
+    limits = c(-1, 1),
+    low = "firebrick2",
+    mid = "white",
+    high = "#009e73"
+  ) +
+  labs(title = NULL) +
+  theme(
+    legend.position = "left",
+    legend.title = element_text(size = 22),
+    legend.text  = element_text(size = 8)
+    )
+
+correlation_joint <- (
+  correlation_matrix + 
+  correlation_graph
+  ) +
+  plot_layout(width = c(1, .7))
+```
+
+::: {#suppfig-correlation-plots .column-page}
+```{r}
+#| label: show-correlation-plots
+#| fig-width: 25
+#| fig-height: 12
+
+print(correlation_joint)
+
+if (params$save_figures) {
+  ggsave(
+    here("figures/correlations.png"), 
+    correlation_joint, dpi = 600)
+}
+```
+
+Correlation matrix and graph of all the original variables (standardized beforehand)/ The matrix shows the correlation coefficients between all the variables, while the graph shows the significant correlations between them. The colours represent the strength and direction of the correlation: red for negative and green for positive. SRI and Raven Matrices scores are at the heart of a network, but they were only merged together (1) because of their higher correlation, (2) because they have the same format (cognitive test with MCQs) and (3) based on domain knowledge that non-verbal and spatial reasoning are very close constructs.
+:::
+
+```{r}
+#| label: variable-reduction
+
+# I created a function to reduce the variables that can be found in the `scripts/data_handling.R` file.
+```
+
+## Number of clusters
+
+The number of clusters was determined using the `NbClust` package [@R-NbClust], which provides 30 indices for determining the number of clusters in a dataset. The most common indices are the silhouette, Dunn, and gap statistics. The `NbClust` package provides the optimal number of clusters based on the majority rule of the indices. The results of this analysis are displayed in @suppfig-nbclust.
+
+```{r}
+#| label: nbclust
+
+# checking statistical cluster tendency
+hopkins <- get_clust_tendency(reduce_vars(df), n = 95)$hopkins_stat
+
+nb_clusters <- 
+  df |> 
+  reduce_vars() |> 
+  n_clusters() |> 
+  as.data.frame() |> 
+  mutate(n_Clusters = as.factor(n_Clusters))
+
+# Evolution of the number of clusters
+# Recompute all of this only if the saved RDS file does not exist
+if (!file.exists(here("data/r-data-structures/nb_clusters_evolution.rds"))) {
+  
+  # computing indices for all sequential dataframes starting from 57 participants
+  nb_clusters_evolution <- tribble(
+    ~ n, ~ df_seq, ~ n_Clusters
+  )
+  
+  nb_temp <- nb_clusters_evolution
+  
+  for(i in seq(57, 96, by = 1)){
+    nb_temp <- tribble(
+    ~ n, ~ df_seq, ~ n_Clusters,
+      i,  df |> reduce_vars() |> slice(1:i), 0
+    )
+    nb_clusters_evolution <- bind_rows(nb_clusters_evolution, nb_temp)
+  }
+  
+  nb_clusters_evolution <-
+    nb_clusters_evolution |> 
+    rowwise() |> 
+    mutate(n_Clusters = list(n_clusters(df_seq))) |> 
+    unnest(n_Clusters) |> 
+    group_by(n, n_Clusters) |> 
+    count(name = "number_of_methods") |> 
+    pivot_wider(
+      names_from = n_Clusters,
+      values_from = number_of_methods,
+      values_fill = 0
+    ) |> 
+    select(n, "1","2","3","4","5","6","7","8","9")
+  
+  saveRDS(nb_clusters_evolution, here("data/r-data-structures/nb_clusters_evolution.rds"))
+  
+} else {
+  nb_clusters_evolution <- readRDS(here("data/r-data-structures/nb_clusters_evolution.rds"))
+}
+```
+
+```{r}
+#| label: nbclust-plots
+
+txt_size_axis <- 24
+txt_size_label <- 7
+
+alpha_bars   <- .2  # all bars
+alpha_accent <- .4  # accentuated bar
+alpha_lines  <- .3  # broken lines
+alpha_ribbon <- .1  # smooth ribbon
+smoothing <- .5   # loess smooting
+
+# Final number of clusters
+nb_clus_plot <-
+  ggplot() +
+  geom_bar(
+    data = nb_clusters,
+    aes(x = n_Clusters, color = n_Clusters, fill = n_Clusters), 
+    alpha = alpha_bars
+    ) +
+  geom_bar(
+    data = nb_clusters |> filter(n_Clusters == 3),
+    aes(x = n_Clusters),
+    color = "#009E73",
+    fill = "#009E73",
+    linewidth = 1,
+    alpha = alpha_accent
+    ) +
+  scale_y_continuous(
+    limits = c(0, 18),
+    breaks = seq(1, 17, 1),
+    labels = c(1,"","","", 5,"","","","", 10,"","","","", 15, "", ""),
+    expand = c(0, 0),
+    oob = squish
+    ) +
+  scale_color_manual(values = pal_full) +
+  scale_fill_manual(values  = pal_full) +
+  theme(
+    panel.grid.major.y = element_line(),
+    axis.title = element_text(size = txt_size_axis),
+    axis.text  = element_text(size = txt_size_axis),
+    legend.position = "none"
+  ) +
+  labs(
+    x = "Recommended number of clusters (N = 96)",
+    y = NULL
+  )
+
+# Evolution of the number of clusters
+nb_clus_plot_evo <-
+  
+  # Data
+  nb_clusters_evolution |> 
+  pivot_longer(
+    !n,
+    names_to = "number_of_clusters",
+    values_to = "number_of_methods"
+  ) |> 
+  ggplot(aes(
+    x = n,
+    y = number_of_methods,
+    group = number_of_clusters,
+    color = number_of_clusters,
+    fill  = number_of_clusters
+    )) +
+  
+  # Geoms
+  geom_line(alpha = alpha_lines, na.rm = TRUE) +
+  geom_smooth(
+    formula = y ~ x,  
+    method = "loess",
+    alpha = alpha_ribbon,
+    na.rm = TRUE,
+    span = smoothing
+    ) +
+  geom_label(
+    label = "3 Clusters",
+    x = 79,
+    y = 14,
+    color = "#009E73",
+    fill = "white",
+    size = txt_size_label
+  ) +
+  geom_label(
+    label = "2 Clusters",
+    x = 79,
+    y = 9,
+    color = "#0072B2",
+    fill = "white",
+    size = txt_size_label
+  ) +
+  
+  # Scales
+  scale_x_continuous(
+    breaks = c(60, 70, 80, 90, 96),
+    labels = c("60", "70", "80", "90", "96"),
+    expand = c(0, 0),
+    limits = c(60, 96)
+    ) +
+  scale_y_continuous(
+    limits = c(0, 18),
+    breaks = seq(1,17,1),
+    labels = c(1,"","","", 5,"","","","", 10,"","","","", 15, "", ""),
+    expand = c(0, 0),
+    oob = squish
+    ) +
+  scale_color_manual(
+    name = "Recommended\nnumber of\nclusters", values = pal_full) +
+  scale_fill_manual(
+    name = "Recommended\nnumber of\nclusters", values = pal_full) +
+  
+  # Theme
+  theme(
+    panel.grid.major.y = element_line(),
+    axis.title = element_text(size = txt_size_axis),
+    axis.text  = element_text(size = txt_size_axis),
+    legend.position = "none"
+  ) +
+  labs(
+    x = "Sample size",
+    y = "Number of clustering indices"
+  )
+
+# Joint plot
+nb_clus_plot_joint <-
+  nb_clus_plot_evo + nb_clus_plot + 
+  plot_layout(width = c(1, 1))
+```
+
+::: {#suppfig-nbclust}
+```{r}
+#| label: show-nbclust-plots
+#| fig-width: 16
+#| fig-height: 6
+
+print(nb_clus_plot_joint)
+
+if (params$save_figures) {
+  ggsave(here("figures/cluster-n.png"), nb_clus_plot_joint, dpi = 600)
+}
+```
+
+Determination of the optimal number of clusters through an unsupervised "agreement" method.
+:::
+
+## Clustering
+
+```{r}
+#| label: computing-clustering
+
+clustering <- Mclust(reduce_vars(df), G = 3, verbose = FALSE)
+
+# I created a function to add the cluster variables to the main `df` (to avoid creating a new object) that can be found in the `scripts/data_handling.R` file.
+```
+
+::: {#supptbl-cluster-repartition}
+```{r}
+#| label: show-cluster-repartition
+
+df |> 
+  add_cluster_vars(clustering) |> 
+  group_by(group) |> 
+  count(Cluster = cluster) |> 
+  pivot_wider(names_from = group, values_from = n, values_fill = 0) |> 
+  mutate(Cluster = paste("Cluster", Cluster)) |> 
+  display()
+```
+:::
+
+## Modelling
+
+```{r}
+#| label: cluster-models
+
+# Recompute all of these models only if the saved RDS file does not exist
+if (!file.exists(here("data/r-data-structures/cluster_models.rds"))) {
+  cluster_models <-
+    df |> 
+    add_cluster_vars(clustering) |>
+    select(
+      cluster, age, 
+      visual_imagery:span_digit_std, 
+      wcst_accuracy, score_comprehension
+    ) |>
+    pivot_longer(
+      !c(cluster, age),
+      names_to = "Variable", 
+      values_to = "value"
+    ) |>
+    mutate(
+      cluster = fct_relabel(cluster, ~ paste("Cluster", .)),
+      Variable = Variable |> 
+        str_to_title() |> 
+        str_replace_all(c(
+          "_" = " ",
+          "Non verbal reasoning" = "Non-verbal reasoning",
+          "Span spatial std" = "Spatial span",
+          "Span digit std" = "Digit span",
+          "Wcst accuracy" = "WCST", 
+          "Score comprehension" = "Reading comprehension"
+        )) |> 
+        fct_inorder()
+    ) |> 
+    rename_with(str_to_title, c(cluster, age)) |> 
+    group_by(Variable) |> 
+    nest() |> 
+    rowwise() |> 
+    mutate(
+      stats = list(
+        data |> 
+          group_by(Cluster) |> 
+          reframe(stats = glue("{round(mean(value), digits = 2)} ({round(sd(value), digits = 2)})")) |> 
+          pivot_wider(
+            names_from = Cluster,
+            values_from = stats
+          )
+      ),
+      models_inclusion = list(
+        generalTestBF(value ~ Cluster * Age, data = data) |>
+          bayesfactor_inclusion() |> 
+          rownames_as_column(var = "Variable")
+      ),
+      models_bf = list(models_inclusion$log_BF),
+      models_post = list(
+        stan_glm(
+          value ~ Cluster * Age, 
+          data = data,
+          chains = 4,
+          iter   = 10000,
+          refresh = 100
+          )
+      ),
+      contrasts = list(
+        estimate_contrasts(
+          models_post,
+          contrast = "Cluster",
+          test = "bf",
+          bf_prior = models_post,
+          refresh = 100
+        ) |> 
+        as.data.frame() |> 
+        mutate(across(where(is.numeric), ~ round(., digits = 2))) |>
+        rename(
+          `Cluster 1` = Level1,
+          `Cluster 2` = Level2
+        ) |>
+        rename(`$log(BF_{10})$` = log_BF) |> 
+        unite(
+          "95% CI",
+          c(CI_low, CI_high),
+          sep = ", ",
+        ) |> 
+        mutate(`95% CI` = paste0("[", `95% CI`, "]"))
+      )
+    ) |> 
+    unnest_wider(stats) |> 
+    unnest_wider(models_bf, names_sep = "_") |> 
+    unnest_longer(contrasts) |>
+    unnest_wider(contrasts) |> 
+    mutate(across(where(is.numeric), ~ round(., digits = 2))) |> 
+    rename(
+      Cluster = models_bf_1,
+      Age = models_bf_2,
+      `Cluster $\\times$ Age` = models_bf_3
+    )
+  
+  saveRDS(cluster_models, "data/r-data-structures/cluster_models.rds")
+} else {
+  cluster_models <- readRDS("data/r-data-structures/cluster_models.rds")
+}
+```
+
+::: {#supptbl-cluster-modelling-results}
+```{r}
+#| label: show-cluster-models-table
+
+# table of the means of each cluster
+cluster_models |>
+  select(
+    Variable, 
+    `Cluster A`, `Cluster B`, `Cluster C`,
+    Cluster, Age, `Cluster $\\times$ Age`,
+  ) |>
+  unique() |>
+  display()
+
+# table of the contrasts between clusters
+cluster_models |>
+  select(
+    Variable, 
+    `Cluster 1`, `Cluster 2`,
+    Difference,  `95% CI`, `$log(BF_{10})$`
+  ) |>
+  display()
+```
+:::
+
+## Visualizations
+
+```{r}
+#| label: cluster-pca-radar-plots
+
+txt_size_axis <- 18
+txt_size_legend <- 22
+
+ellipse_level <- .7
+ellipse_alpha <- .1
+
+# Clustering PCA projection
+cluster_pca <-
+  clustering |> 
+  fviz_mclust(
+    geom = "text",
+    ellipse.type = "norm",
+    ellipse.level = ellipse_level,
+    ellipse.alpha = ellipse_alpha,
+    shape = 16,
+    repel = TRUE
+  ) +
+  scale_color_manual(values = pal_trio, guide = "none") +
+  scale_fill_manual(values  = pal_trio, guide = "none") +
+  theme(
+    axis.title = element_text(size = txt_size_axis),
+    axis.text  = element_text(size = txt_size_axis - 2),
+    plot.margin = margin(0,0,0,0)
+  ) +
+  labs(
+    title = NULL,
+    subtitle = NULL,
+    x = "Dimension 1 (35.5%)",
+    y = "Dimension 2 (19.8%)"
+  )
+
+# Clustering radar
+cluster_radar <-
+  df |>
+  add_cluster_vars(clustering) |>
+  select(cluster, visual_imagery:span_digit_std) |> 
+  group_by(cluster) |>
+  reframe(across(everything(), ~ round(mean(.), digits = 2))) |> 
+  plot_radar(new_params = list(
+    axis.labels = c(
+      "Visual\nimagery", 
+      "Spatial\nimagery", 
+      "Verbal\nstrategies",
+      "Non-verbal\nreasoning", 
+      "Verbal\nreasoning", 
+      "Spatial\nspan",
+      "Digit\nspan"
+      ),
+    plot.extent.x.sf = 1.17,
+    plot.extent.y.sf = 1.28,
+    axis.label.offset = 1.25,
+    group.colours = pal_trio
+  )) + 
+  scale_color_manual(
+    values = pal_trio, 
+    name = "Cluster: ",
+    labels = c("A ", "B ", "C ")
+  ) +
+  scale_fill_manual(values = pal_trio, guide = "none")
+
+# Joint plot
+cluster_plot_joint <-
+  cluster_pca + cluster_radar +
+  plot_layout(
+    guides = "collect",
+    widths = c(0.75, 1)
+    ) &
+  theme(
+    legend.position = "top", 
+    legend.title = element_text(size = txt_size_legend),
+    legend.text  = element_text(size = txt_size_legend),
+    legend.box.margin = margin(0,20,0,0)
+  )
+```
+
+::: {#suppfig-cluster-pca-radar-plots}
+```{r}
+#| label: show-cluster-pca-radar-plots
+#| fig-width: 15
+#| fig-height: 6
+
+print(cluster_plot_joint)
+
+if (params$save_figures) {
+  ggsave(here("figures/cluster-joint.png"), cluster_plot_joint, dpi = 600)
+}
+```
+:::
+
+```{r}
+#| label: cluster-violin-plots
+
+# legend
+name   = "Cluster:  "
+labels = c(" A  ", " B  ", " C ")
+nrows = 2
+# sizes
+lw = 1
+# y scale
+y_scale = c(0, 1.2)
+# text sizes
+txt_legend = 26
+txt_panels = 20
+txt_y = 16
+# transparency
+alpha_violins = .3
+
+y_star_low = 1.05
+y_line_low = 1.03
+y_star_high = 1.14
+y_line_high = 1.12
+
+cluster_signif_l2 <- factor(c("WCST", "Reading comprehension")) |> fct_inorder()
+cluster_signif_l3 <- factor(c(
+    "VVIQ","Visual imagery", "Spatial imagery", 
+    "Non-verbal reasoning", "Verbal reasoning", 
+    "Spatial span", "Digit span")) |> fct_inorder()
+
+cluster_signif_t2 <- factor(c("Verbal reasoning")) |> fct_inorder()
+cluster_signif_t3 <- factor(c(
+    "VVIQ","Visual imagery", "Verbal strategies", 
+    "Non-verbal reasoning", "Spatial span")) |> fct_inorder()
+
+cluster_signif_r1 <- factor(c("Spatial span")) |> fct_inorder()
+cluster_signif_r2 <- factor(c("Verbal reasoning")) |> fct_inorder()
+cluster_signif_r3 <- factor(c(
+    "VVIQ","Visual imagery", "Spatial imagery", "Verbal strategies", 
+    "Non-verbal reasoning", "Digit span")) |> fct_inorder()
+
+cluster_violins <-
+  df |>
+  add_cluster_vars(clustering) |> 
+  scale_vars() |>  
+  select(
+    cluster, vviq, visual_imagery:span_digit_std, 
+    wcst_accuracy, score_comprehension
+  ) |> 
+  # select(!c(group, age)) |>
+  pivot_longer(
+    !cluster,
+    names_to = "Variable", 
+    values_to = "value"
+  ) |>
+  group_by(cluster, Variable) |> 
+  mutate(
+    cluster = fct_relabel(cluster, ~ paste("Cluster", .)),
+    mean = round(mean(value), digits = 2),
+    sd = round(sd(value), digits = 2)
+  ) |> 
+  ungroup() |> 
+  mutate(
+    Variable = Variable |> 
+      str_to_title() |> 
+      str_replace_all(c(
+        "_" = " ",
+        "Non verbal reasoning" = "Non-verbal reasoning",
+        "Span spatial std" = "Spatial span",
+        "Span digit std" = "Digit span",
+        "Vviq" = "VVIQ",
+        "Wcst accuracy" = "WCST", 
+        "Score comprehension" = "Reading comprehension"
+      )) |> 
+      fct_inorder() |> 
+      fct_relevel("VVIQ")
+  ) |> 
+  
+  # Geoms
+  ggplot(aes(y = value, x = cluster, color = cluster, fill = cluster)) +
+  geom_line(
+    aes(
+      x = cluster,
+      y = mean,
+      group = 1
+      ),
+    color = "grey80",
+    linewidth = lw
+    ) +
+  geom_violinhalf(alpha = alpha_violins, scale = "width") +
+  geom_pointrange2(
+    aes(
+      x = cluster, 
+      y = mean,
+      ymin = if_else(mean - sd <= 0, 0, mean - sd),
+      ymax = if_else(mean + sd >= 1, 1, mean + sd),
+      group = cluster
+      ),
+    show.legend = FALSE,
+    color = "black",
+    size  = lw,
+    linewidth = lw
+    ) +
+  
+  # Significance labels
+  # Left
+  add_significance(
+    cluster_signif_l2, stars = "**",
+    x_star = 1.5, y_star = y_star_low - .075,
+    x_line = 1, x_line_end = 1.95, y_line = y_line_low - .075
+    ) +
+  add_significance(
+    cluster_signif_l3, stars = "***",
+    x_star = 1.5, y_star = y_star_low,
+    x_line = 1, x_line_end = 1.95, y_line = y_line_low
+    ) +
+  # Right
+  add_significance(
+    cluster_signif_r1, stars = "*",
+    x_star = 2.5, y_star = y_star_low,
+    x_line = 2.05, x_line_end = 3, y_line = y_line_low
+    ) +
+  add_significance(
+    cluster_signif_r2, stars = "**",
+    x_star = 2.5, y_star = y_star_low,
+    x_line = 2.05, x_line_end = 3, y_line = y_line_low
+    ) +
+  add_significance(
+    cluster_signif_r3, stars = "***",
+    x_star = 2.5, y_star = y_star_low,
+    x_line = 2.05, x_line_end = 3, y_line = y_line_low
+    ) +
+  # Top
+  add_significance(
+    cluster_signif_t2, stars = "**",
+    x_star = 2, y_star = y_star_high,
+    x_line = 1, x_line_end = 3, y_line = y_line_high
+    ) +
+  add_significance(
+    cluster_signif_t3, stars = "***",
+    x_star = 2, y_star = y_star_high,
+    x_line = 1, x_line_end = 3, y_line = y_line_high
+    ) +
+  
+  # Scales
+  scale_y_continuous(
+    expand = c(0, 0), 
+    limits = y_scale,
+    breaks = seq(0, 1, .2)
+    ) +
+  scale_color_manual(
+    values = pal_trio, 
+    name   = name,
+    labels = labels
+    )+
+  scale_fill_manual(
+    values = pal_trio, 
+    name = name,
+    labels = labels
+    ) +
+    labs(
+      x = NULL,
+      y = "Standardised scores"
+    ) +
+
+  # Facet
+  facet_wrap(~Variable, nrow = nrows) +
+
+  # Custom theme
+  theme_violins(
+    txt_size_legend = 18,
+    panel_spacing_y = 0.1
+  )
+```
+
+::: {#suppfig-cluster-violin-plots}
+```{r}
+#| label: show-cluster-violin-plots
+#| fig-width: 13
+#| fig-height: 7
+
+print(cluster_violins)
+
+if (params$save_figures) {
+  ggsave(here("figures/cluster-violins.png"), cluster_violins, dpi = 600)
+}
+```
+:::
+
+# Education, field and occupation
+
+## Groups
+
+::: {#supptbl-group-association-tests}
+```{r}
+#| label: show-group-association-tests
+
+df |> 
+  pivot_longer(
+    c(education, field, occupation), 
+    names_to = "Variable", 
+    values_to = "value"
+  ) |> 
+  select(group, Variable, value) |> 
+  group_by(Variable) |> 
+  nest() |> 
+  rowwise() |> 
+  mutate(
+    table = list(
+      data |> 
+        group_by(group, value) |>
+        count() |> 
+        pivot_wider(
+          names_from = group,
+          values_from = n
+        ) |>
+        mutate(across(c(1,2), ~replace_na(.x, 0)))
+    ),
+    log_bf10 =
+      contingencyTableBF(
+        as.matrix(table[,c(2,3)]), 
+        sampleType = "indepMulti", 
+        fixedMargin = "cols"
+      ) |> 
+      as_tibble() |> 
+      pull(bf) |> 
+      log(),
+    Variable = str_to_title(Variable)
+  ) |> 
+  select(Variable, log_bf10) |> 
+  rename(`$log(BF_{10})$` = log_bf10) |> 
+  display()
+```
+:::
+
+```{r}
+#| label: group-life-plots
+
+levels = c("Aphantasic", "Control")
+# scales labels and breaks
+labels = c(" Control  ", " Aphantasic ")
+breaks = c("Control", "Aphantasic")
+# legend title
+fill_title = NULL
+# parameters for the vertical lines
+v_col = "grey50"
+v_lt  = 3  # linetype
+v_ls  = .8 # line size
+width = 6400
+height = 2000
+res = 300
+# label placement
+# education
+x_bf_edu = 2
+y_bf_edu = 25
+# field
+x_bf_field = 8.5
+y_bf_field = 20
+# occupation
+x_bf_occ = 7
+y_bf_occ = 30
+# label text size
+txt_bf = 6
+# transparency of the bars
+alpha = 0.5
+# text sizes
+txt_axis = 18
+txt_legend = 26
+# grand plot margins
+t = 0
+r = 150
+b = 10
+l = 0
+# edu margins
+t_edu = 0
+r_edu = 10
+b_edu = 0
+l_edu = 0
+# relative widths of the plots
+width_p1 = .75
+width_p2 = 1
+width_p3 = 1
+
+# ---------------------------------- Education 
+group_education <-
+  df |> 
+  count(group, education) |> 
+  group_by(group) |>
+  mutate(
+    sum = sum(n),
+    prop = (n / sum)*100
+  ) |>
+  ggplot() +
+  geom_col(
+    aes(
+      x = education, 
+      y = prop,
+      fill  = factor(group, levels  = levels),
+      color = factor(group, levels = levels)
+      ),
+    position = "dodge",
+    alpha = alpha
+  ) +
+  geom_vline(
+    xintercept = c(1.5, 2.5, 3.5, 4.5, 5.5),
+    color    = v_col,
+    linetype = v_lt,
+    size     = v_ls
+  ) +
+  geom_label(
+    x = x_bf_edu, 
+    y = y_bf_edu,
+    label = TeX("$log(BF_{10}) = -4.88$"),
+    color = "black",
+    size = txt_bf,
+  ) +
+  scale_fill_manual(values  = pal_duo, breaks = breaks, labels = labels) +
+  scale_color_manual(values = pal_duo, breaks = breaks, guide = "none") +
+  labs(
+    x = NULL,
+    y = "Proportion (%)",
+    title = NULL,
+    fill = fill_title
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 100, 5),
+    expand = c(0, 0)
+  ) +
+  coord_flip() +
+  theme(
+    panel.grid.major.x = element_line(),
+    panel.grid.minor.x = element_line(),
+    axis.title = element_text(size = txt_axis),
+    axis.text  = element_text(size = txt_axis),
+    plot.margin = margin(t_edu, r_edu, b_edu, l_edu)
+  )
+  
+# ---------------------------------- Field
+group_field <-
+  df |> 
+  count(group, field_code) |> 
+  group_by(group) |>
+  mutate(
+    sum = sum(n),
+    prop = (n / sum)*100
+  ) |>
+  ggplot() +
+  geom_col(
+    aes(
+      x = field_code, 
+      y = prop,
+      fill  = group,
+      color = group
+      ),
+    position = "dodge",
+    alpha = alpha
+  ) +
+  geom_vline(
+    xintercept = c(1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5),
+    color    = v_col,
+    linetype = v_lt,
+    size     = v_ls
+  ) +
+  geom_label(
+    x = x_bf_field, 
+    y = y_bf_field,
+    label = TeX(r"($log(BF_{10}) = -5.41$)"),
+    color = "black",
+    size = txt_bf,
+  ) +
+  scale_fill_manual(values  = pal_duo, labels = labels) +
+  scale_color_manual(values = pal_duo, guide = "none") +
+  labs(
+    x = "Study field (ISCED-F broad fields)",
+    y = "Proportion (%)",
+    title = NULL,
+    fill = fill_title
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 100, 5),
+    expand = c(0, 0)
+  ) +
+  theme(
+    panel.grid.major.y = element_line(),
+    panel.grid.minor.y = element_line(),
+    axis.title = element_text(size = txt_axis),
+    axis.text  = element_text(size = txt_axis)
+  )
+
+# ---------------------------------- Occupation
+group_occupation <-
+  df |>
+  count(group, occupation_code) |> 
+  group_by(group) |>
+  mutate(
+    sum = sum(n),
+    prop = (n / sum)*100
+  ) |> 
+  ggplot() +
+  geom_col(
+    aes(
+      x = occupation_code, 
+      y = prop,
+      fill  = group,
+      color = group
+      ),
+    position = "dodge",
+    alpha = alpha
+  ) +
+  geom_vline(
+    xintercept = c(1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5),
+    color    = v_col,
+    linetype = v_lt,
+    size     = v_ls
+  ) +
+  geom_label(
+    x = x_bf_occ,
+    y = y_bf_occ,
+    label = TeX(r"($log(BF_{10}) = -4.37$)"),
+    color = "black",
+    size = txt_bf,
+  ) +
+  scale_fill_manual(values  = pal_duo, labels = labels) +
+  scale_color_manual(values = pal_duo, guide = "none") +
+  labs(
+    x = "Occupation (ISCO-08 sub-major groups)",
+    y = NULL,
+    # y = "Proportion (%)",
+    title = NULL,
+    fill = fill_title
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 100, 5),
+    expand = c(0, 0)
+  ) +
+  theme(
+    panel.grid.major.y = element_line(),
+    panel.grid.minor.y = element_line(),
+    axis.title = element_text(size = txt_axis),
+    axis.text  = element_text(size = txt_axis)
+  )
+
+# ---------------------------------- Joint plot
+group_life <-
+  group_education + group_field + group_occupation +
+  plot_layout(
+    guides = "collect",
+    widths = c(width_p1, width_p2, width_p3)
+  ) &
+  theme(
+    legend.position = "top",
+    legend.title = element_text(size = txt_legend),
+    legend.text  = element_text(size = txt_legend),
+    legend.box.margin = margin(t, r, b, l)
+  )
+```
+
+::: {#suppfig-group-life-plots}
+```{r}
+#| label: show-group-life-plots
+#| fig-width: 16
+#| fig-height: 6
+
+print(group_life)
+
+if (params$save_figures) {
+  ggsave(here("figures/group-life.png"), group_life, dpi = 600)
+}
+```
+:::
+
+## Clusters
+
+::: {#supptbl-cluster-association-tests}
+```{r}
+#| label: show-cluster-association-tests
+
+df |> 
+  add_cluster_vars(clustering) |> 
+  pivot_longer(
+    c(education, field, occupation), 
+    names_to = "Variable", 
+    values_to = "value"
+  ) |> 
+  select(cluster, Variable, value) |> 
+  group_by(Variable) |> 
+  nest() |> 
+  rowwise() |> 
+  mutate(
+    table = list(
+      data |> 
+        group_by(cluster, value) |>
+        count() |> 
+        pivot_wider(
+          names_from = cluster,
+          values_from = n
+        ) |>
+        mutate(across(c(1,2,3), ~replace_na(.x, 0)))
+    ),
+    log_bf10 =
+      contingencyTableBF(
+        as.matrix(table[,c(2,3,4)]), 
+        sampleType = "jointMulti"
+      ) |> 
+      as_tibble() |> 
+      pull(bf) |> 
+      log(),
+    Variable = str_to_title(Variable)
+  ) |> 
+  select(Variable, log_bf10) |> 
+  rename(`$log(BF_{10})$` = log_bf10) |> 
+  display()
+
+df |> 
+  add_cluster_vars(clustering) |> 
+  group_by(cluster) |>
+  filter(group == "Aphantasic") |>
+  count(field) |> 
+  pivot_wider(names_from = cluster, values_from = n) |> 
+  mutate(across(c(B, C), ~replace_na(.x, 0))) |> 
+  mutate(total = B + C) |> 
+  rename_with(~ paste("Aph. in ", .), B:C) |> 
+  rename("Field" = field, "Total Aph." = total) |> 
+  display()
+```
+:::
+
+```{r}
+#| label: cluster-life-plots
+#| fig-width: 16
+#| fig-height: 6
+
+levels = c("C", "B", "A")
+# scales labels and breaks
+labels = c(" A   ", " B   ", " C   ")
+breaks = c("A", "B", "C")
+# legend title
+fill_title = "Cluster:   "
+# accent for evidence
+accent = "red"
+# parameters for the vertical lines
+v_col = "grey50"
+v_lt  = 3  # linetype
+v_ls  = .8 # line size
+width = 6400 
+height = 2000
+res = 300
+# label placement
+# education
+x_bf_edu = 2 
+y_bf_edu = 24
+# field
+x_bf_field = 8.5 
+y_bf_field = 20
+# occupation
+x_bf_occ = 7
+y_bf_occ = 35
+# label text size
+txt_bf = 6
+# transparency of the bars
+alpha = 0.5
+# text sizes
+txt_axis = 18
+txt_legend = 26
+# grand plot margins
+t = 0
+r = 150
+b = 10
+l = 0
+# edu margins
+t_edu = 10
+r_edu = 40
+b_edu = 10
+l_edu = 10
+# relative widths of the plots
+width_p1 = .75
+width_p2 = 1
+width_p3 = 1
+
+# ---------------------------------- Education
+cluster_education <-
+  df |> 
+  add_cluster_vars(clustering) |> 
+  count(cluster, education) |>
+  group_by(cluster) |>
+  mutate(
+    sum = sum(n),
+    prop = (n / sum)*100
+  ) |>
+  ggplot() +
+  geom_col(
+    aes(
+      x = education, 
+      y = prop,
+      fill  =  factor(cluster, levels = levels),
+      color = factor(cluster, levels = levels)
+      ),
+    position = "dodge",
+    alpha = alpha
+  )+
+  geom_vline(
+    xintercept = c(1.5, 2.5, 3.5, 4.5, 5.5),
+      color    = v_col,
+      linetype = v_lt,
+      size     = v_ls
+  ) +
+  geom_label(
+    x = x_bf_edu, 
+    y = y_bf_edu,
+    label = TeX(r"($log(BF_{10}) = -6.90$)"),
+    color = "black",
+    size = txt_bf,
+  ) +
+  scale_fill_manual(values  = pal_trio, breaks = breaks, labels = labels) +
+  scale_color_manual(values = pal_trio, breaks = breaks, guide = "none") +
+  labs(
+    # x = "Education (ISCED levels)",
+    x = NULL,
+    y = "Proportion (%)",
+    title = NULL,
+    fill = fill_title
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 100, 5),
+    expand = c(0, 0)
+    ) +
+  coord_flip() +
+  theme(
+    panel.grid.major.x = element_line(),
+    panel.grid.minor.x = element_line(),
+    axis.title = element_text(size = txt_axis),
+    axis.text  = element_text(size = txt_axis),
+    plot.margin = margin(t_edu, r_edu, b_edu, l_edu)
+  )
+
+# ---------------------------------- Field
+cluster_field <-
+  df |> 
+  add_cluster_vars(clustering) |>
+  count(cluster, field_code) |> 
+  group_by(cluster) |>
+  mutate(
+    sum = sum(n),
+    prop = (n / sum)*100
+  ) |> 
+  ggplot() +
+  geom_col(
+    aes(
+      x = field_code,
+      y = prop,
+      fill  = cluster,
+      color = cluster
+      ),
+    position = "dodge",
+    alpha = alpha
+  ) +
+  geom_vline(
+    xintercept = c(
+      1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5,
+      8.5, 9.5, 10.5),
+    color    = v_col,
+    linetype = v_lt,
+    size     = v_ls
+  ) +
+  geom_label(
+    x = x_bf_field,
+    y = y_bf_field,
+    label = TeX(r"($log(BF_{10}) = -2.82$)"),
+    color = "black",
+    size = txt_bf,
+  ) +
+  scale_fill_manual(values  = pal_trio, labels = labels) +
+  scale_color_manual(values = pal_trio, guide = "none") +
+  labs(
+    x = "Study field (ISCED-F broad fields)",
+    y = "Proportion (%)",
+    title = NULL,
+    fill = fill_title
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 100, 5),
+    expand = c(0, 0)
+  ) +
+  theme(
+    panel.grid.major.y = element_line(),
+    panel.grid.minor.y = element_line(),
+    axis.title = element_text(size = txt_axis),
+    axis.text  = element_text(size = txt_axis)
+  )
+
+# ---------------------------------- Occupation
+cluster_occupation <-
+  df |> 
+  add_cluster_vars(clustering) |>
+  count(cluster, occupation_code) |> 
+  group_by(cluster) |>
+  mutate(
+    sum = sum(n),
+    prop = (n / sum)*100
+  ) |> 
+  ggplot() +
+  geom_col(
+    aes(
+      x = occupation_code, 
+      y = prop,
+      fill  = cluster,
+      color = cluster
+      ),
+    position = "dodge",
+    alpha = alpha
+  ) +
+  geom_vline(
+    xintercept = c(
+      1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5,
+      8.5, 9.5, 10.5, 11.5),
+    color    = v_col,
+    linetype = v_lt,
+    size     = v_ls
+  ) +
+  geom_label(
+    x = x_bf_occ, 
+    y = y_bf_occ,
+    label = TeX(r"($log(BF_{10}) = 0.83$)"),
+    color = accent,
+    size = txt_bf,
+  ) +
+  scale_fill_manual(values  = pal_trio, labels = labels) +
+  scale_color_manual(values = pal_trio, guide = "none") +
+  labs(
+    x = "Occupation (ISCO-08 sub-major groups)",
+    y = NULL,
+    title = NULL,
+    fill = fill_title
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 100, 5),
+    expand = c(0, 0)
+  ) +
+  theme(
+    panel.grid.major.y = element_line(),
+    panel.grid.minor.y = element_line(),
+    axis.title = element_text(size = txt_axis),
+    axis.text  = element_text(size = txt_axis)
+  )
+
+# ---------------------------------- Joint plot
+cluster_life <-
+  cluster_education + cluster_field + cluster_occupation +
+  plot_layout(
+    guides = "collect",
+    widths = c(width_p1, width_p2, width_p3)
+  ) &
+  theme(
+    legend.position = "top",
+    legend.title = element_text(size = txt_legend),
+    legend.text  = element_text(size = txt_legend),
+    legend.box.margin = margin(t, r, b, l)
+  )
+```
+
+::: {#suppfig-cluster-life-plots}
+```{r}
+#| label: show-cluster-life-plots
+#| fig-width: 16
+#| fig-height: 6
+
+print(cluster_life)
+
+if (params$save_figures) {
+  ggsave(here("figures/cluster-life.png"), cluster_life, dpi = 600)
+}
+```
+:::
+
+
+:::: {.content-visible when-format="html"}
+     
+
+::: {.callout-note collapse="true"}
+# Session information
+
+```{r}
+#| label: session-information
+#| echo: false
+
+cat("═════════════════════════════════════════════════════════════════════════")
+report_system(session = sessionInfo())
+cat("Packages used:")
+report_packages(session = sessionInfo())
+cat("═════════════════════════════════════════════════════════════════════════")
+```
+:::
+::::

@@ -8,7 +8,7 @@ sum_items <- function(name){rowSums(across(starts_with(name)), na.rm = TRUE)}
 
 # Scaling the quantitative variables --------------------------------------
 
-scale_quantitative_vars <- function(df){
+scale_vars <- function(df){
   
   min <- 0
   max <- 1
@@ -91,12 +91,13 @@ get_long_format <- function(df){
   return(df_long)
 }
 
+
 # Reduce variables for clustering -----------------------------------------
 
 reduce_vars <- function(df){
   df_reduced <- 
     df |> 
-    scale_quantitative_vars() |> 
+    scale_vars() |> 
     select(vviq:psiq_vis, score_raven:span_digit, score_similarities) |> 
     mutate(
       # merging the normalized vviq, osviq-o, and psiq scores
@@ -117,5 +118,27 @@ reduce_vars <- function(df){
     )
   
   return(df_reduced)
+}
+
+
+# Adding the clustering classification and reduced variables --------------
+
+add_cluster_vars <- function(df, clustering) {
+  new_cols <-
+    df |> 
+    reduce_vars() |> 
+    mutate(
+      id = df$id,
+      cluster = clustering$classification |> 
+        case_match(1 ~ "B", 2 ~ "A", 3 ~ "C") |> 
+        factor(levels = c("A", "B", "C"))
+    ) |> 
+    rename_with(~ paste0(., "_std"), contains("span"))
+  
+  df_new <-
+    left_join(df, new_cols, by = "id") |> 
+    select(id, group, cluster, age, everything())
+  
+  return(df_new)
 }
 

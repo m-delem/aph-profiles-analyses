@@ -296,7 +296,11 @@ df_final <-
   arrange(field_code) |> 
   mutate(field = fct_reorder(field, field_code)) |>
   arrange(occupation_code) |>
-  mutate(occupation = fct_reorder(occupation, occupation_code)) |>
+  mutate(
+    occupation = fct_reorder(occupation, occupation_code),
+    field_code = factor(field_code, levels = seq(0, max(field_code))),
+    occupation_code = factor(occupation_code)
+  ) |>
   # Back to sorting by id
   arrange(id) |>
   select(
@@ -311,7 +315,7 @@ df_final <-
     score_similarities, score_comprehension
   ) |> 
   mutate(
-    across(sex:occupation, as.factor),
+    across(c(sex:field,occupation), as.factor),
     across(c(age, vviq:score_comprehension), as.numeric),
     across(where(is.numeric), ~ round(., 2))
   ) |> 
