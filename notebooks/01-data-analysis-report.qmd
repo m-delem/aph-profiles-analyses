@@ -235,7 +235,11 @@ group_violins <-
     Variable = 
       Variable |> 
       str_replace("Reading comprehension", "Reading\ncomprehension") |>
-      fct_relevel(levels(group_signif_effects))) |>
+      fct_relevel(
+        levels(group_signif_effects), "OSIVQ-Spatial", "OSIVQ-Verbal",
+        "Raven matrices", "SRI", "Spatial span", "Digit span",
+        "Similarities test", "WCST", "Reading\ncomprehension"
+        )) |>
   
   # Geoms
   ggplot(aes(y = value, x = Group, color = Group, fill = Group)) +
@@ -637,6 +641,7 @@ if (!file.exists(here("data/r-data-structures/cluster_models.rds"))) {
   cluster_models <-
     df |> 
     add_cluster_vars(clustering) |>
+    scale_vars() |>
     select(
       cluster, age, 
       visual_imagery:span_digit_std, 
