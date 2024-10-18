@@ -48,28 +48,268 @@ author:
     email: gaen.plancher@univ-lyon2.fr
 format:
   docx: 
-    reference-doc: "../utils/docx/custom-reference-doc-numbered.docx"
+    reference-doc: "../utils/docx/custom-reference-doc.docx"
+crossref:
+  chapters: false
 ---
 
 **Keywords:** Aphantasia, mental imagery, reasoning, working memory, individual differences, unsupervised clustering, machine learning
 
 {{< pagebreak >}}
 
+```{r}
+#| label: setup
+#| include: false
+
+library(here)
+source(here("scripts/_setup.R"))
+source(here("scripts/data_handling.R"))
+source(here("scripts/plotting_functions.R"))
+
+# Load data
+df <- readRDS(here("data/data-processed/data_tidied.rds"))
+# metadata
+df_meta <- 
+  read_xlsx(here("data/data-processed/data_tidied.xlsx"), sheet = "metadata") |> 
+  mutate(Duration = as.numeric(Duration))
+
+# VVIQ Groups Bayesian modelling
+group_models <- readRDS(here("data/r-data-structures/group_models.rds"))
+# same df with numerical mean and sd columns
+# group_models_2 <- 
+#   group_models |> 
+#   select(Variable, data) |>
+#   rowwise() |> 
+#   mutate(
+#     stats = list(
+#       data |> 
+#         group_by(Group) |> 
+#         reframe(
+#           mean = round(mean(value), digits = 2),
+#           sd = round(sd(value), digits = 2)
+#         ) |> 
+#         pivot_wider(
+#           names_from = Group,
+#           names_glue = "{.value}_{Group}",
+#           values_from = c(mean, sd)
+#         )
+#     )
+#   ) |> 
+#   unnest_wider(stats)
+
+# Cluster analysis
+clustering <- Mclust(reduce_vars(df), G = 3, verbose = FALSE)
+cluster_models <- readRDS(here("data/r-data-structures/cluster_models.rds"))
+
+# Group association tests
+group_associations <-
+  df |> 
+  pivot_longer(
+    c(education, field, occupation), 
+    names_to = "Variable", 
+    values_to = "value"
+  ) |> 
+  select(group, Variable, value) |> 
+  group_by(Variable) |> 
+  nest() |> 
+  rowwise() |> 
+  mutate(
+    table = list(
+      data |> 
+        group_by(group, value) |>
+        count() |> 
+        pivot_wider(
+          names_from = group,
+          values_from = n
+        ) |>
+        mutate(across(c(1,2), ~replace_na(.x, 0)))
+    ),
+    log_bf10 =
+      contingencyTableBF(
+        as.matrix(table[,c(2,3)]), 
+        sampleType = "indepMulti", 
+        fixedMargin = "cols"
+      ) |> 
+      as_tibble() |> 
+      pull(bf) |> 
+      log() |> 
+      round(2),
+    Variable = str_to_title(Variable)
+  ) |> 
+  select(Variable, log_bf10)
+
+# Cluster association tests
+cluster_associations <-
+  df |> 
+  add_cluster_vars(clustering) |> 
+  pivot_longer(
+    c(education, field, occupation), 
+    names_to = "Variable", 
+    values_to = "value"
+  ) |> 
+  select(cluster, Variable, value) |> 
+  group_by(Variable) |> 
+  nest() |> 
+  rowwise() |> 
+  mutate(
+    table = list(
+      data |> 
+        group_by(cluster, value) |>
+        count() |> 
+        pivot_wider(
+          names_from = cluster,
+          values_from = n
+        ) |>
+        mutate(across(c(1,2,3), ~replace_na(.x, 0)))
+    ),
+    log_bf10 =
+      contingencyTableBF(
+        as.matrix(table[,c(2,3,4)]), 
+        sampleType = "jointMulti"
+      ) |> 
+      as_tibble() |> 
+      pull(bf) |> 
+      log() |> 
+      round(2),
+    Variable = str_to_title(Variable)
+  ) |> 
+  select(Variable, log_bf10)
+```
+
 # Introduction
 
---------------------------------------------------------------------------------
+Visual imagery, commonly referred to as "seeing in the mind's eye", designates the pseudo-perceptual visual experience of mental images in the absence of the corresponding external stimulus [@pearsonHumanImaginationCognitive2019]. There are large individual differences in visual imagery vividness (i.e. the intensity and detail of mental images), across a spectrum from the absence of mental imagery, a phenomenon recently named "aphantasia" [@zemanLivesImageryCongenital2015], to extremely vivid and perception-like imagery, named "hyperphantasia" [@zemanPhantasiaPsychologicalSignificance2020]. The introduction of the term "aphantasia" in 2015 led to a wave of research on the subject, exploring its underlying causes and consequences and potential positive or negative outcomes. A large body research on aphantasia has focused on identifying potential deficits associated with it. Specifically, the condition has been associated with a reduction in autobiographical memory [@dawesCognitiveProfileMultisensory2020; @dawesMemoriesBlindMind2022; @miltonBehavioralNeuralSignatures2021; @monzelHippocampaloccipitalConnectivityReflects2023a], reduced temporal and future imagination [@miltonBehavioralNeuralSignatures2021], increased prosopagnosia [@miltonBehavioralNeuralSignatures2021; @palermoCongenitalLackExtraordinary2022; @zemanPhantasiaPsychologicalSignificance2020], reduced dreams [@dawesCognitiveProfileMultisensory2020], or decreased motor simulation [@dupontExplicitImplicitMotor2024]. This focus has left the potential positive aspects of aphantasia largely unexplored, even though empirical evidence from recent studies has shown that individuals with aphantasia performed as well as those with "typical" imagery in various types of tasks presumed to require visual imagery, such as visual or visuo-spatial working memory [@keoghVisualWorkingMemory2021; @pounderOnlyMinimalDifferences2022; @reederNonvisualSpatialStrategies2024]. Research that hinted at advantages of aphantasia have focused mainly on emotional processing. Individuals with aphantasia have been shown to be less prone to sensory sensitivity [@danceWhatLinkMental2021], less reactive to the reading of frightening scenarios [@wickenCriticalRoleMental2019], and less sensible to intrusive memories [@keoghFewerIntrusiveMemories2023]. suggesting that aphantasia could help to reduce sensory overwhelm, and potentially protect against emotional overreaction.
 
-The manuscript.
+Recently, @monzelAphantasiaFrameworkNeurodivergence2023 proposed that aphantasia should be understood in the framework of "neurodivergence" as a state representing atypical but functional cognitive processing, with advantages and disadvantages. The specifics of this "alternative thinking" and its advantages, however, remain to be understood. Interestingly, @zemanPhantasiaPsychologicalSignificance2020 found that individuals with aphantasia seemed more likely to work in STEM (Science, Technology, Engineering, and Mathematics) fields, whereas hyperphantasics, at the other end of the spectrum, were more likely to work in art-related professions. Drawing on the patterns emerging from their large-scale exploratory survey, @zemanPhantasiaPsychologicalSignificance2020 proposed a broad hypothesis that, whereas hyperphantasia might be characterized by an episodic and sensorily-rich mode of thinking, aphantasia might be characterized by a more semantic and fact-oriented approach. The results and conclusions of @zemanPhantasiaPsychologicalSignificance2020 are very similar to the Object-Spatial-Verbal model of cognitive styles developed by @blazhenkovaNewObjectspatialverbalCognitive2009 and its associated questionnaire (Object-Spatial Imagery and Verbal Questionnaire, OSIVQ). Based on behavioural and neuroimaging studies on healthy individuals [@kosslynCognitiveNeuroscienceMental1995; @wallaceImageryVividnessHypnotic1990; @kozhevnikovRevisingVisualizerVerbalizerDimension2002] and neuropsychological studies of brain damaged patients [@farahCaseStudyMental1988; @bartolomeoRelationshipVisualPerception2002; @blazhenkovaObjectSpatialImagery2006] showed that visual-object imagery (imagery for colours, shapes, brightness, etc.) could be dissociated from spatial imagery (imagery for location, movement and orientation). They challenged then the prevailing Visualizer-Verbalizer model of cognitive styles [@paivioImageryLanguage1971; @richardsonMeaningMeasurementMemory1977] to introduce the spatial dimension as a major form of imagery and cognitive style in its own right. They showed that several widely used paradigms, such as the Mental Rotation Task [@shepard1971] or Paper Folding Test [@ekstromKitFactorreferencedCognitive1976], often treated as visual, were not associated with visual imagery or visual cognitive styles *per se*, but with spatial imagery and spatial cognitive styles [@blazhenkovaObjectSpatialImagery2006; @blazhenkovaNewObjectspatialverbalCognitive2009; @kozhevnikovTradeoffObjectSpatial2010; @vannucciIndividualDifferencesVisuospatial2006]. Consistent with the observation of @zemanPhantasiaPsychologicalSignificance2020 of a prevalence of STEM occupations in aphantasia and artists in hyperphantasia, several studies on the Object-Spatial-Verbal model have shown visual-object cognitive styles to be particularly prevalent among visual artists, while spatial styles are over-represented in scientific fields and verbal styles prevail in literature and the humanities, both among students and professionals [@blazhenkovaObjectSpatialImagery2006; @blazhenkovaNewObjectspatialverbalCognitive2009; @blazhenkovaVisualobjectAbilityNew2010; @kozhevnikovSpatialObjectVisualizers2005; @kozhevnikovTradeoffObjectSpatial2010]. These results are corroborated by various studies showing that spatial imagery is preserved or enhanced in aphantasia, both on the subjective spatial scale of the Object-Spatial Imagery Questionnaire [OSIQ, the first version of the OSIVQ without the verbal scale, @blazhenkovaObjectSpatialImagery2006] and on various spatial rotation, manipulation or spatial working memory tasks [@zemanLivesImageryCongenital2015; @bainbridgeQuantifyingAphantasiaDrawing2021; @dawesCognitiveProfileMultisensory2020; @keoghBlindMindNo2018; @keoghVisualWorkingMemory2021; @pounderOnlyMinimalDifferences2022; @reederNonvisualSpatialStrategies2024].
 
---------------------------------------------------------------------------------
+Several studies have also revealed a wide range of spatial, sensorimotor/kinaesthetic, verbal or amodal memory strategies reported by individuals with aphantasia in (allegedly) visual tasks [@keoghVisualWorkingMemory2021; @reederNonvisualSpatialStrategies2024; @zemanPhantasiaPsychologicalSignificance2020]. The supposed diversity in modes of thinking could therefore be distributed across several dimensions, including visual-object or spatial representation, but potentially extending to verbal and semantic domains. The verbal (or "propositional") aspect of representations and cognitive strategies, although often mentioned as a potential candidate for alternative strategies in visual aphantasia, has scarcely been studied. The Object-Spatial-Verbal model of cognitive styles could allow to study verbal representations in a coherent framework alongside visual and spatial imagery, and has never been used to date on a large scale of individuals with aphantasia. Therefore, the objective of the present study was two-fold: (a) to explore the cognitive profiles of individuals with aphantasia using the Object-Spatial-Verbal model of imagery and cognitive styles theorised by @blazhenkovaNewObjectspatialverbalCognitive2009, and (b) to explore whether the profiles might be related to cognitive performance.
+
+First, we hypothesised that the profiles might be related to reasoning performance. Spatial imagery is known to be involved and play a major role in abstract reasoning [@waiSpatialAbilitySTEM2009]. In this context, the absence of visual imagery in aphantasia and the hypothesised priority and focus on spatial representations in aphantasia [@bainbridgeQuantifyingAphantasiaDrawing2021; @keoghVisualWorkingMemory2021; @reederNonvisualSpatialStrategies2024] could be hypothesised to facilitate abstract reasoning. Second, we hypothesised that spatial or verbal cognitive profiles could explain individual differences in working memory performance, depending on the modality involved. Several previous studies have failed to find differences in working memory performance between (visual) individuals with aphantasia and controls [e.g., @keoghVisualWorkingMemory2021; @pounderOnlyMinimalDifferences2022; @reederNonvisualSpatialStrategies2024], but have only taken into account variations on the visual-object dimension of imagery. Accounting for the use of spatial and verbal representations in working memory could provide insight into the processes and strategies underlying the performance of individuals with aphantasia in various tasks [@pearsonRedefiningVisualWorking2019]. Third, we put forward the very general hypothesis that, if individuals with aphantasia have distinct verbal cognitive profiles, they could have very good reading comprehension skills. However, some studies have established a positive correlation between reading comprehension and visual mental imagery [e.g., @suggateMentalImagerySkill2022], suggesting a central role for the latter. To date no specific study of reading comprehension in an ecological context in aphantasia could provide a definitive answer as to the advantages or disadvantages of aphantasia in complex reading tasks involving verbal skills, working memory and mental imagery. Finally, we hypothesised that the performance of individuals with aphantasia in tasks supposed to require visual imagery might be linked to a greater flexibility in switching to alternative strategies (e.g. propositional, motor, etc.). In this case, they could be characterised by particularly efficient executive functioning. Thus, the present study also included a task designed to probe executive functions.
+
+In sum, the present study aimed to gain a better understanding of the cognitive profiles of individuals with aphantasia and their strategies for representing and processing information, and relate them to their performance in spatial, verbal and abstract processing. We sought to identify subjective patterns of "preference" for these domains in individuals with aphantasia and controls and to relate these patterns to various cognitive abilities. To this end, an online study was designed, integrating questionnaires and behavioural tasks to assess visual imagery, spatial imagery, verbal strategies, spatial, verbal and non-verbal reasoning, verbal and visuo-spatial working memory, reading comprehension, and executive functions. Based on previous work showing very few differences in cognitive performance between individuals with aphantasia and controls, we expected that dividing the participants into two groups according to visual imagery ability would not fully explain substantial differences in task performance. Thus, we planned to explore the hypothesis of hidden sub-groups within the sample using a data-driven unsupervised clustering method. This analysis included all measures of cognitive abilities to assess similarities and differences between participants. The proposed data analysis plan resulted in clusters characterized by their visual, spatial, and verbal cognitive styles, which were able to explain task performance. In the light of these patterns, we then discuss the potential of the Object-Spatial-Verbal model for understanding cognitive processes and strategies in aphantasia.
+
+# Methods
+
+No part of the study procedures or analysis plan was preregistered prior to the research being undertaken. We report all data exclusions, all inclusion/exclusion criteria, all manipulations, and all measures in the study.
+
+## Participants
+
+As the study was exploratory, the sample size was not determined *a priori*. Only data from participants who had completed all the tasks were included in the analyses. The final sample comprised `r nrow(df)` participants ($M_{age}$ = `r round(mean(df$age), 1)`, $SD_{age}$ = `r round(mean(df$age), 1)`, $range_{age}$ = \[`r min(df$age)`, `r max(df$age)`\], `r nrow(filter(df, sex == "f"))` females, `r nrow(filter(df, sex == "m"))` males, `r nrow(filter(df, sex == "other"))` another gender). They were native French speakers, had normal or corrected vision and none of the participants reported to have any known reading disorders. They were recruited online both on groups unrelated to mental imagery (social networks, RISC French cognitive science network, etc.) and on groups dedicated to aphantasia and visual imagery. The most widely used criterion in studies on aphantasia to identify the condition is a score inferior to 32 on the Vividness of Visual Imagery Questionnaire [VVIQ, @marks1973]. According to this criterion, we recruited `r nrow(filter(df, group == "Aphantasic"))` individuals with aphantasia ($M_{VVIQ}$ = `r round(mean(filter(df, group == "Aphantasic")$vviq), 1)`, $SD_{VVIQ}$ = `r round(sd(filter(df, group == "Aphantasic")$vviq), 1)`, $M_{age}$ = `r round(mean(filter(df, group == "Aphantasic")$age), 1)`, $SD_{age}$ = `r round(sd(filter(df, group == "Aphantasic")$age), 1)`, `r nrow(filter(df, group == "Aphantasic" & sex == "f"))` females, `r nrow(filter(df, group == "Aphantasic" & sex == "m"))` males) and `r nrow(filter(df, group == "Control"))` controls ($M_{VVIQ}$ = `r round(mean(filter(df, group == "Control")$vviq), 1)`, $SD_{VVIQ}$ = `r round(sd(filter(df, group == "Control")$vviq), 1)`, $M_{age}$ = `r round(mean(filter(df, group == "Control")$age), 1)`, $SD_{age}$ = `r round(sd(filter(df, group == "Control")$age), 1)`, `r nrow(filter(df, group == "Control" & sex == "f"))` females, `r nrow(filter(df, group == "Control" & sex == "m"))` males, `r nrow(filter(df, group == "Control" & sex == "other"))` other). All participants gave their informed consent before starting the study. Participation was voluntary and without compensation.
+
+## Materials
+
+### Questionnaires
+
+The Vividness of Visual Imagery Questionnaire [VVIQ, @marks1973] was used to assess visual imagery ability. The VVIQ is a 16-item self-report scale that asks participants to imagine a person and several scenes and to rate the vividness of these mental images using a 5-point scale ranging from 1 ("*No imagery at all, you just know you're thinking about the object*") to 5 ("*Perfectly clear and as vivid as normal vision*"). Scores range from 16 to 80. The total score of 32, conventionally used as a threshold to define aphantasia, is equivalent to a score of 2 ("*vague and faint*") for each item in the questionnaire. The internal reliability (Cronbach’s $\alpha$) of the VVIQ is .88 [@mckelvieVVIQPsychometricTest1995].
+
+The Object-Spatial Imagery and Verbal Questionnaire [OSIVQ, @blazhenkovaNewObjectspatialverbalCognitive2009] was used to evaluate imagery strategies and cognitive styles. The OSIVQ is a 45-item scale that asks participants to indicate the extent to which each of the statements about visual-object imagery ability (e.g., "*When I imagine a friend's face, I have a perfectly clear and bright image*"), about visuo-spatial imagery ability (e.g., "*My images tend to be schematic representations of things and events rather than detailed images*") or about "verbal strategies" for processing information (e.g., "*When I remember a scene, I use verbal descriptions rather than mental images*") applied to them, on a 5-point scale ranging from 1 ("*Totally disagree*") to 5 ("*Totally agree*"). Each sub-scale (object, spatial, verbal) comprises 15 items whose values are added together to obtain a score ranging from 15 to 75. Cronbach's $\alpha$ of the object, spatial and verbal scales are .83, .79 and .74 respectively [@blazhenkovaNewObjectspatialverbalCognitive2009].
+
+As mental imagery is a multi-sensory experience that is not limited to vision, the Plymouth Sensory Imagery Questionnaire [Psi-Q, @andradeAssessingVividnessMental2014] was used to assess imagery vividness across various sensory modalities. The Psi-Q (in its short form) comprises seven sets of three items for each of the following modalities: *Vision*, *Hearing*, *Smell*, *Taste*, *Touch*, *Bodily Sensation* and *Emotional Feeling*. Each set has a heading such as *"Imagine the appearance of..."* and then three items. Participants were asked to rate their image on an 11-point scale anchored by 0 ("*No image at all*") and 10 ("*As vivid as real life*"), thus yielding scores ranging from 0 to 33 for each modality. Cronbach's $\alpha$ of the 21-item Psi-Q is .91 [@andradeAssessingVividnessMental2014].
+
+### Tasks
+
+The Raven Standard Progressive Matrices [hereinafter called Raven matrices, @ravenRavenProgressiveMatrices1938] is a widely-used assessment to estimate fluid intelligence (non-verbal visual perception ability) and abstract reasoning (analogical and deductive reasoning abilities). The Raven matrices contains 60 items divided into five sets. Each question consists in completing a missing figure in a matrix of $3 \times 3$ figures by extracting and following the logical rules underlying the organisation of the matrices. Items are of increasing difficulty. At the end of a set, the difficulty decreases again but the logical rule changes, and the successive sets have increasing difficulty. A shortened clinical version with two sets of 9 items developed by @bilkerDevelopmentAbbreviatedNineItem2012 was used, predicting the 60-item score with good accuracy. Each of the short forms have correlations of $r = .98$ with the long form, and respective Cronbach’s $\alpha$ of .80 and .83. This shortened version represents an 70% reduction in the number of items to be administered and in test-taking time, for characteristics similar to those of the full form @bilkerDevelopmentAbbreviatedNineItem2012.
+
+The Spatial Reasoning Instrument [SRI, @ramfulMeasurementSpatialAbility2017] is a 30-item test for measuring spatial ability along three constructs: mental rotation, spatial orientation, and spatial visualisation. The test showed good validity an psychometric properties in three areas: (a) the exploratory factor analysis of the individual scales (mental rotation, spatial orientation, spatial visualisation), (b) the Rasch analysis of item quality within each construct, and (c) the significant correlations ($r \in [.33, .62]$) and person separation reliability with four existing well-regarded instruments measuring spatial reasoning, the Card Rotation Test, the Cube Comparison Test, the Paper Folding Test \[all from @ekstromKitFactorreferencedCognitive1976\] and the Perspective Taking (Spatial Orientation) Test [@kozhevnikovDissociationObjectManipulation2001]. The internal reliability (Cronbach’s $\alpha$) of the SRI is .85.
+
+The Similarities sub-test of the Weschler Adult Intelligence Scale [WAIS-IV, @wechslerWechslerAdultIntelligence2008] is a well-known assessment to estimate verbal comprehension abilities. Specifically, this test assesses both verbal concept formation and verbal abstract reasoning. It comprises 18 pairs of words in which the participant has to identify the underlying qualitative relationship (e.g., "*How are DREAM and REALITY similar?*"). Accurate answers (rated according to a standardized response scale) receive two points, approximate answers one point, and vague or incorrect answers zero, giving a maximum score of 36. After three zero scores, the task stops. Due to the internet-based nature of the experiment, all participants passed all the items, but only the *scoring* of their answers stopped after three incorrect answers. The scoring was carried out manually, using double scoring by the first two authors of this article, blind to the groups and participants. All participants performed above the fifth percentile on the Similarities WAIS-IV sub-test (score $\geq$ 12/36), thereby confirming that none of the participants presented a deficit in semantic oral language skills.
+
+Reverse Corsi blocks is a spatial memory span task [@gibeauCorsiBlocksTask2021] assessing visuo-spatial working memory. The task consists of presenting the participant with a grid of blocks in a frame, then displaying a sequence of blocks (the blocks changing colours in turn), at a rate of one per second, and asking the participant to recall it in reverse order, from the last block to the first. The task began with a short sequence of three blocks, increasing with each success or decreasing after two failures, over a fixed total of 14 trials. The average number of blocks recalled correctly at the correct position was retained as the score for the task.
+
+The reverse digit span is a verbal memory span task assessing verbal working memory [@blackburnRevisedAdministrationScoring1957]. The task involves presenting numbers at a rate of 1 per second, and then asking the participant to recall them from the last to the first. The task begins with a short sequence of three digits, then lengthens with each success or decreases after two failures, over a total of 14 trials. The average number of digits recalled correctly at the correct position was retained as the score for the task.
+
+The Wisconsin Card Sorting Test [WCST, @heatonWisconsinCardSorting1993] is a widely used test of set-shifting ability which was developed to measure flexibility of human thought and the ability to shift cognitive strategy in response to changing contingencies. The WCST is designed to measure executive functioning including attentional set shifting, task/rule switching or reversal, and working memory abilities. The assessment requires the participants to sort 64 cards according to colour (red, blue, yellow or green), shape (cross, circle, triangle or star) or number of figures (one, two, three or four). Over the course of the task, the sorting rule discreetly changes from colour to shape or number of figures, without the participants being informed. Participants must modify their predictions and choices accordingly and sort the cards according to the new sorting rule: they receive feedback for their response (correct or incorrect), which should enable them to improve with implicit rule extraction [@nelsonModifiedCardSorting1976]. The final score used was the percentage of correct sorts after 64 trials. The WCST, scored according to the percentage (or number) of correct sorts, exhibits satisfying split-half reliability [Spearman-Brown $r = .90$, @koppReliabilityWisconsinCard2021].
+
+The reading comprehension task assesses both explicit literal comprehension and inferential comprehension skills and was designed for assessment in adult readers [@brethesTextReadingFluency2022]. Reading comprehension is a complex cognitive activity that involves a number of skills including word recognition skills, language, semantic and general knowledge, working memory and reasoning skills as well as inference-making abilities. This reading comprehension task was composed of three texts drawn from the French daily newspaper *Le Monde*, all dealing with the destruction of the Great Barrier Reef and its various causes. The participant had to read each text without time constraints, then answer eight questions: four questions about explicit literal comprehension and four inferential questions about the comprehension of the implicit information in the texts, among which two examined text-connecting inferences and two examined knowledge-based inferences. While text-connecting inference skills required participants to integrate text information in order to establish local cohesiveness, knowledge-based inference skills required participants to establish links between the text content and their own personal knowledge. The questions were also divided between two question formats: open questions or multiple-choice questions. Participants were not allowed to refer to the text when answering the questions. In all, the test contained 20 questions whose answers were scored by the experimenter, with 2 points for complete answers, 1 point for incomplete answers and 0 for incorrect answers. The maximum score was therefore 40 points. The scoring was carried out manually, using double scoring by the first two authors of the present article, blind to the groups and participants. Cronbach’s $\alpha$ of the task is 0.78.
+
+## Experimental design and procedure
+
+The experiment was administered online via a JATOS server [@lange2015]. It was programmed using SurveyJS and jsPsych [@leeuw2023], Open Source JavaScript libraries dedicated to the creation of questionnaires and experiments respectively, as well as OpenSesame [@mathotOpenSesameOpensourceGraphical2012], a graphical interface for the construction of behavioural experiments. The link to the experiment was emailed individually to each volunteer participant and could only be used once per participant.
+
+All participants were subjected to the same study design and task sequence. Before the first questionnaires, participants gave their consent, then demographic data were collected (first language, age, gender, occupation, education and field of study, vision). Due to the length of the protocol (Median time spent = `r round(median(df_meta$Duration), 1)` min, Median Absolute Deviation = `r round(mad(df_meta$Duration), 1)` min), the experiment was structured with instructions accompanied by pages of explanations to reinforce engagement and focus (e.g., inviting people to "dive into their minds" or "test their abilities"). No text mentioned the word aphantasia, to avoid the stigma, bias or preconceived ideas specifically associated with this term [see @cabbaiInvestigatingRelationshipsTrait2023; @monzelAphantasiaFrameworkNeurodivergence2023]. The experiment started with the VVIQ, followed by the Raven matrices, the WCST, the OSIVQ, the SRI, the reverse Corsi blocks, the Similarities test, the Reading comprehension task, the reverse digit span, and ended with the Psi-Q. None of the tasks had a time limit, but participants were instructed to respond as soon as they had the answer while maintaining accuracy, with the aim of reducing the total duration of the experiment for them. However, given that the experiment was long, that the participants were not monitored due to the online format, and that the instructions did not place particular emphasis on speed of response as a key aspect, response times were not analysed.
+
+# Analyses and Results
+
+All analyses were conducted using the R statistical language [Version 4.2.0, @R-base] on RStudio [@positteamRStudioIntegratedDevelopment2022]. Data curation was handled in R with packages from the *tidyverse* collection [@tidyverse2019]. All visualisations were produced with the packages *ggplot2* [@R-ggplot2], *factoextra* [@R-factoextra], *ggradar* [@R-ggradar], *ggtext* [@ggtext2022], *latex2exp* [@latex2exp2022], *see* [@see2021], and *patchwork* [@patchwork2024].
+
+Bayesian modelling used throughout the analyses was conducted using the R packages *rstanarm* [@rstanarm2023], *BayesFactor* [@BayesFactor2023] and *bayestestR* [@bayestestR2019], and unless otherwise stated default parameter values were used. The R packages *emmeans* [@R-emmeans] and *modelbased* [@R-modelbased] were used for marginal estimates and contrast analyses. For all tests, the statistic reported, $log(BF_{10})$, quantifies the relative "weight of evidence" in favour of the hypothesis $H_{1}$ (e.g., the effect of a factor), against the null hypothesis $H_{0}$ [@goodWeightEvidenceBrief1985]. According to Jeffrey's scale thresholds [see, @kassBayesFactors1995], $log(BF_{10}) \in [0;0.5[$ = "*Barely worth mentioning*"; $\in [0.5;1[$ = "*Substantial evidence*"; $\in [1;2[$ = "*Strong evidence*"; $\in [2;+\infty[$ = "*Decisive evidence*". The same negative thresholds apply for the weight of evidence in favour of $H_0$.
+
+## VVIQ groups analysis
+
+### Demographic data
+
+Participants were initially divided into two groups according to their VVIQ scores (individuals with aphantasia = VVIQ $\le$ 32; controls = VVIQ $>$ 32). Participants' level of education, field of study, and occupation were analysed to detect any association with the grouping factor. Levels of education were coded using the equivalent of the French levels in the International Standard Classification of Education (ISCED), i.e., *Upper secondary*, *Post-secondary*, *Bachelor*, *Master*, and *Doctorate*. Fields of study have been coded according to the 10 broad categories defined by the ISCED-F 2013 (ISCED: Fields of Education and Training). Occupations have been coded according to the sub-major groups of the International Standard Classification of Occupations (ISCO-08) for an appropriate level of precision given our sample size. Nine occupational groups were identified in the sample. The details of the field of education categories and occupational groups can be found in @fig-cluster-life.
+
+Bayes factors for independence were calculated to evaluate the association between groups and each demographic variable [see @gunelBayesFactorsIndependence1974]. The tests found decisive evidence against a relationship between groups and levels of education ($log(BF_{10})$ = `r group_associations$log_bf10[1]`), groups and fields of study ($log(BF_{10})$ = `r group_associations$log_bf10[2]`), or groups and occupation ($log(BF_{10})$ = `r group_associations$log_bf10[3]`).
+
+### Questionnaire and task results
+
+The measured outcomes were the scores on the VVIQ, the three OSIVQ scales, the seven Psi-Q scales, the Raven matrices, the SRI, the Similarities Test, the reverse spatial and verbal spans, the WCST and the Reading comprehension task. Linear models have been fitted to the various outcomes to model them with participant groups as categorical predictors and age as a continuous predictor, so as to control for the potential influence of the latter. Contrast analyses were thereafter conducted to assess the differences between the groups. All score differences (hereinafter referred to as $\Delta$) and their 95\% Credible Intervals are reported in @tbl-group-contrasts along with the $log(BF_{10})$ quantifying the weight of evidence in favour of a difference between the groups.
+
+Individuals with aphantasia had lower scores than controls in all visual imagery scales (VVIQ: $log(BF_{10})$ = `r group_models[[12]][1]`; OSIVQ-Object: $log(BF_{10})$  = `r group_models[[12]][2]`; Psi-Q Visual: $log(BF_{10})$ = `r group_models[[12]][5]`), but also on all other sensory imaging modalities evaluated by the Psi-Q ($log(BF_{10}) \in [16; 34]$ for all modalities). All means and contrasts between the groups are represented with their distributions in @fig-group-violins. Apart from sensory imagery, strong evidence was found in favour of a difference between the groups on the verbal scale of the OSIVQ, with individuals with aphantasia scoring higher than controls ($\Delta$ = `r group_models$Difference[4]`, 95\% CI = `r group_models[[11]][4]`, $log(BF_{10})$ = `r group_models[[12]][4]`). No differences between the groups were found on all other variables: the statistical analyses showed substantial evidence against a difference on the spatial scale of the OSIVQ ($log(BF_{10})$ = `r group_models[[12]][3]`), strong evidence against differences  in Raven matrices scores ($log(BF_{10})$ = `r group_models[[12]][12]`) and spatial span ($log(BF_{10})$ = `r group_models[[12]][16]`), and decisive evidence against differences in SRI scores ($log(BF_{10})$ = `r group_models[[12]][13]`), digit span ($log(BF_{10})$ = `r group_models[[12]][17]`), Similarities test scores ($log(BF_{10})$ = `r group_models[[12]][14]`), Reading comprehension scores ($log(BF_{10})$ = `r group_models[[12]][15]`) and WCST scores ($log(BF_{10})$ = `r group_models[[12]][18]`).
+
+```{r}
+#| label: tbl-group-contrasts
+#| tbl-cap: "Means and standard deviations of the scores of each VVIQ group for every variable. The score differences, their 95% Credible Interval and weight of evidence are reported for each variable."
+
+group_models |> 
+  select(
+    Variable, 
+    Control, Aphantasic, 
+    Difference,  `95% CI`, `$log(BF_{10})$`
+    ) |>
+  display()
+```
+
+![Standardised scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been scaled and standardised between 0 and 1 to be represented on the same scale. The coloured shapes represent the distribution of the scores in each group. The black dots represent the mean of each group, while the black bars represent the standard deviations. The stars represent weight of evidence thresholds in favour of an effect of the Group: \* = "*Substantial evidence*", \*\* = "*Strong evidence*", \*\*\* = "*Decisive evidence*".](../figures/group-violins.png){#fig-group-violins}
+
+The VVIQ model—i.e., the division of the sample into two VVIQ groups of individuals with aphantasia and controls—therefore had very little explanatory power on task performance. However, large inter-individual variances were observed in various outcomes, as evidenced by the spread of the outcomes' distributions and several clear bimodal distributions (e.g., distributions of the OSIVQ-Verbal, SRI, or Reading comprehension scores, see @fig-group-violins). These unexplained differences suggested the existence of an underlying structure in our sample, thus requiring a better model with more relevant groups to account for them in light of our data. We studied this hypothesis by searching for new groups in the sample using data-driven unsupervised clustering.
+
+## Cluster analysis
+
+### Model-based clustering method
+
+A model-based method was chosen for clustering. In this approach, clustering aims at modelling distributions with mixtures of multivariate Gaussian distributions [@steinleyEvaluatingMixtureModeling2011]. Finite Gaussian mixture models (GMM) attempt to determine the underlying population groups that produced the observed data, each cluster being a distribution with its own centre and spread. The resulting model is then used to compute the probability of each observation belonging to a cluster. Although discrete (k-means) or hierarchical clustering methods are frequently used in psychology [@zakharovApplicationKmeansClustering2016], probabilistic mixture modelling approaches have proven to be more powerful and parsimonious with partially overlapping multivariate normal distributions, small sample sizes and non-spherical groups of varying shape and size, all of which are common in psychology experiments [@dalmaijerStatisticalPowerCluster2022]. 
+
+The estimation procedure for the mixture of clusters in the GMM requires knowledge of the number of clusters and their distributional form. The unsupervised determination of these parameters was done using various methods implemented in R, and is described in full in a later section. Then, given that very little information is available on the clusters, the estimation of the GMM proceeds in steps, alternating between (1) estimating the posterior probability of each observation belonging to each cluster with a fixed set of parameters and (2) updating the estimates of the parameters by fixing the probability of cluster membership for each observation [@steinleyEvaluatingMixtureModeling2011]. This iterative procedure continues until the model converges on stable clusters. The standard method for this estimation is the expectation-maximisation algorithm[^1] [EM, @dempsterMaximumLikelihoodIncomplete1977]. In the present study, the *mclust* R package [@scruccaMclustClusteringClassification2016] was used to run the EM algorithm for GMM clustering.
+
+[^1]: Mathematical and technical details are not developed here, but more can be found in the documentation for the *mclust* R package [@scruccaMclustClusteringClassification2016], *inter alia*.
+
+### Variable selection
+
+The selection of relevant variables for clustering is essential for good model fit and interpretation of the results [@fopVariableSelectionMethods2018; @zakharovApplicationKmeansClustering2016]. Having an adequate number of dimensions (variables) for a given sample size is also crucial to increase the accuracy of the Gaussian likelihood function for GMM clustering [@psutkaSampleSizeMaximumlikelihood2019]. The identification and reduction of *redundant variables* is particularly important, so as not to distort the relative weight of each latent variable in the clustering process. If two variables represent the same concept, that concept would be represented twice in the data and hence get twice the weight as all the other variables. The final solution could be skewed in the direction of that concept, which would considerably compromise the relevance of the model for understanding variable importance [@kyriazosDealingMulticollinearityFactor2023]. In the present analysis, this issue particularly affected sensory imagery, which was represented by nine highly correlated variables (VVIQ, OSIVQ-Object, and the seven Psi-Q modalities, Pearson's $r \in [0.65, 0.94]$ for every pairwise correlation[^2] that were likely to reflect very similar constructs, as opposed to the remaining nine variables. By design, sensory imagery drew an obvious separation between two groups, which would logically be the main structure of a two-cluster model involving all nine variables. Several methods exist to deal with such multicollinearity problems. As no agreed-upon correlation threshold exists for assessing the severity of multicollinearity in clustering procedures, merging variables based on domain-knowledge was chosen as a simple and reliable solution in our low-dimensional setting to maintain interpretability while enhancing the stability of the model [@kyriazosDealingMulticollinearityFactor2023].
+
+[^2]: An in-depth examination of the correlation structure of the data is available in the extended analysis notebook on OSF (<https://osf.io/7vsx6/?view_only=d44f765247b44e89a0c614d32bf1a1f3>).
+ 
+Firstly, as visual imagery is the main sensory imagery modality studied, only variables related to visual imagery were retained among the VVIQ, OSIVQ-Object and all Psi-Q scales. Thus, the VVIQ, OSIVQ-Visual and Psi-Q Visual scores were standardized between 0 and 1, weighted by their number of items (16, 15 and 3 respectively) and merged into a single *Visual imagery* variable to obtain as balanced a continuous measure of imagery as possible. Secondly, the Raven matrices and the SRI scores were also considered to reflect closely related non-verbal reasoning constructs, based on their role in the WAIS-IV [@wechslerWechslerAdultIntelligence1955; @wechslerWechslerAdultIntelligence2008], their recruitment of spatial reasoning abilities [@kozhevnikovSpatialVisualizationPhysics2007; @chabrisSpatialObjectVisualization2006], and their strong correlation (Pearson's $r$ = `r round(cor.test(df$score_raven, df$score_sri)$estimate, 2)`, $p <$ .001). They were therefore standardised, weighted, and merged into a single *Non-verbal reasoning* variable. Thirdly, the WCST and Reading comprehension scores were not used for clustering, as these tasks are designed to evaluate higher-level abilities that are likely to integrate many redundant processes with the other assessments. Instead, they will be used in a second phase to test the explanatory power of the resulting cluster model on complex tasks. This entire selection procedure allowed to reduce the variable space to seven dimensions, estimated by @psutkaSampleSizeMaximumlikelihood2019 to yield a good accuracy of the Gaussian likelihood function ($\beta \in [0.8, 0.9]$) for GMM clustering on a sample N = `nrow(df)`. As a result, other variables were used as they were to keep as much information as possible. For the sake of clarity, several scores have been renamed to reflect what they assess. The OSIVQ-Spatial sub-scale score was identified as the *Spatial imagery* variable, while the OSIVQ-Verbal score represented the propensity to use *Verbal strategies* for information processing, in line with the definition of these sub-scales [see @blazhenkovaNewObjectspatialverbalCognitive2009]. The Similarities test score was identified as a *Verbal Reasoning* variable. The clustering process was therefore conducted on the seven following variables: *Visual imagery*, *Spatial imagery*, *Verbal strategies*, *Non-verbal reasoning*, *Verbal reasoning*, *Spatial span*, and *Digit span*. To model variables using the same scale, data were normalized between 0 and 1 from their respective scales, as recommended by @zakharovApplicationKmeansClustering2016.
+
+### Number of clusters
+
+### Description of the clusters
+
+![Detailed distributions of the levels of education, fields of study and occupations in the three clusters. The $log(BF_{10})$ quantifies the weight of evidence in favour of a relationship between clusters and each variable. **Left:** Levels of education coded using the equivalent of the French levels in the International Standard Classification of Education (ISCED). **Centre:** Fields of study defined by the ISCED-F 2013 (ISCED: Fields of Education and Training). 0 = Generic programs; 1 = Education; 2 = Arts, Humanities; 3 = Social sciences, journalism, information; 4 = Business, Administration, Law; 5 = Natural sciences, mathematics, statistics; 6 = Information and communication technologies; 7 = Engineering, manufacturing, construction; 8 = Agriculture, forestry, fisheries, veterinary; 9 = Health and welfare; 10 = Services. **Right:** Occupations coded according to the sub-major groups of the International Standard Classification of Occupations (ISCO-08). 1 = No answer; 2 = Unemployed; 3 = Student; 4 = Science and Engineering; 5 = Health; 6 = Teaching; 7 = Business, administration; 8 = Information, communications; 9 = Social, cultural, legal.](../figures/cluster-life.png){#fig-cluster-life}
+
+### Imagery and cognitive task results
+
+### Complex tasks in the light of the clusters
+
+# Discussion
+
+## Revealing cognitive profiles through clustering
+
+## Explanatory potential of the cognitive profiles model
+
+## Interference between visual imagery and reasoning
+
+## Conclusions and avenues of research
 
 # Research transparency statement {.unnumbered}
 
-All the following elements required to reproduce the study and analyses are publicly available on the Open Science Framework (<https://osf.io/7vsx6/?view_only=d44f765247b44e89a0c614d32bf1a1f3>): all online study materials in raw form and as JATOS server-ready files; all anonymised primary data and pre-processed tidy data; all analysis code in scripts and notebooks with extensive commentary. Rendered analysis notebooks contain supplementary information on the exploratory analysis process and results. No artificial intelligence assisted technologies were used in this research or the creation of this article.
+All the following elements required to reproduce the study and analyses are publicly available on the Open Science Framework (<https://osf.io/7vsx6/?view_only=d44f765247b44e89a0c614d32bf1a1f3>): all online study materials; all anonymised primary data and pre-processed tidy data; all analysis code in scripts and notebooks with extensive commentary and supplementary information on the exploratory analysis process and results. No artificial intelligence assisted technologies were used in this research or the creation of this article.
 
 # Author contributions {.unnumbered}
 
-**Conceptualisation**: MD, ST, EC, GP. **Data curation**: MD. **Formal analysis**: MD. **Funding acquisition**: GP. **Investigation**: MD, ST. **Methodology**: MD, ST, DC, EC, GP. **Project administration**: GP, EC. **Resources**: MD, ST, EC, DC. **Software**: MD. **Supervision**: GP, EC. **Visualisation**: MD. **Writing - Original Draft Preparation**: MD. **Writing - Review \& Editing**: GP, EC.
+**Conceptualisation**: MD, ST, EC, GP. **Data curation**: MD. **Formal analysis**: MD. **Funding acquisition**: GP. **Investigation**: MD, ST. **Methodology**: MD, ST, DC, EC, GP. **Project administration**: GP, EC. **Resources**: MD, ST, EC, DC. **Software**: MD. **Supervision**: GP, EC. **Visualisation**: MD. **Writing - Original Draft Preparation**: MD. **Writing - Review & Editing**: GP, EC.
 
 # Declaration of interest {.unnumbered}
 
