@@ -1,8 +1,9 @@
-# Uncovering spatial and verbal cognitive profiles in aphantasia through unsupervised clustering 
+# Uncovering spatial and verbal cognitive profiles in aphantasia through unsupervised clustering <img src='logo/logo-emc-lyon2.png' align="right" width="175" />
 
-This Quarto project contains all the data and code required to replicate the analyses presented in the above article. I sincerely apologize, the research schedule of a PhD student being what it is, I don't have time to write a thorough README for this project, even though I'd love to. However, the folder structure here is based on [my personal Quarto research template, which you can find on GitHub](https://github.com/m-delem/my-quarto-template). It has a pretty detailed README on the data analysis workflow underlying this project (and my personal recommendations). I'll just write the first step (assuming you have the necessary software): start by opening `open-this-file-first.RProj` with RStudio and read/run what's in the `scripts/_setup.R` script.
+This repository contains all the data, code and materials required to reproduce the analyses presented in the above article. Other associated materials can be found in the OSF project [here](https://osf.io/7vsx6/). This repository is linked in the project.
 
-All the scripts the notebook are also thoroughly commented, so that might help. Lastly, if you came all the way down here to read this for instructions with the intention of using this project, well (1) I'm very grateful, because I didn't expect that to ever happen, and (2) I'd be more than happy to give you pointers and/or chat about this analysis. Contact me at <mael.delem@univ-lyon2.fr> or <mael.a.delem@gmail.com> if you need anything.
+This repository is a Quarto project endowed with a renv R environment to ensure the stability of the packages that were used to conduct the analysis and guarantee the reproducibility of the results. The repository is based on [this Quarto project template](https://github.com/m-delem/my-quarto-template): you can find a quick tutorial to use this project structure and an in-depth explanation of its elements in the README of the template.
 
-Cheers,
-Maël Delem
+The main rendered notebooks can be found in the `_outputs/notebooks/` folder.
+
+> Side note: if you came all the way down here for instructions with the intention of using (or exploring) this project, well (1) I'm very grateful, because I didn't expect that to ever happen, and (2) I'd be more than happy to give you pointers and/or chat about this analysis. Contact me at <mael.delem@univ-lyon2.fr> or <mael.a.delem@gmail.com> if you need anything.
