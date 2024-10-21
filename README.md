@@ -7,5 +7,3 @@ This repository is a Quarto project endowed with a `renv` R environment to ensur
 The main rendered notebooks can be found in the `_outputs/notebooks/` folder.
 
 <img src='figures/logo-emc-lyon2.png' align="right" width="250" />
-
-> Side note: if you came all the way down here for instructions with the intention of using (or exploring) this project, well (1) I'm very grateful, because I didn't expect that to ever happen, and (2) I'd be more than happy to give you pointers and/or chat about this analysis. Contact me at <mael.a.delem@gmail.com> if you need anything.
