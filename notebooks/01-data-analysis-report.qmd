@@ -22,16 +22,57 @@ format: html
 
 ```{r}
 #| label: setup
-#| include: false
+#| echo: true
 
-library(here)
-source(here("scripts/_setup.R"))
-source(here("scripts/data_handling.R"))
-source(here("scripts/plotting_functions.R"))
+if (!requireNamespace("pacman")) install.packages("pacman")
+pacman::p_load(conflicted, here, fs, purrr, sessioninfo)
 
+# source all our functions
+dir_ls(here("R"), type = "file", recurse = TRUE) |> walk(source)
 
-# load data
-df <- readRDS(here("data/data-processed/data_tidied.rds"))
+# resolve package conflicts
+conflicts_prefer(dplyr::filter(), scales::rescale(), .quiet = TRUE)
+```
+
+```{r}
+#| label: pipeline
+#| echo: true
+
+# load the data
+df <- import_jatos_data()$data_final
+clustering <- cluster_vars(df)
+
+# compute/save or load existing VVIQ group models
+path_g_models <- here("data/r-data-structures/group_models.rds")
+if (!file.exists(path_g_models)) {
+  
+  group_models <-
+    df |>
+    select(group, age, vviq:score_comprehension) |> 
+    get_long_format() |> 
+    model_groups()
+  
+  saveRDS(group_models, path_g_models)
+  
+} else {
+  group_models <- readRDS(path_g_models)
+}
+
+# compute/save or load existing cluster models
+path_c_models <- here("data/r-data-structures/cluster_models.rds")
+if (!file.exists(path_c_models)) {
+  
+  cluster_models <-
+    df |> 
+    add_cluster_vars(clustering) |>
+    scale_vars() |> 
+    model_clusters()
+  
+  saveRDS(cluster_models, path_c_models)
+  
+} else {
+  cluster_models <- readRDS(path_c_models)
+}
 ```
 
 :::: {.content-visible when-format="html"}
@@ -51,83 +92,6 @@ df <- readRDS(here("data/data-processed/data_tidied.rds"))
 We first analysed the data in light of the VVIQ groups, examining differences between aphantasics and controls In order to model our variables with the VVIQ groups, we adjusted generalized linear models also controlling the effect of age on all variables to isolate the group effect:
 
 $$Variable = \alpha  + \beta_{1} \cdot Group \times \beta_{2} \cdot Age + \epsilon$$
-
-```{r}
-#| label: group-models
-#| echo: true
-#| code-summary: Modelling groups
-
-# Recompute all of these models only if the saved RDS file does not exist
-if (!file.exists(here("data/r-data-structures/group_models.rds"))) {
-  group_models <-
-    df |>
-    select(group, age, vviq:score_comprehension) |> 
-    get_long_format() |>
-    group_by(Variable) |> 
-    nest() |> 
-    rowwise() |> 
-    mutate(
-      stats = list(
-        data |> 
-          group_by(Group) |> 
-          reframe(stats = glue("{round(mean(value), digits = 2)} ({round(sd(value), digits = 2)})")) |> 
-          pivot_wider(
-            names_from = Group,
-            values_from = stats
-          )
-      ),
-      models_inclusion = list(
-        generalTestBF(value ~ Group * Age, data = data) |>
-          bayesfactor_inclusion() |> 
-          rownames_as_column(var = "Variable")
-      ),
-      models_bf = list(models_inclusion$log_BF),
-      models_post = list(
-        stan_glm(
-          value ~ Group * Age, 
-          data = data,
-          chains = 4,
-          iter   = 10000,
-          refresh = 100
-          )
-      ),
-      contrasts = list(
-        estimate_contrasts(
-          models_post,
-          contrast = "Group",
-          test = "bf",
-          bf_prior = models_post,
-          refresh = 100
-        ) |> 
-        as.data.frame() |> 
-        mutate(across(where(is.numeric), ~ round(., digits = 2))) |>
-        select(!c(Level1, Level2)) |> 
-        rename(`$log(BF_{10})$` = log_BF) |> 
-        unite(
-          "95% CI",
-          c(CI_low, CI_high),
-          sep = ", ",
-        ) |> 
-        mutate(`95% CI` = paste0("[", `95% CI`, "]"))
-      )
-    ) |> 
-    unnest_wider(stats) |> 
-    unnest_wider(models_bf, names_sep = "_") |> 
-    unnest_wider(contrasts) |> 
-    mutate(across(where(is.numeric), ~ round(., digits = 2))) |> 
-    rename(
-      `Group` = models_bf_1,
-      `Age` = models_bf_2,
-      `Group $\\times$ Age` = models_bf_3
-    )
-  
-  saveRDS(group_models, "data/r-data-structures/group_models.rds")
-} else {
-  group_models <- readRDS("data/r-data-structures/group_models.rds")
-}
-
-# head(models_groups)
-```
 
 ::: {#supptbl-group-modelling-results}
 ```{r}
@@ -632,108 +596,6 @@ df |>
 :::
 
 ## Modelling
-
-```{r}
-#| label: cluster-models
-
-# Recompute all of these models only if the saved RDS file does not exist
-if (!file.exists(here("data/r-data-structures/cluster_models.rds"))) {
-  cluster_models <-
-    df |> 
-    add_cluster_vars(clustering) |>
-    scale_vars() |>
-    select(
-      cluster, age, 
-      visual_imagery:span_digit_std, 
-      wcst_accuracy, score_comprehension
-    ) |>
-    pivot_longer(
-      !c(cluster, age),
-      names_to = "Variable", 
-      values_to = "value"
-    ) |>
-    mutate(
-      cluster = fct_relabel(cluster, ~ paste("Cluster", .)),
-      Variable = Variable |> 
-        str_to_title() |> 
-        str_replace_all(c(
-          "_" = " ",
-          "Non verbal reasoning" = "Non-verbal reasoning",
-          "Span spatial std" = "Spatial span",
-          "Span digit std" = "Digit span",
-          "Wcst accuracy" = "WCST", 
-          "Score comprehension" = "Reading comprehension"
-        )) |> 
-        fct_inorder()
-    ) |> 
-    rename_with(str_to_title, c(cluster, age)) |> 
-    group_by(Variable) |> 
-    nest() |> 
-    rowwise() |> 
-    mutate(
-      stats = list(
-        data |> 
-          group_by(Cluster) |> 
-          reframe(stats = glue("{round(mean(value), digits = 2)} ({round(sd(value), digits = 2)})")) |> 
-          pivot_wider(
-            names_from = Cluster,
-            values_from = stats
-          )
-      ),
-      models_inclusion = list(
-        generalTestBF(value ~ Cluster * Age, data = data) |>
-          bayesfactor_inclusion() |> 
-          rownames_as_column(var = "Variable")
-      ),
-      models_bf = list(models_inclusion$log_BF),
-      models_post = list(
-        stan_glm(
-          value ~ Cluster * Age, 
-          data = data,
-          chains = 4,
-          iter   = 10000,
-          refresh = 100
-          )
-      ),
-      contrasts = list(
-        estimate_contrasts(
-          models_post,
-          contrast = "Cluster",
-          test = "bf",
-          bf_prior = models_post,
-          refresh = 100
-        ) |> 
-        as.data.frame() |> 
-        mutate(across(where(is.numeric), ~ round(., digits = 2))) |>
-        rename(
-          `Cluster 1` = Level1,
-          `Cluster 2` = Level2
-        ) |>
-        rename(`$log(BF_{10})$` = log_BF) |> 
-        unite(
-          "95% CI",
-          c(CI_low, CI_high),
-          sep = ", ",
-        ) |> 
-        mutate(`95% CI` = paste0("[", `95% CI`, "]"))
-      )
-    ) |> 
-    unnest_wider(stats) |> 
-    unnest_wider(models_bf, names_sep = "_") |> 
-    unnest_longer(contrasts) |>
-    unnest_wider(contrasts) |> 
-    mutate(across(where(is.numeric), ~ round(., digits = 2))) |> 
-    rename(
-      Cluster = models_bf_1,
-      Age = models_bf_2,
-      `Cluster $\\times$ Age` = models_bf_3
-    )
-  
-  saveRDS(cluster_models, "data/r-data-structures/cluster_models.rds")
-} else {
-  cluster_models <- readRDS("data/r-data-structures/cluster_models.rds")
-}
-```
 
 ::: {#supptbl-cluster-modelling-results}
 ```{r}
