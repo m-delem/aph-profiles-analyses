@@ -25,7 +25,16 @@ format: html
 #| echo: true
 
 if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(conflicted, here, fs, purrr, sessioninfo)
+pacman::p_load(
+  conflicted, 
+  here, 
+  fs, 
+  ggplot2, 
+  purrr, 
+  see, 
+  sessioninfo, 
+  superb
+)
 
 # source all our functions
 dir_ls(here("R"), type = "file", recurse = TRUE) |> walk(source)
@@ -101,10 +110,9 @@ group_models |>
   select(
     Variable, 
     Control, Aphantasic, 
-    # `Group`, `Age`, `Group $\\times$ Age`, # main effects' inclusion BF
     Difference,  `95% CI`, `$log(BF_{10})$`
     ) |>
-  display()
+  knitr::kable()
 ```
 
 Means and standard deviations of the scores of each VVIQ group for every variable. The score differences, their 95% Credible Interval and weight of evidence are reported for each variable.
@@ -113,6 +121,14 @@ Means and standard deviations of the scores of each VVIQ group for every variabl
 \newpage
 
 ## Visualizations
+
+```{r}
+#| fig-width: 12
+#| fig-height: 6
+
+plot_groups_superb(df)
+```
+
 
 ```{r}
 #| label: group-radar-plots
