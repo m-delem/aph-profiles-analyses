@@ -27,13 +27,13 @@ format: html
 if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(
   conflicted, 
+  correlation,
   here, 
   fs, 
-  ggplot2, 
-  purrr, 
-  see, 
-  sessioninfo, 
-  superb
+  ggplot2,
+  patchwork,
+  purrr,
+  sessioninfo
 )
 
 # source all our functions
@@ -84,16 +84,6 @@ if (!file.exists(path_c_models)) {
 }
 ```
 
-:::: {.content-visible when-format="html"}
-::: {.callout-note collapse="true"}
-# Packages and setup
-
-``` r
-{{< include ../scripts/_setup.R >}}
-```
-:::
-::::
-
 # VVIQ group analysis
 
 ## Modelling
@@ -123,160 +113,23 @@ Means and standard deviations of the scores of each VVIQ group for every variabl
 ## Visualizations
 
 ```{r}
-#| fig-width: 12
-#| fig-height: 6
-
-plot_groups_superb(df)
-```
-
-
-```{r}
-#| label: group-radar-plots
-
-group_radar_sensory <-
-  df |>  
-  scale_vars() |> 
-  select(group, vviq, osivq_o, contains("psiq")) |>
-  group_by(group) |> 
-  reframe(across(everything(), ~ round(mean(.), digits = 2))) |> 
-  plot_radar(new_params = list(axis.labels = c(
-      "VVIQ","OSIVQ-Object",
-      "Psi-Q Visual", "Psi-Q Audition", 
-      "Psi-Q Smell", "Psi-Q Taste",
-      "Psi-Q Touch", "Psi-Q\nSensations", 
-      "Psi-Q Feelings"
-    )))
-
-group_radar_others <-
-  df |>  
-  scale_vars() |> 
-  select(group, osivq_s, osivq_v, score_raven:score_comprehension) |>
-  group_by(group) |> 
-  reframe(across(everything(), ~ round(mean(.), digits = 2))) |> 
-  plot_radar(new_params = list(axis.labels = c(
-        "OSIVQ-Spatial","OSIVQ-Verbal",
-        "Raven\nmatrices", "SRI", 
-        "Spatial span", "Digit span",
-        "WCST", "Similarities", "Reading\ncomprehension"
-      )))
-
-margins <- c(0, 0, 0, 0)
-txt_size_legend <- 18
-
-group_radar_joint <-
-  group_radar_sensory + group_radar_others +
-    plot_layout(
-      guides = "collect",
-      widths = c(1, 1)
-      ) & 
-    theme(
-      legend.position = "top", 
-      legend.title = element_text(size = txt_size_legend),
-      legend.text  = element_text(size  = txt_size_legend),
-      legend.box.margin = margin(margins)
-      )
-```
-
-::: {#suppfig-group-radar-plots}
-```{r}
-#| label: show-group-radar-plots
-#| fig-width: 12
-#| fig-height: 5
-
-print(group_radar_joint)
-
-if (params$save_figures) {
-  ggsave(here("figures/group-radars.png"), group_radar_joint, dpi = 600)
-}
-```
-
-Radar charts of the standardized means of the two groups on sensory imagery variables and questionnaire and test scores. For most variables, the scales represent the standardized score ranges: the center of the chart is the minimum possible score at each task, 0.5 is the midpoint, and 1 is the maximum possible score. For the memory spans, the center of the chart is a span of 0 and the maximum is the highest span achieved by the participants.
-:::
-
-```{r}
 #| label: group-violin-plots
+#| fig-width: 16
+#| fig-height: 7
 
-group_signif_effects <- factor(c(
-    "VVIQ","Psi-Q Vision",
-    "Psi-Q Audition", "Psi-Q Smell", "Psi-Q Taste",
-    "Psi-Q Touch", "Psi-Q Sensations", "Psi-Q Feelings",
-    "OSIVQ-Object")) |> fct_inorder()
-
-lw <- 1
-labels <- c(" Control    ", " Aphantasic")
-
-group_violins <-
-  df |> 
-  scale_vars() |>
-  get_long_format() |> 
-  group_by(Group, Variable) |>
-  reframe(value = value, mean = mean(value), sd = sd(value)) |> 
-  mutate(
-    Variable = 
-      Variable |> 
-      str_replace("Reading comprehension", "Reading\ncomprehension") |>
-      fct_relevel(
-        levels(group_signif_effects), "OSIVQ-Spatial", "OSIVQ-Verbal",
-        "Raven matrices", "SRI", "Spatial span", "Digit span",
-        "Similarities test", "WCST", "Reading\ncomprehension"
-        )) |>
-  
-  # Geoms
-  ggplot(aes(y = value, x = Group, color = Group, fill = Group)) +
-  geom_violinhalf(alpha = .3, scale = "width") +
-  geom_line(
-    aes(x = Group, y = mean, group = 1),
-    color = "grey80",
-    linewidth = lw
-    ) +
-  geom_pointrange2(
-    aes(
-      x = Group, 
-      y = mean,
-      ymin = if_else(mean - sd <= 0, 0, mean - sd),
-      ymax = if_else(mean + sd >= 1, 1, mean + sd),
-      group = Group
-      ),
-    show.legend = FALSE,
-    color = "black",
-    size  = lw,
-    linewidth = lw
-  ) +
-  add_significance(group_signif_effects, stars = "***") +
-  add_significance(factor("OSIVQ-Verbal"), stars = "**") +
-  
-  # Scales
-  scale_y_continuous(
-    expand = c(0, 0), 
-    limits = c(0, 1.2),
-    breaks = seq(0, 1, .2)
-    ) +
-  scale_color_manual(values = pal_duo, name = "",labels = labels) +
-  scale_fill_manual(values = pal_duo, name = "", labels = labels) +
-  labs(
-    x = NULL,
-    y = "Standardised scores"
-  ) +
-  
-  # Facet
-  facet_wrap(~Variable, nrow = 3) +
-
-  # Custom theme
-  theme_violins(
-    txt_size_legend = 18,
-    panel_spacing_y = 0.1)
+p_groups_violins <- plot_groups_violins(df)
 ```
 
 ::: {#suppfig-group-violin-plots}
 ```{r}
 #| label: show-group-violin-plots
-#| fig-width: 13
-#| fig-height: 8
+#| fig-width: 16
+#| fig-height: 7
 
-print(group_violins)
+print(p_groups_violins)
 
 if (params$save_figures) {
-  ggsave(here("figures/group-violins.png"), group_violins, dpi = 600)
+  ggsave(here("figures/group-violins.png"), p_groups_violins, dpi = 600)
 }
 ```
 
@@ -288,6 +141,46 @@ Standardised scores of the two VVIQ groups on all the questionnaires and tasks. 
 ## Variable reduction
 
 Before clustering the data, making sure that variables are not redundant, i.e., that they are not too highly correlated with each other, is essential for good model fit and interpretation of the results [@fopVariableSelectionMethods2018; @zakharovApplicationKmeansClustering2016]. First, we checked the correlations between all the variables. Then, if several variables were redundant, we merged them into a single variable. The results of this analysis are displayed in @suppfig-correlation-plots. Based on this evaluation and domain knowledge, we decided to merge the visual imagery variables (VVIQ, OSIQ-Object and Psi-Q visual), drop the rest of the Psi-Q variables that were very highly correlated with the visual imagery scores, and merge the Raven Matrices and SRI scores. This process left us with 7 variables to cluster, which satisfied various criteria proposed in the literature [see e.g., @psutkaSampleSizeMaximumlikelihood2019; @zakharovApplicationKmeansClustering2016].
+
+```{r}
+#| fig-width: 16
+#| fig-height: 12
+
+pacman::p_load(corrplot)
+# needs to run trace(corrplot,edit=TRUE) and add + 0.25 to line 449
+
+df |>
+  scale_vars() |> 
+  select(vviq:score_comprehension) |> 
+  rename_vars() |> 
+  cor() |> 
+  corrplot(
+    method = "color",
+    type = "upper",
+    diag = FALSE,
+    order = "hclust",
+    hclust.method = "ward.D2",
+    addCoef.col = "black",
+    tl.col = "black",
+    tl.srt = 45,
+    tl.cex = 1.4,
+    tl.offset = 0.8,
+    number.cex = 1.1,
+    cl.cex = 1.1,
+    cl.ratio = 0.1,
+    p.mat = (
+      df |>
+      scale_vars() |> 
+      select(vviq:score_comprehension) |> 
+      rename_vars() |>
+      cor.mtest(conf.level = .95)
+      )$p,
+    insig = "label_sig",
+    sig.level = c(0.001,0.01,.05), 
+    pch.cex = 1.4
+  )
+```
+
 
 ```{r}
 #| label: correlation-plots

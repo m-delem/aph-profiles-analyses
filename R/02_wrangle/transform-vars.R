@@ -122,3 +122,29 @@ add_cluster_vars <- function(df, clustering) {
 }
 
 
+rename_vars <- function(df) {
+  quantitative_vars <- c(
+    "VVIQ" = "vviq",
+    "OSIVQ-Object" = "osivq_o",
+    "OSIVQ-Spatial" = "osivq_s",
+    "OSIVQ-Verbal"  = "osivq_v",
+    "Psi-Q Vision"  = "psiq_vis",
+    "Psi-Q Audition" = "psiq_aud",
+    "Psi-Q Smell" = "psiq_od",
+    "Psi-Q Taste" = "psiq_gout",
+    "Psi-Q Touch" = "psiq_tou",
+    "Psi-Q Sensations" = "psiq_sens",
+    "Psi-Q Feelings" = "psiq_feel",
+    "Raven matrices" = "score_raven",
+    "SRI" = "score_sri",
+    "Digit span"   = "span_digit",
+    "Spatial span" = "span_spatial",
+    "WCST" = "wcst_accuracy",
+    "Similarities test" = "score_similarities",
+    "Reading comprehension" = "score_comprehension"
+  )
+  
+  df <- df |> rename(any_of(quantitative_vars))
+  
+  return(df)
+}

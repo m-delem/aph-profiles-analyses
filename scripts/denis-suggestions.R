@@ -48,6 +48,16 @@ correl<-cor(corrtime,use = "pairwise.complete.obs")
 #trace(corrplot,edit=TRUE)
 
 res1<-cor.mtest(corrtime,conf.level=.95)
-corrplot(correl,method="color",type="upper", addCoef.col="black", tl.col="black",p.mat=res1$p,
-         diag=FALSE, tl.srt=70,insig = "label_sig",sig.level = c(0.001,0.01,.05), pch.cex = .8
+corrplot(
+  correl,
+  method="color",
+  type="upper", 
+  addCoef.col="black", 
+  tl.col="black",
+  p.mat = res1$p,
+  diag=FALSE, 
+  tl.srt=70,
+  insig = "label_sig",
+  sig.level = c(0.001,0.01,.05), 
+  pch.cex = .8
 )
