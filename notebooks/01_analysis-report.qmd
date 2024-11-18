@@ -49,6 +49,8 @@ conflicts_prefer(dplyr::filter(), scales::rescale(), .quiet = TRUE)
 
 # load the data
 df <- import_jatos_data()$data_final
+
+# cluster the data
 clustering <- cluster_vars(df)
 
 # compute/save or load existing VVIQ group models
@@ -63,9 +65,7 @@ if (!file.exists(path_g_models)) {
   
   saveRDS(group_models, path_g_models)
   
-} else {
-  group_models <- readRDS(path_g_models)
-}
+} else group_models <- readRDS(path_g_models)
 
 # compute/save or load existing cluster models
 path_c_models <- here("data/r-data-structures/cluster_models.rds")
@@ -79,9 +79,7 @@ if (!file.exists(path_c_models)) {
   
   saveRDS(cluster_models, path_c_models)
   
-} else {
-  cluster_models <- readRDS(path_c_models)
-}
+} else cluster_models <- readRDS(path_c_models)
 ```
 
 # VVIQ group analysis
@@ -94,7 +92,7 @@ $$Variable = \alpha  + \beta_{1} \cdot Group \times \beta_{2} \cdot Age + \epsil
 
 ::: {#supptbl-group-modelling-results}
 ```{r}
-#| label: show-group-models-table
+#| label: group-models-table
 
 group_models |> 
   select(
@@ -112,25 +110,15 @@ Means and standard deviations of the scores of each VVIQ group for every variabl
 
 ## Visualizations
 
+::: {#suppfig-group-violin-plots}
 ```{r}
 #| label: group-violin-plots
 #| fig-width: 16
 #| fig-height: 7
 
-p_groups_violins <- plot_groups_violins(df)
-```
-
-::: {#suppfig-group-violin-plots}
-```{r}
-#| label: show-group-violin-plots
-#| fig-width: 16
-#| fig-height: 7
-
-print(p_groups_violins)
-
-if (params$save_figures) {
-  ggsave(here("figures/group-violins.png"), p_groups_violins, dpi = 600)
-}
+plot_groups_violins(df)
+  
+if (params$save_figures) ggsave(here("figures/group-violins.png"), dpi = 600)
 ```
 
 Standardised scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been rescaled and standardised between 0 and 1 to be represented on the same scale. The coloured shapes represent the distribution of the scores in each group. The black dots represent the mean of each group, while the black bars represent the standard deviations. The stars represent weight of evidence thresholds in favour of a difference between the groups: \* = "*Substantial evidence*", \*\* = "*Strong evidence*", \*\*\* = "*Decisive evidence*".
@@ -142,131 +130,15 @@ Standardised scores of the two VVIQ groups on all the questionnaires and tasks. 
 
 Before clustering the data, making sure that variables are not redundant, i.e., that they are not too highly correlated with each other, is essential for good model fit and interpretation of the results [@fopVariableSelectionMethods2018; @zakharovApplicationKmeansClustering2016]. First, we checked the correlations between all the variables. Then, if several variables were redundant, we merged them into a single variable. The results of this analysis are displayed in @suppfig-correlation-plots. Based on this evaluation and domain knowledge, we decided to merge the visual imagery variables (VVIQ, OSIQ-Object and Psi-Q visual), drop the rest of the Psi-Q variables that were very highly correlated with the visual imagery scores, and merge the Raven Matrices and SRI scores. This process left us with 7 variables to cluster, which satisfied various criteria proposed in the literature [see e.g., @psutkaSampleSizeMaximumlikelihood2019; @zakharovApplicationKmeansClustering2016].
 
-```{r}
-#| fig-width: 16
-#| fig-height: 12
-
-pacman::p_load(corrplot)
-# needs to run trace(corrplot,edit=TRUE) and add + 0.25 to line 449
-
-df |>
-  scale_vars() |> 
-  select(vviq:score_comprehension) |> 
-  rename_vars() |> 
-  cor() |> 
-  corrplot(
-    method = "color",
-    type = "upper",
-    diag = FALSE,
-    order = "hclust",
-    hclust.method = "ward.D2",
-    addCoef.col = "black",
-    tl.col = "black",
-    tl.srt = 45,
-    tl.cex = 1.4,
-    tl.offset = 0.8,
-    number.cex = 1.1,
-    cl.cex = 1.1,
-    cl.ratio = 0.1,
-    p.mat = (
-      df |>
-      scale_vars() |> 
-      select(vviq:score_comprehension) |> 
-      rename_vars() |>
-      cor.mtest(conf.level = .95)
-      )$p,
-    insig = "label_sig",
-    sig.level = c(0.001,0.01,.05), 
-    pch.cex = 1.4
-  )
-```
-
-
-```{r}
-#| label: correlation-plots
-
-correlations <- 
-  df |>
-  scale_vars() |> 
-  select(vviq:score_comprehension) |> 
-  correlation(p_adjust = "bonferroni") |> 
-  mutate(
-    across(
-      c(Parameter1, Parameter2),
-      ~case_match(
-        .x,
-        "vviq" ~ "VVIQ",
-        "osivq_o" ~ "OSVIQ\nObject",
-        "osivq_s" ~ "OSVIQ\nSpatial",
-        "osivq_v" ~ "OSVIQ\nVerbal",
-        "psiq_vis" ~ "Psi-Q\nVisual",
-        "psiq_aud" ~ "Psi-Q\nAudition",
-        "psiq_od" ~ "Psi-Q\nSmell",
-        "psiq_gout" ~ "Psi-Q\nTaste",
-        "psiq_tou" ~ "Psi-Q\nTouch",
-        "psiq_sens" ~ "Psi-Q\nSensations",
-        "psiq_feel" ~ "Psi-Q\nFeelings",
-        "score_raven" ~ "Raven\nMatrices",
-        "score_sri" ~ "SRI",
-        "span_spatial" ~ "Spatial\nspan",
-        "span_digit" ~ "Digit\nspan",
-        "wcst_accuracy" ~ "WCST",
-        "score_similarities" ~ "Similarities",
-        "score_comprehension" ~ "Reading"
-      )
-    )
-  )
-
-correlation_matrix <-
-  correlations |> 
-    summary() |> 
-    plot() +
-    scale_fill_gradient2(
-      limits = c(-1, 1),
-      low = "firebrick2",
-      mid = "white",
-      high = "#009e73"
-    ) +
-    labs(title = NULL) + 
-    theme(legend.position = "none")
-
-correlation_graph <-
-  correlations |> 
-  filter(p < 0.05) |>
-  plot() +
-  scale_edge_colour_gradient2(
-    limits = c(-1, 1),
-    low = "firebrick2",
-    mid = "white",
-    high = "#009e73"
-  ) +
-  labs(title = NULL) +
-  theme(
-    legend.position = "left",
-    legend.title = element_text(size = 22),
-    legend.text  = element_text(size = 8)
-    )
-
-correlation_joint <- (
-  correlation_matrix + 
-  correlation_graph
-  ) +
-  plot_layout(width = c(1, .7))
-```
-
 ::: {#suppfig-correlation-plots .column-page}
 ```{r}
-#| label: show-correlation-plots
-#| fig-width: 25
-#| fig-height: 12
+#| label: correlation-plots
+#| fig-width: 23
+#| fig-height: 14
 
-print(correlation_joint)
+plot_correlations(df)
 
-if (params$save_figures) {
-  ggsave(
-    here("figures/correlations.png"), 
-    correlation_joint, dpi = 600)
-}
+if (params$save_figures) ggsave(here("figures/correlations.png"), dpi = 600)
 ```
 
 Correlation matrix and graph of all the original variables (standardized beforehand)/ The matrix shows the correlation coefficients between all the variables, while the graph shows the significant correlations between them. The colours represent the strength and direction of the correlation: red for negative and green for positive. SRI and Raven Matrices scores are at the heart of a network, but they were only merged together (1) because of their higher correlation, (2) because they have the same format (cognitive test with MCQs) and (3) based on domain knowledge that non-verbal and spatial reasoning are very close constructs.
@@ -275,7 +147,6 @@ Correlation matrix and graph of all the original variables (standardized beforeh
 ```{r}
 #| label: variable-reduction
 
-# I created a function to reduce the variables that can be found in the `scripts/data_handling.R` file.
 ```
 
 ## Number of clusters
