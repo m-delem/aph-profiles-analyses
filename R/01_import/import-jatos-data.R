@@ -1,4 +1,4 @@
-if (!requireNamespace("pacman")) install.packages("pacman")
+# if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(
   dplyr, 
   here,

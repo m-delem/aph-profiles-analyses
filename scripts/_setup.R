@@ -86,3 +86,7 @@ set.seed(14051998)
 
 # Adding all packages' citations to a .bib --------------------------------
 knitr::write_bib(c(.packages()), file = here("bibliography/packages.bib"))
+
+
+orange light blue      green      amber       blue        red     purple       grey      black 
+"#E69F00"  "#56B4E9"  "#009E73"  "#F5C710"  "#0072B2"  "#D55E00"  "#CC79A7"  "#999999"  "#000000" 

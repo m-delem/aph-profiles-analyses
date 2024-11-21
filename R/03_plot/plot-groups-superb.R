@@ -1,4 +1,8 @@
-if (!requireNamespace("pacman")) install.packages("pacman")
+# ------------------------------------------------------------------------------
+# Alternative method to plot the group violins using the "superb" package
+# ------------------------------------------------------------------------------
+
+# if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(
   dplyr, 
   here, 

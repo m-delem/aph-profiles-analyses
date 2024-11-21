@@ -1,4 +1,4 @@
-if (!requireNamespace("pacman")) install.packages("pacman")
+# if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(
   BayesFactor, 
   bayestestR, 
@@ -6,6 +6,7 @@ pacman::p_load(
   dplyr, 
   emmeans,
   glue,
+  logspline,
   modelbased,
   rstanarm,
   tidyr
@@ -30,7 +31,7 @@ pacman::p_load(
 #' @return A tibble with the results of the models
 #' 
 model_groups <- function(df_long) {
-  group_models <- 
+  models <-
     df_long |>
     group_by(Variable) |> 
     nest() |> 
@@ -46,18 +47,18 @@ model_groups <- function(df_long) {
           )
       ),
       models_inclusion = list(
-        generalTestBF(value ~ Group * Age, data = data) |>
+        generalTestBF(formula = value ~ Group * Age, data = data) |>
           bayesfactor_inclusion() |> 
           rownames_as_column(var = "Variable")
       ),
       models_bf = list(models_inclusion$log_BF),
       models_post = list(
         stan_glm(
-          value ~ Group * Age, 
+          formula = value ~ Group * Age, 
           data = data,
           chains = 4,
           iter   = 10000,
-          refresh = 100
+          refresh = 5000
         )
       ),
       contrasts = list(
@@ -66,30 +67,33 @@ model_groups <- function(df_long) {
           contrast = "Group",
           test = "bf",
           bf_prior = models_post,
-          refresh = 100
-        ) |> 
-          as.data.frame() |> 
+        ) |>
+          as.data.frame() |>
           mutate(across(where(is.numeric), ~ round(., digits = 2))) |>
-          select(!c(Level1, Level2)) |> 
-          rename(`$log(BF_{10})$` = log_BF) |> 
+          rename(
+            "Group 1" = Level1,
+            "Group 2" = Level2
+          ) |>
+          rename(`$log(BF_{10})$` = log_BF) |>
           unite(
             "95% CI",
             c(CI_low, CI_high),
             sep = ", ",
-          ) |> 
+          ) |>
           mutate(`95% CI` = paste0("[", `95% CI`, "]"))
       )
     ) |> 
     unnest_wider(stats) |> 
     unnest_wider(models_bf, names_sep = "_") |> 
+    unnest_longer(contrasts) |>
     unnest_wider(contrasts) |> 
     mutate(across(where(is.numeric), ~ round(., digits = 2))) |> 
     rename(
-      `Group` = models_bf_1,
-      `Age` = models_bf_2,
-      `Group $\\times$ Age` = models_bf_3
-    )
+      "Group" = models_bf_1,
+      Age = models_bf_2,
+      "Group $\\times$ Age" = models_bf_3
+    ) |> 
+    select(!c(data, models_inclusion, models_post))
   
-  return(group_models)
+  return(models)
 }
-

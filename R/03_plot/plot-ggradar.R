@@ -9,7 +9,9 @@
 #' Plotting radars with ggradar using parameter lists
 #'
 #' @param df The data you want to plot
-#' @param new_params A list of parameters that you would like to change in the ggradar function, using ggradar argument names as names in the list. The rest will be my defaults
+#' @param new_params A list of parameters that you would like to change in the 
+#'                   ggradar function, using ggradar argument names as names in 
+#'                   the list. The rest will be my defaults
 #'
 #' @return A ggradar radar plot
 #' @export
@@ -85,7 +87,48 @@
 #     legend.text  = element_text(size  = txt_size_legend),
 #     legend.box.margin = margin(margins)
 #   )
-
+# # Clustering radar
+# cluster_radar <-
+#   df |>
+#   add_cluster_vars(clustering) |>
+#   select(cluster, visual_imagery:span_digit_std) |> 
+#   group_by(cluster) |>
+#   reframe(across(everything(), ~ round(mean(.), digits = 2))) |> 
+#   plot_radar(new_params = list(
+#     axis.labels = c(
+#       "Visual\nimagery", 
+#       "Spatial\nimagery", 
+#       "Verbal\nstrategies",
+#       "Non-verbal\nreasoning", 
+#       "Verbal\nreasoning", 
+#       "Spatial\nspan",
+#       "Digit\nspan"
+#     ),
+#     plot.extent.x.sf = 1.17,
+#     plot.extent.y.sf = 1.28,
+#     axis.label.offset = 1.25,
+#     group.colours = pal_trio
+#   )) + 
+#   scale_color_manual(
+#     values = pal_trio, 
+#     name = "Cluster: ",
+#     labels = c("A ", "B ", "C ")
+#   ) +
+#   scale_fill_manual(values = pal_trio, guide = "none")
+# 
+# # Joint plot
+# cluster_plot_joint <-
+#   cluster_pca + cluster_radar +
+#   plot_layout(
+#     guides = "collect",
+#     widths = c(0.75, 1)
+#   ) &
+#   theme(
+#     legend.position = "top", 
+#     legend.title = element_text(size = txt_size_legend),
+#     legend.text  = element_text(size = txt_size_legend),
+#     legend.box.margin = margin(0,20,0,0)
+#   )
 
 
 

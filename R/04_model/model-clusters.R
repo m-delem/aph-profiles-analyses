@@ -1,4 +1,4 @@
-if (!requireNamespace("pacman")) install.packages("pacman")
+# if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(
   BayesFactor, 
   bayestestR, 
@@ -6,6 +6,7 @@ pacman::p_load(
   dplyr, 
   emmeans,
   glue,
+  logspline,
   modelbased,
   rstanarm,
   tidyr
@@ -29,34 +30,9 @@ pacman::p_load(
 #' 
 #' @return A tibble with the results of the models
 #' 
-model_clusters <- function(df_clustered) {
-  cluster_models <- 
-    df_clustered |>
-    select(
-      cluster, age, 
-      visual_imagery:span_digit_std, 
-      wcst_accuracy, score_comprehension
-    ) |>
-    pivot_longer(
-      !c(cluster, age),
-      names_to = "Variable", 
-      values_to = "value"
-    ) |>
-    mutate(
-      cluster = fct_relabel(cluster, ~ paste("Cluster", .)),
-      Variable = Variable |> 
-        str_to_title() |> 
-        str_replace_all(c(
-          "_" = " ",
-          "Non verbal reasoning" = "Non-verbal reasoning",
-          "Span spatial std" = "Spatial span",
-          "Span digit std" = "Digit span",
-          "Wcst accuracy" = "WCST", 
-          "Score comprehension" = "Reading comprehension"
-        )) |> 
-        fct_inorder()
-    ) |> 
-    rename_with(str_to_title, c(cluster, age)) |> 
+model_clusters <- function(df_long) {
+  models <-
+    df_long |>
     group_by(Variable) |> 
     nest() |> 
     rowwise() |> 
@@ -71,18 +47,18 @@ model_clusters <- function(df_clustered) {
           )
       ),
       models_inclusion = list(
-        generalTestBF(value ~ Cluster * Age, data = data) |>
+        generalTestBF(formula = value ~ Cluster * Age, data = data) |>
           bayesfactor_inclusion() |> 
           rownames_as_column(var = "Variable")
       ),
       models_bf = list(models_inclusion$log_BF),
       models_post = list(
         stan_glm(
-          value ~ Cluster * Age, 
+          formula = value ~ Cluster * Age, 
           data = data,
           chains = 4,
           iter   = 10000,
-          refresh = 100
+          refresh = 5000
         )
       ),
       contrasts = list(
@@ -91,20 +67,19 @@ model_clusters <- function(df_clustered) {
           contrast = "Cluster",
           test = "bf",
           bf_prior = models_post,
-          refresh = 100
-        ) |> 
-          as.data.frame() |> 
+        ) |>
+          as.data.frame() |>
           mutate(across(where(is.numeric), ~ round(., digits = 2))) |>
           rename(
-            `Cluster 1` = Level1,
-            `Cluster 2` = Level2
+            "Cluster 1" = Level1,
+            "Cluster 2" = Level2
           ) |>
-          rename(`$log(BF_{10})$` = log_BF) |> 
+          rename(`$log(BF_{10})$` = log_BF) |>
           unite(
             "95% CI",
             c(CI_low, CI_high),
             sep = ", ",
-          ) |> 
+          ) |>
           mutate(`95% CI` = paste0("[", `95% CI`, "]"))
       )
     ) |> 
@@ -114,10 +89,11 @@ model_clusters <- function(df_clustered) {
     unnest_wider(contrasts) |> 
     mutate(across(where(is.numeric), ~ round(., digits = 2))) |> 
     rename(
-      Cluster = models_bf_1,
+      "Cluster" = models_bf_1,
       Age = models_bf_2,
-      `Cluster $\\times$ Age` = models_bf_3
-    )
+      "Cluster $\\times$ Age" = models_bf_3
+    ) |> 
+    select(!c(data, models_inclusion, models_post))
   
-  return(cluster_models)
+  return(models)
 }

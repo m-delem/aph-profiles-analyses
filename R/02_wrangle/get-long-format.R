@@ -1,13 +1,15 @@
-if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(dplyr, tidyr)
+# if (!requireNamespace("pacman")) install.packages("pacman")
+pacman::p_load(dplyr, tidyr, withr)
 
 #' Transform the main data frame to long format
 #'
 #' @param df The main data frame
 #' 
 get_long_format <- function(df){
+  withr::local_options(list(warn = -1))
   
-  quantitative_vars <- c(
+  vars <- c(
+    # Original scores
     "VVIQ" = "vviq",
     "OSIVQ-Object" = "osivq_o",
     "OSIVQ-Spatial" = "osivq_s",
@@ -23,33 +25,56 @@ get_long_format <- function(df){
     "SRI" = "score_sri",
     "Digit span"   = "span_digit",
     "Spatial span" = "span_spatial",
-    "WCST" = "wcst_accuracy",
     "Similarities test" = "score_similarities",
-    "Reading comprehension" = "score_comprehension"
+    # Reduced variables
+    "Visual imagery" = "visual_imagery",
+    "Auditory imagery" = "auditory_imagery",
+    "Sensory imagery" = "sensory_imagery",
+    "Spatial imagery" = "spatial_imagery",
+    "Verbal strategies" = "verbal_strategies",
+    "Fluid\nintelligence" = "fluid_intelligence",
+    "Non-verbal\nreasoning" = "non_verbal_reasoning",
+    "Verbal reasoning" = "verbal_reasoning",
+    "Spatial span" = "spatial_span",
+    # Complex tasks
+    "WCST" = "wcst_accuracy",
+    "Reading\ncomprehension" = "score_comprehension"
   )
   
   df_long <- 
     df |>
     pivot_longer(
       any_of(c(
+        # original
         contains("vviq"),
         contains("osivq"),
         contains("psiq"),
-        contains("score"),
-        contains("span"),
-        contains("wcst")
+        contains("raven"),
+        contains("sri"),
+        matches("span_digit"),
+        matches("span_spatial"),
+        contains("similarities"),
+        # reduced
+        contains("imagery"),
+        contains("strategies"),
+        contains("intelligence"),
+        contains("reasoning"),
+        matches("spatial_span"),
+        # complex
+        contains("wcst"),
+        contains("comprehension")
       )),
       names_to = "Variable", 
       values_to = "value"
     ) |> 
     mutate(
       Variable = fct_inorder(Variable),
-      Variable = fct_recode(Variable, !!!quantitative_vars)
+      Variable = fct_recode(Variable, !!!vars)
     ) |> 
     rename_with(str_to_title, any_of(c(
-      "age", "sex", "group", 
+      "age", "sex", "group", "cluster", "subcluster",
       "education", "field", "occupation"
-      ))
+    ))
     )
   
   return(df_long)

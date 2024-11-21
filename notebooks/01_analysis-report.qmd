@@ -28,9 +28,12 @@ if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(
   conflicted, 
   correlation,
-  here, 
+  here,
+  factoextra,
   fs, 
   ggplot2,
+  mclust,
+  NbClust,
   patchwork,
   purrr,
   sessioninfo
@@ -40,7 +43,13 @@ pacman::p_load(
 dir_ls(here("R"), type = "file", recurse = TRUE) |> walk(source)
 
 # resolve package conflicts
-conflicts_prefer(dplyr::filter(), scales::rescale(), .quiet = TRUE)
+conflicts_prefer(
+  dplyr::filter(), 
+  dplyr::select(),
+  scales::rescale(), 
+  purrr::map(),
+  .quiet = TRUE
+  )
 ```
 
 ```{r}
@@ -49,9 +58,6 @@ conflicts_prefer(dplyr::filter(), scales::rescale(), .quiet = TRUE)
 
 # load the data
 df <- import_jatos_data()$data_final
-
-# cluster the data
-clustering <- cluster_vars(df)
 
 # compute/save or load existing VVIQ group models
 path_g_models <- here("data/r-data-structures/group_models.rds")
@@ -67,19 +73,87 @@ if (!file.exists(path_g_models)) {
   
 } else group_models <- readRDS(path_g_models)
 
+# correlate variables
+corrs_simple  <- correlate_vars(df, partial = FALSE, correction = "bonferroni")
+corrs_partial <- correlate_vars(df, partial = TRUE,  correction = "bonferroni")
+
+# variables selected for clustering
+selected_vars <- c(
+  "visual_imagery", "sensory_imagery", "spatial_imagery", "verbal_strategies",
+  "fluid_intelligence", "verbal_reasoning", "span_spatial"
+)
+
+# checking statistical cluster tendency and number of clusters
+hopkins <- 
+  (df |> 
+  reduce_vars() |>
+  select(any_of(selected_vars)) |>
+  get_clust_tendency(n = 95))$hopkins_stat
+
+nb_clusters <- 
+  df |> 
+  reduce_vars() |> 
+  select(any_of(selected_vars)) |>
+  n_clusters() |> 
+  as.data.frame() |> 
+  mutate(n_Clusters = as.factor(n_Clusters))
+
+# compute/save or load existing model of the evolution of the number of clusters
+path_n_models <- here("data/r-data-structures/nb_clusters_evolution.rds")
+if (!file.exists(here(path_n_models))) {
+  
+  nb_clusters_evolution <- model_nb_clusters(df, selected_vars)
+  
+  saveRDS(nb_clusters_evolution, here(path_n_models))
+  
+} else {
+  nb_clusters_evolution <- readRDS(here(path_n_models))
+}
+
+# cluster the data
+clustering <- 
+  df |> 
+  reduce_vars() |> 
+  select(any_of(selected_vars)) |>
+  Mclust(G = 3, verbose = FALSE)
+
 # compute/save or load existing cluster models
 path_c_models <- here("data/r-data-structures/cluster_models.rds")
 if (!file.exists(path_c_models)) {
   
   cluster_models <-
     df |> 
-    add_cluster_vars(clustering) |>
     scale_vars() |> 
+    add_cluster_vars(clustering) |>
+    select(
+      cluster, age, visual_imagery:spatial_span, 
+      wcst_accuracy, score_comprehension
+    ) |>
+    get_long_format() |> 
     model_clusters()
   
   saveRDS(cluster_models, path_c_models)
   
 } else cluster_models <- readRDS(path_c_models)
+
+# compute/save or load existing subcluster models
+path_sc_models <- here("data/r-data-structures/subcluster_models.rds")
+if (!file.exists(path_sc_models)) {
+  
+  subcluster_models <-
+    df |> 
+    scale_vars() |> 
+    add_cluster_vars(clustering) |>
+    select(
+      subcluster, age, visual_imagery:spatial_span, 
+      wcst_accuracy, score_comprehension
+    ) |>
+    get_long_format() |> 
+    model_subclusters()
+  
+  saveRDS(subcluster_models, path_sc_models)
+  
+} else subcluster_models <- readRDS(path_sc_models)
 ```
 
 # VVIQ group analysis
@@ -133,207 +207,28 @@ Before clustering the data, making sure that variables are not redundant, i.e., 
 ::: {#suppfig-correlation-plots .column-page}
 ```{r}
 #| label: correlation-plots
-#| fig-width: 23
-#| fig-height: 14
+#| fig-width: 19.5
+#| fig-height: 12.5
 
-plot_correlations(df)
+plot_correlations(corrs_simple)
+if (params$save_figures) ggsave(here("figures/correlations-simple.png"), dpi = 600)
 
-if (params$save_figures) ggsave(here("figures/correlations.png"), dpi = 600)
+plot_correlations(corrs_partial)
+if (params$save_figures) ggsave(here("figures/correlations-partial.png"), dpi = 600)
 ```
 
 Correlation matrix and graph of all the original variables (standardized beforehand)/ The matrix shows the correlation coefficients between all the variables, while the graph shows the significant correlations between them. The colours represent the strength and direction of the correlation: red for negative and green for positive. SRI and Raven Matrices scores are at the heart of a network, but they were only merged together (1) because of their higher correlation, (2) because they have the same format (cognitive test with MCQs) and (3) based on domain knowledge that non-verbal and spatial reasoning are very close constructs.
 :::
 
-```{r}
-#| label: variable-reduction
-
-```
-
 ## Number of clusters
 
 The number of clusters was determined using the `NbClust` package [@R-NbClust], which provides 30 indices for determining the number of clusters in a dataset. The most common indices are the silhouette, Dunn, and gap statistics. The `NbClust` package provides the optimal number of clusters based on the majority rule of the indices. The results of this analysis are displayed in @suppfig-nbclust.
 
-```{r}
-#| label: nbclust
-
-# checking statistical cluster tendency
-hopkins <- get_clust_tendency(reduce_vars(df), n = 95)$hopkins_stat
-
-nb_clusters <- 
-  df |> 
-  reduce_vars() |> 
-  n_clusters() |> 
-  as.data.frame() |> 
-  mutate(n_Clusters = as.factor(n_Clusters))
-
-# Evolution of the number of clusters
-# Recompute all of this only if the saved RDS file does not exist
-if (!file.exists(here("data/r-data-structures/nb_clusters_evolution.rds"))) {
-  
-  # computing indices for all sequential dataframes starting from 57 participants
-  nb_clusters_evolution <- tribble(
-    ~ n, ~ df_seq, ~ n_Clusters
-  )
-  
-  nb_temp <- nb_clusters_evolution
-  
-  for(i in seq(57, 96, by = 1)){
-    nb_temp <- tribble(
-    ~ n, ~ df_seq, ~ n_Clusters,
-      i,  df |> reduce_vars() |> slice(1:i), 0
-    )
-    nb_clusters_evolution <- bind_rows(nb_clusters_evolution, nb_temp)
-  }
-  
-  nb_clusters_evolution <-
-    nb_clusters_evolution |> 
-    rowwise() |> 
-    mutate(n_Clusters = list(n_clusters(df_seq))) |> 
-    unnest(n_Clusters) |> 
-    group_by(n, n_Clusters) |> 
-    count(name = "number_of_methods") |> 
-    pivot_wider(
-      names_from = n_Clusters,
-      values_from = number_of_methods,
-      values_fill = 0
-    ) |> 
-    select(n, "1","2","3","4","5","6","7","8","9")
-  
-  saveRDS(nb_clusters_evolution, here("data/r-data-structures/nb_clusters_evolution.rds"))
-  
-} else {
-  nb_clusters_evolution <- readRDS(here("data/r-data-structures/nb_clusters_evolution.rds"))
-}
-```
-
-```{r}
-#| label: nbclust-plots
-
-txt_size_axis <- 24
-txt_size_label <- 7
-
-alpha_bars   <- .2  # all bars
-alpha_accent <- .4  # accentuated bar
-alpha_lines  <- .3  # broken lines
-alpha_ribbon <- .1  # smooth ribbon
-smoothing <- .5   # loess smooting
-
-# Final number of clusters
-nb_clus_plot <-
-  ggplot() +
-  geom_bar(
-    data = nb_clusters,
-    aes(x = n_Clusters, color = n_Clusters, fill = n_Clusters), 
-    alpha = alpha_bars
-    ) +
-  geom_bar(
-    data = nb_clusters |> filter(n_Clusters == 3),
-    aes(x = n_Clusters),
-    color = "#009E73",
-    fill = "#009E73",
-    linewidth = 1,
-    alpha = alpha_accent
-    ) +
-  scale_y_continuous(
-    limits = c(0, 18),
-    breaks = seq(1, 17, 1),
-    labels = c(1,"","","", 5,"","","","", 10,"","","","", 15, "", ""),
-    expand = c(0, 0),
-    oob = squish
-    ) +
-  scale_color_manual(values = pal_full) +
-  scale_fill_manual(values  = pal_full) +
-  theme(
-    panel.grid.major.y = element_line(),
-    axis.title = element_text(size = txt_size_axis),
-    axis.text  = element_text(size = txt_size_axis),
-    legend.position = "none"
-  ) +
-  labs(
-    x = "Recommended number of clusters (N = 96)",
-    y = NULL
-  )
-
-# Evolution of the number of clusters
-nb_clus_plot_evo <-
-  
-  # Data
-  nb_clusters_evolution |> 
-  pivot_longer(
-    !n,
-    names_to = "number_of_clusters",
-    values_to = "number_of_methods"
-  ) |> 
-  ggplot(aes(
-    x = n,
-    y = number_of_methods,
-    group = number_of_clusters,
-    color = number_of_clusters,
-    fill  = number_of_clusters
-    )) +
-  
-  # Geoms
-  geom_line(alpha = alpha_lines, na.rm = TRUE) +
-  geom_smooth(
-    formula = y ~ x,  
-    method = "loess",
-    alpha = alpha_ribbon,
-    na.rm = TRUE,
-    span = smoothing
-    ) +
-  geom_label(
-    label = "3 Clusters",
-    x = 79,
-    y = 14,
-    color = "#009E73",
-    fill = "white",
-    size = txt_size_label
-  ) +
-  geom_label(
-    label = "2 Clusters",
-    x = 79,
-    y = 9,
-    color = "#0072B2",
-    fill = "white",
-    size = txt_size_label
-  ) +
-  
-  # Scales
-  scale_x_continuous(
-    breaks = c(60, 70, 80, 90, 96),
-    labels = c("60", "70", "80", "90", "96"),
-    expand = c(0, 0),
-    limits = c(60, 96)
-    ) +
-  scale_y_continuous(
-    limits = c(0, 18),
-    breaks = seq(1,17,1),
-    labels = c(1,"","","", 5,"","","","", 10,"","","","", 15, "", ""),
-    expand = c(0, 0),
-    oob = squish
-    ) +
-  scale_color_manual(
-    name = "Recommended\nnumber of\nclusters", values = pal_full) +
-  scale_fill_manual(
-    name = "Recommended\nnumber of\nclusters", values = pal_full) +
-  
-  # Theme
-  theme(
-    panel.grid.major.y = element_line(),
-    axis.title = element_text(size = txt_size_axis),
-    axis.text  = element_text(size = txt_size_axis),
-    legend.position = "none"
-  ) +
-  labs(
-    x = "Sample size",
-    y = "Number of clustering indices"
-  )
-
-# Joint plot
-nb_clus_plot_joint <-
-  nb_clus_plot_evo + nb_clus_plot + 
-  plot_layout(width = c(1, 1))
-```
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+A MODIFIER
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 ::: {#suppfig-nbclust}
 ```{r}
@@ -341,25 +236,15 @@ nb_clus_plot_joint <-
 #| fig-width: 16
 #| fig-height: 6
 
-print(nb_clus_plot_joint)
+plot_nb_clust(nb_clusters, nb_clusters_evolution)
 
-if (params$save_figures) {
-  ggsave(here("figures/cluster-n.png"), nb_clus_plot_joint, dpi = 600)
-}
+if (params$save_figures) ggsave(here("figures/cluster-n.png"), dpi = 600)
 ```
 
 Determination of the optimal number of clusters through an unsupervised "agreement" method.
 :::
 
 ## Clustering
-
-```{r}
-#| label: computing-clustering
-
-clustering <- Mclust(reduce_vars(df), G = 3, verbose = FALSE)
-
-# I created a function to add the cluster variables to the main `df` (to avoid creating a new object) that can be found in the `scripts/data_handling.R` file.
-```
 
 ::: {#supptbl-cluster-repartition}
 ```{r}
@@ -370,8 +255,7 @@ df |>
   group_by(group) |> 
   count(Cluster = cluster) |> 
   pivot_wider(names_from = group, values_from = n, values_fill = 0) |> 
-  mutate(Cluster = paste("Cluster", Cluster)) |> 
-  display()
+  knitr::kable()
 ```
 :::
 
@@ -389,7 +273,7 @@ cluster_models |>
     Cluster, Age, `Cluster $\\times$ Age`,
   ) |>
   unique() |>
-  display()
+  knitr::kable()
 
 # table of the contrasts between clusters
 cluster_models |>
@@ -398,103 +282,148 @@ cluster_models |>
     `Cluster 1`, `Cluster 2`,
     Difference,  `95% CI`, `$log(BF_{10})$`
   ) |>
-  display()
+  knitr::kable()
 ```
 :::
 
 ## Visualizations
 
-```{r}
-#| label: cluster-pca-radar-plots
-
-txt_size_axis <- 18
-txt_size_legend <- 22
-
-ellipse_level <- .7
-ellipse_alpha <- .1
-
-# Clustering PCA projection
-cluster_pca <-
-  clustering |> 
-  fviz_mclust(
-    geom = "text",
-    ellipse.type = "norm",
-    ellipse.level = ellipse_level,
-    ellipse.alpha = ellipse_alpha,
-    shape = 16,
-    repel = TRUE
-  ) +
-  scale_color_manual(values = pal_trio, guide = "none") +
-  scale_fill_manual(values  = pal_trio, guide = "none") +
-  theme(
-    axis.title = element_text(size = txt_size_axis),
-    axis.text  = element_text(size = txt_size_axis - 2),
-    plot.margin = margin(0,0,0,0)
-  ) +
-  labs(
-    title = NULL,
-    subtitle = NULL,
-    x = "Dimension 1 (35.5%)",
-    y = "Dimension 2 (19.8%)"
-  )
-
-# Clustering radar
-cluster_radar <-
-  df |>
-  add_cluster_vars(clustering) |>
-  select(cluster, visual_imagery:span_digit_std) |> 
-  group_by(cluster) |>
-  reframe(across(everything(), ~ round(mean(.), digits = 2))) |> 
-  plot_radar(new_params = list(
-    axis.labels = c(
-      "Visual\nimagery", 
-      "Spatial\nimagery", 
-      "Verbal\nstrategies",
-      "Non-verbal\nreasoning", 
-      "Verbal\nreasoning", 
-      "Spatial\nspan",
-      "Digit\nspan"
-      ),
-    plot.extent.x.sf = 1.17,
-    plot.extent.y.sf = 1.28,
-    axis.label.offset = 1.25,
-    group.colours = pal_trio
-  )) + 
-  scale_color_manual(
-    values = pal_trio, 
-    name = "Cluster: ",
-    labels = c("A ", "B ", "C ")
-  ) +
-  scale_fill_manual(values = pal_trio, guide = "none")
-
-# Joint plot
-cluster_plot_joint <-
-  cluster_pca + cluster_radar +
-  plot_layout(
-    guides = "collect",
-    widths = c(0.75, 1)
-    ) &
-  theme(
-    legend.position = "top", 
-    legend.title = element_text(size = txt_size_legend),
-    legend.text  = element_text(size = txt_size_legend),
-    legend.box.margin = margin(0,20,0,0)
-  )
-```
-
 ::: {#suppfig-cluster-pca-radar-plots}
 ```{r}
-#| label: show-cluster-pca-radar-plots
+#| label: cluster-radar-plots
 #| fig-width: 15
-#| fig-height: 6
+#| fig-height: 8
 
-print(cluster_plot_joint)
+plot_clusters_radars(df, clustering)
 
-if (params$save_figures) {
-  ggsave(here("figures/cluster-joint.png"), cluster_plot_joint, dpi = 600)
-}
+if (params$save_figures) ggsave(here("figures/cluster-radar.png"), dpi = 600)
 ```
 :::
+
+Contrasts that must appear:
+- Visual partout
+- Sensory partout
+- Spatial AB et BC
+- Verbal AC et BC
+- Non-v reas None
+- V reas AB
+- Spatial span AB, AC négligeable
+- WCST Reading rien
+
+```{r}
+#| fig-width: 14
+#| fig-height: 7
+
+txt_size_strip = 14
+txt_size_legend = 18
+legend_margins = c(0, 0, 0, 0)
+panel_spacing_y = 0.1
+size = 1
+lw = 1
+lw_sd = 1
+lw_bg = 0.5
+pal <- c("#56B4E9", "#E69F00", "#009E73")
+pal_4 <- c("#56B4E9", "#F5C710", "#E69F00", "#009E73")
+
+df |> 
+  add_cluster_vars_2(clustering_2) |> 
+  scale_vars() |>  
+  select(
+    cluster, 
+    subcluster,
+    visual_imagery,
+    auditory_imagery = psiq_aud, 
+    sensory_imagery:span_spatial_std, 
+    wcst_accuracy, score_comprehension
+  ) |> 
+  get_long_format_2() |> 
+  group_by(subcluster, Variable) |>
+  mutate(
+    Cluster = fct_relabel(cluster, ~ paste("Cluster", .)),
+    Variable = factor(Variable) |> fct_inorder(),
+    mean = round(mean(value), digits = 2),
+    sd = round(sd(value), digits = 2)
+  ) |> 
+  # --------------------------------------------------------------------
+  ggplot(aes(y = value, x = subcluster, color = subcluster, fill = subcluster)) +
+    geom_violinhalf(
+      alpha = .3, 
+      scale = "width", 
+      color = "transparent",
+      # show.legend = FALSE
+    ) +
+    geom_quasirandom(
+      width = 0.15, 
+      alpha = 0.3, 
+      size = 1, 
+      show.legend = FALSE
+    ) +
+    geom_line(
+      aes(x = subcluster, y = mean, group = 1),
+      color = "grey80",
+      linewidth = lw
+    ) +
+    geom_pointrange2(
+      aes(
+        x = subcluster, 
+        y = mean,
+        ymin = if_else(mean - sd <= 0, 0, mean - sd),
+        ymax = if_else(mean + sd >= 1, 1, mean + sd),
+        group = subcluster
+      ),
+      show.legend = FALSE,
+      # color       = "black",
+      size        = size,
+      linewidth   = lw_sd
+    ) +
+  # -------------------------
+    # add_significance(group_effects) +
+    # add_significance(group_effect_verbal) +
+  # ----------------------------
+  labs(
+    x = NULL,
+    y = "Standardised scores",
+    # fill = "Cluster:  "
+    fill = NULL
+  ) +
+    scale_y_continuous(
+      expand = expansion(c(0.05, 0.15)), 
+      limits = c(0, 1),
+      breaks = seq(0, 1, .2)
+    ) +
+  scale_colour_manual(values = pal_4) +
+  scale_fill_manual(values   = pal_4) +
+  # -------------------------------
+  facet_wrap(~Variable, nrow = 2) +
+  # -------------------------------
+  theme_modern() +
+  theme(
+    legend.position    = "top",
+    legend.title       = element_text(size = txt_size_legend),
+    legend.text        = element_text(size = txt_size_legend),
+    legend.box.margin  = margin(legend_margins),
+    axis.title.y       = element_text(size = txt_size_legend),
+    axis.text.y        = element_text(size = txt_size_strip - 4),
+    axis.ticks.y       = element_line(colour = "grey80"),
+    axis.text.x        = element_blank(),
+    axis.ticks.x       = element_blank(), 
+    axis.line          = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(),
+    panel.grid.minor.y = element_line(),
+    panel.spacing.x    = unit(0, "in"),
+    panel.spacing.y    = unit(panel_spacing_y, "in"),
+    strip.text         = element_text(size = txt_size_strip, face = "plain"),
+    strip.background   = element_rect(
+      fill      = "grey95",
+      color     = "grey80",
+      linewidth = lw_bg
+    ),
+    panel.border = element_rect(color = "grey80", fill = NA)
+  )
+  
+if (params$save_figures) ggsave(here("figures/subcluster-violins.png"), dpi = 600)
+```
 
 ```{r}
 #| label: cluster-violin-plots
