@@ -12,24 +12,7 @@ pacman::p_load(
   tidyr
 )
 
-#' Model the quantitative variables with the VVIQ groups
-#'
-#' @param df_long The long format data frame (e.g. using get_long_format)
-#'
-#' @details
-#' This function return a tibble with many objects in list-columns that 
-#' summarise the models fitted on the data:
-#' - "data" contains the data subset for each variable
-#' - "Control" and "Aphantasic" contain the means and sds for each group
-#' - "models_inclusion" contains the Bayes factors for the inclusion of each
-#'    predictor in the model
-#' - "Group", "Age", and "Group x Age" contain the Bayes factors for each model
-#' - "models_post" contains the fitted models
-#' - "Difference" and "95% CI" contains the contrasts between the groups
-#' - "log(BF_{10})" contains the Bayes factors for the contrasts
-#' 
-#' @return A tibble with the results of the models
-#' 
+# Model the quantitative variables with the VVIQ groups
 model_groups <- function(df_long) {
   models <-
     df_long |>

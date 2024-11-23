@@ -1,3 +1,7 @@
+# ------------------------------------------------------------------------------
+# Alternative method to plot the radars using the "ggradar" package
+# ------------------------------------------------------------------------------
+
 # The ggradar package comes from GitHub and needs special treatment
 # if (!require("devtools")) install.packages("devtools")
 # if (!require("ggradar")) devtools::install_github("ricardo-bion/ggradar")

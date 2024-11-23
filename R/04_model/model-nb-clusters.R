@@ -1,7 +1,7 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(dplyr, parameters, tidyr)
-# source(here("R/02_wrangle/transform-vars.R"))
 
+# Model the evolution of the number of clusters with the sample size
 model_nb_clusters <- function(df, selected_vars) {
   # computing indices for all sequential dataframes starting from 57 subjects
   nb_clusters_evolution <- tribble(

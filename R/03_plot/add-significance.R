@@ -1,5 +1,4 @@
-# Adding significance labels above plots ----------------------------------
-
+# Add significance labels above plots
 add_significance <- function(
     df_effects, 
     size_star = 6, 

@@ -1,14 +1,7 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(dplyr)
-source(here("R/02_wrangle/reduce-vars.R"))
 
-#' Add the clustering and reduced variables to the main data frame
-#'
-#' @param df         The main data frame
-#' @param clustering The clustering object
-#'
-#' @return A data frame with the clustering classification and reduced variables
-#' 
+# Add the clustering and reduced variables to the main data frame
 add_cluster_vars <- function(df, clustering) {
   withr::local_options(list(warn = -1))
   

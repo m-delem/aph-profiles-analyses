@@ -1,13 +1,19 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(correlation, dplyr, here)
-# source(here("R/02_wrangle/scale-vars.R"))
 
-correlate_vars <- function(df, partial = TRUE, correction = "bonferroni") {
+# Correlate the original variables with a chosen method and correction
+correlate_vars <- function(
+    df, 
+    method = "pearson",
+    partial = TRUE, 
+    correction = "bonferroni"
+) {
   correlations <- 
     df |>
     scale_vars() |> 
     select(vviq:score_comprehension) |> 
     correlation(
+      method   = method,
       partial  = partial,
       p_adjust = correction
     ) |> 

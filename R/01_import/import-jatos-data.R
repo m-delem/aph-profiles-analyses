@@ -14,14 +14,7 @@ pacman::p_load(
   tidyr
 )
 
-#' Import, tidy and save JATOS data
-#'
-#' @description
-#' This function imports the raw data from the JATOS files stored in 
-#' data/data-raw, tidies it and saves it in various formats.
-#' 
-#' @return A list containing the main data frame and the metadata
-#' 
+# Import, tidy and save JATOS data
 import_jatos_data <- function() {
   
   # Retrieving metadata ------------------------------

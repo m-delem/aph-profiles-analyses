@@ -1,18 +1,7 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(dplyr, scales)
 
-#' Scale original quantitative variables to a defined range
-#'
-#' @description
-#' This function scales all quantitative variables in the data from their
-#' original range, defined here by hand, to a new range defined by the user.
-#' 
-#' @param df The main data frame
-#' @param min The minimum value of the new range
-#' @param max The maximum value of the new range
-#'
-#' @return A data frame with the scaled variables
-#' 
+# Scale original quantitative variables to a defined range
 scale_vars <- function(df, min = 0, max = 1){
   
   df_scaled <- 

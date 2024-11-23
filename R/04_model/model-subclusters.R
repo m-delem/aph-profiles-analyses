@@ -12,24 +12,7 @@ pacman::p_load(
   tidyr
 )
 
-#' Model the quantitative variables with the clusters
-#'
-#' @param df_clustered The data frame with the clusters (e.g. add_cluster_vars)
-#'
-#' @details
-#' This function return a tibble with many objects in list-columns that 
-#' summarise the models fitted on the data:
-#' - "data" contains the data subset for each variable
-#' - "Cluster X" contain the means and sds for each cluster
-#' - "models_inclusion" contains the Bayes factors for the inclusion of each
-#'    predictor in the model
-#' - "Cluster", "Age", and "Cluster x Age" contain the BFs for each model
-#' - "models_post" contains the fitted models
-#' - "Difference" and "95% CI" contains the contrasts between the clusters
-#' - "log(BF_{10})" contains the Bayes factors for the contrasts
-#' 
-#' @return A tibble with the results of the models
-#' 
+# Model the quantitative variables with the subclusters
 model_subclusters <- function(df_long) {
   models <-
     df_long |>

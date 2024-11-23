@@ -6,10 +6,11 @@ pacman::p_load(
   tidyr
 )
 
+# Plot the evolution of the number of clusters and the final number retained
 plot_nb_clust <- function(
     nb_clusters,
     nb_clusters_evolution,
-    txt_size_axis  = 22,
+    txt_size_axis  = 18,
     txt_size_label = 7,
     alpha_bars     = .2,  # all bars
     alpha_accent   = .4,  # accentuated bar

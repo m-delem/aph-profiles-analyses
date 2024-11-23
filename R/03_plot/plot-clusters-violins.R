@@ -1,11 +1,11 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(ggbeeswarm, ggplot2, see)
 
+# Plot the cluster scores on all reduced variables and WCST/Reading as violins
 plot_clusters_violins <- function(
     df, clustering, var,
-    pal = c("#56B4E9", "#F5C710", "#E69F00", "#009E73"),
     txt_size_strip = 14,
-    txt_size_legend = 18,
+    txt_size_legend = 14,
     legend_margins = c(0, 0, 0, 0),
     panel_spacing_y = 0.1,
     size = 1,
@@ -13,6 +13,161 @@ plot_clusters_violins <- function(
     lw_sd = 1,
     lw_bg = 0.5
 ) {
+  # Defining all the contrasts to display for clusters or subclusters (lengthy)
+  up <- function(y, n = 1, gap = 0.03) y + n * gap
+  y0 = 1.03
+  
+  cluster_effects <- 
+    tibble(
+      Variable = c(
+        rep("Visual imagery", 3),
+        rep("Auditory imagery", 3),
+        rep("Sensory imagery", 3),
+        rep("Spatial imagery", 3),
+        rep("Verbal strategies", 3),
+        rep("Verbal reasoning", 3),
+        rep("Spatial span", 3)
+      ) |> factor() |> fct_inorder(),
+      x_star = c(
+        1.5, 2.5, 2.5,
+        1.5, 2.5, 2.5,
+        1.5, 2.5, 2.5,
+        1.5, 0.0, 2.5,
+        0.0, 1.5, 2.5,
+        1.5, 0.0, 0.0,
+        1.5, 0.0, 0.0
+      ),
+      y_star = c(
+        up(y0, 2), up(y0, 1), 0.8,
+        up(y0, 3), up(y0, 2), y0,
+        up(y0, 3), up(y0, 2), y0,
+        up(y0, 1), 0,         up(y0, 1),
+        0,         up(y0, 1), up(y0, 2),
+        up(y0, 1), 0,         0,
+        up(y0, 1), 0,         0
+      ),
+      stars = c(
+        "***", "***", "***",
+        "***", "***", "   ",
+        "***", "***", "   ",
+        "***", "   ", "***",
+        "   ", "***", "***",
+        "***", "   ", "   ",
+        "***", "   ", "   "
+      ),
+      x_line = c(
+        1.0, 1.0, 2.0,
+        1.0, 1.0, 2.0,
+        1.0, 1.0, 2.0,
+        1.0, 0.0, 2.1,
+        0.0, 1.0, 2.0,
+        1.0, 0.0, 0.0,
+        1.0, 0.0, 0.0
+      ),
+      x_line_end = c(
+        2.0, 3.0, 3.0,
+        2.0, 3.0, 3.0,
+        2.0, 3.0, 3.0,
+        1.9, 0.0, 3.0,
+        0.0, 3.0, 3.0,
+        2.0, 0.0, 0.0,
+        2.0, 0.0, 0.0
+      ),
+      y_line = c(
+        up(y0, 1), up(y0, 0), 0.77,
+        up(y0, 2), up(y0, 1), up(y0, 0),
+        up(y0, 2), up(y0, 1), up(y0, 0),
+        up(y0, 0), 0,         up(y0, 0),
+        0,         up(y0, 0), up(y0, 1),
+        up(y0, 0), 0,         0,
+        up(y0, 0), 0,         0
+      )
+    )
+  
+  subcluster_effects <- 
+    tibble(
+      Variable = c(
+        rep("Visual imagery", 6),
+        rep("Auditory imagery", 6),
+        rep("Sensory imagery", 6),
+        rep("Spatial imagery", 6),
+        rep("Verbal strategies", 6),
+        rep("Verbal reasoning", 6),
+        rep("Spatial span", 6)
+      ) |> factor() |> fct_inorder(),
+      stars = c(
+        "***", "***", "***", "***", "***", "   ",
+        "   ", "***", "***", "   ", "   ", "   ",
+        "   ", "***", "***", "   ", "   ", "   ",
+        "***", "***", "   ", "   ", "***", "*",
+        "   ", "   ", "***", "   ", "***", "***",
+        "*",   "**",  "   ", "   ", "   ", "   ",
+        "***", "***", "   ", "   ", "   ", "   "
+      ),
+      x_star = c(
+        1.5, 2.5, 3.5, 2.5, 3.5, 0.0,
+        0.0, 2.5, 3.5, 0.0, 0.0, 0.0,
+        0.0, 2.5, 3.5, 0.0, 0.0, 0.0,
+        1.5, 1.5, 0.0, 0.0, 3.5, 3.5,
+        0.0, 0.0, 1.5, 0.0, 2.5, 3.5,
+        1.5, 2.5, 0.0, 0.0, 0.0, 0.0,
+        1.5, 2.5, 0.0, 0.0, 0.0, 0.0
+      ),
+      y_star = c(
+        up(y0, 3), up(y0, 2), up(y0, 1), 0.79, 0.76, 0.0,
+        0.0, up(y0, 4), up(y0, 4), 0.0, 0.0, 0.0,
+        0.0, up(y0, 4), up(y0, 4), 0.0, 0.0, 0.0,
+        0.93, up(y0, 1), 0.0, 0.0, up(y0, 2), 0.93,
+        0.0, 0.0, up(y0, 1), 0.0, up(y0, 2), up(y0, 3),
+        up(y0, 2), up(y0, 1), 0.0, 0.0, 0.0, 0.0,
+        up(y0, 2), up(y0, 1), 0.0, 0.0, 0.0, 0.0
+      ),
+      x_line = c(
+        1.0, 1.0, 1.0, 2.0, 2.0, 0.0,
+        0.0, 1.0, 1.0, 2.0, 2.0, 3.1,
+        0.0, 1.0, 1.0, 2.0, 2.0, 3.1,
+        1.0, 1.0, 0.0, 0.0, 2.0, 3.0,
+        0.0, 0.0, 1.0, 0.0, 2.0, 3.0,
+        1.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+        1.0, 1.0, 0.0, 0.0, 0.0, 0.0
+      ),
+      x_line_end = c(
+        2.0, 3.0, 4.0, 3.0, 4.0, 0.0,
+        0.0, 3.0, 4.0, 3.0, 4.0, 4.0,
+        0.0, 3.0, 4.0, 3.0, 4.0, 4.0,
+        2.0, 3.0, 0.0, 0.0, 4.0, 4.0,
+        0.0, 0.0, 4.0, 0.0, 4.0, 4.0,
+        2.0, 3.0, 0.0, 0.0, 0.0, 0.0,
+        2.0, 3.0, 0.0, 0.0, 0.0, 0.0
+      ),
+      y_line = c(
+        up(y0, 2), up(y0, 1), up(y0, 0), 0.76, 0.73, 0.0,
+        0.0,       up(y0, 1), up(y0, 0), up(y0, 3), up(y0, 2), up(y0, 3),
+        0.0,       up(y0, 1), up(y0, 0), up(y0, 3), up(y0, 2), up(y0, 3),
+        0.9,       up(y0, 0), 0.0, 0.0, up(y0, 1), 0.9,
+        0.0,       0.0, up(y0, 0), 0.0, up(y0, 1), up(y0, 2),
+        up(y0, 1), up(y0, 0), 0.0, 0.0, 0.0, 0.0,
+        up(y0, 1), up(y0, 0), 0.0, 0.0, 0.0, 0.0
+      )
+    )
+  
+  
+  choice <- deparse(substitute(var))
+  
+  if (choice == "Cluster") {
+    pal <- c("#56B4E9", "#E69F00", "#009E73")
+    effects <- cluster_effects
+    
+  } else if (choice == "Subcluster"){
+    pal <- c("#56B4E9", "#E69F00", "#F5C710", "#009E73")
+    effects <- subcluster_effects
+    
+  } else {
+    stop(
+      "Invalid group variable. ",
+      "Choose between 'Cluster', or 'Subcluster'.")
+  }
+  
   p <- 
     df |> 
     add_cluster_vars(clustering) |> 
@@ -70,6 +225,8 @@ plot_clusters_violins <- function(
       linewidth   = lw_sd
     ) +
     # ----------------------------
+    add_significance(effects) +
+    # ----------------------------
     labs(
       x = NULL,
       y = "Standardised scores",
@@ -113,140 +270,3 @@ plot_clusters_violins <- function(
   
   return(p)
 }
-
-up <- function(y, n = 1, gap = 0.03) y + n * gap
-y0 = 1.03
-
-cluster_effects <- 
-  tibble(
-    Variable = c(
-      rep("Visual imagery", 3),
-      rep("Auditory imagery", 3),
-      rep("Sensory imagery", 3),
-      rep("Spatial imagery", 3),
-      rep("Verbal strategies", 3),
-      rep("Verbal reasoning", 3),
-      rep("Spatial span", 3)
-    ) |> factor() |> fct_inorder(),
-    x_star = c(
-      1.5, 2.5, 2.5,
-      1.5, 2.5, 2.5,
-      1.5, 2.5, 2.5,
-      1.5, 0.0, 2.5,
-      0.0, 1.5, 2.5,
-      1.5, 0.0, 0.0,
-      1.5, 0.0, 0.0
-    ),
-    y_star = c(
-      up(y0, 2), up(y0, 1), 0.8,
-      up(y0, 3), up(y0, 2), y0,
-      up(y0, 3), up(y0, 2), y0,
-      up(y0, 1), 0,         up(y0, 1),
-      0,         up(y0, 1), up(y0, 2),
-      up(y0, 1), 0,         0,
-      up(y0, 1), 0,         0
-    ),
-    stars = c(
-      "***", "***", "***",
-      "***", "***", "   ",
-      "***", "***", "   ",
-      "***", "   ", "***",
-      "   ", "***", "***",
-      "***", "   ", "   ",
-      "***", "   ", "   "
-    ),
-    x_line = c(
-      1.0, 1.0, 2.0,
-      1.0, 1.0, 2.0,
-      1.0, 1.0, 2.0,
-      1.0, 0.0, 2.1,
-      0.0, 1.0, 2.0,
-      1.0, 0.0, 0.0,
-      1.0, 0.0, 0.0
-    ),
-    x_line_end = c(
-      2.0, 3.0, 3.0,
-      2.0, 3.0, 3.0,
-      2.0, 3.0, 3.0,
-      1.9, 0.0, 3.0,
-      0.0, 3.0, 3.0,
-      2.0, 0.0, 0.0,
-      2.0, 0.0, 0.0
-    ),
-    y_line = c(
-      up(y0, 1), up(y0, 0), 0.77,
-      up(y0, 2), up(y0, 1), up(y0, 0),
-      up(y0, 2), up(y0, 1), up(y0, 0),
-      up(y0, 0), 0,         up(y0, 0),
-      0,         up(y0, 0), up(y0, 1),
-      up(y0, 0), 0,         0,
-      up(y0, 0), 0,         0
-    )
-  )
-
-subcluster_effects <- 
-  tibble(
-    Variable = c(
-      rep("Visual imagery", 6),
-      rep("Auditory imagery", 6),
-      rep("Sensory imagery", 6),
-      rep("Spatial imagery", 6),
-      rep("Verbal strategies", 6),
-      rep("Verbal reasoning", 6),
-      rep("Spatial span", 6)
-    ) |> factor() |> fct_inorder(),
-    stars = c(
-      "***", "***", "***", "***", "***", "   ",
-      "   ", "***", "***", "   ", "   ", "   ",
-      "   ", "***", "***", "   ", "   ", "   ",
-      "***", "***", "   ", "   ", "***", "*",
-      "   ", "   ", "***", "   ", "***", "***",
-      "*",   "**",  "   ", "   ", "   ", "   ",
-      "***", "***", "   ", "   ", "   ", "   "
-    ),
-    x_star = c(
-      1.5, 2.5, 3.5, 2.5, 3.5, 0.0,
-      0.0, 2.5, 3.5, 0.0, 0.0, 0.0,
-      0.0, 2.5, 3.5, 0.0, 0.0, 0.0,
-      1.5, 1.5, 0.0, 0.0, 3.5, 3.5,
-      0.0, 0.0, 1.5, 0.0, 2.5, 3.5,
-      1.5, 2.5, 0.0, 0.0, 0.0, 0.0,
-      1.5, 2.5, 0.0, 0.0, 0.0, 0.0
-    ),
-    y_star = c(
-      up(y0, 3), up(y0, 2), up(y0, 1), 0.79, 0.76, 0.0,
-      0.0, up(y0, 4), up(y0, 4), 0.0, 0.0, 0.0,
-      0.0, up(y0, 4), up(y0, 4), 0.0, 0.0, 0.0,
-      0.93, up(y0, 1), 0.0, 0.0, up(y0, 2), 0.93,
-      0.0, 0.0, up(y0, 1), 0.0, up(y0, 2), up(y0, 3),
-      up(y0, 2), up(y0, 1), 0.0, 0.0, 0.0, 0.0,
-      up(y0, 2), up(y0, 1), 0.0, 0.0, 0.0, 0.0
-    ),
-    x_line = c(
-      1.0, 1.0, 1.0, 2.0, 2.0, 0.0,
-      0.0, 1.0, 1.0, 2.0, 2.0, 3.1,
-      0.0, 1.0, 1.0, 2.0, 2.0, 3.1,
-      1.0, 1.0, 0.0, 0.0, 2.0, 3.0,
-      0.0, 0.0, 1.0, 0.0, 2.0, 3.0,
-      1.0, 1.0, 0.0, 0.0, 0.0, 0.0,
-      1.0, 1.0, 0.0, 0.0, 0.0, 0.0
-    ),
-    x_line_end = c(
-      2.0, 3.0, 4.0, 3.0, 4.0, 0.0,
-      0.0, 3.0, 4.0, 3.0, 4.0, 4.0,
-      0.0, 3.0, 4.0, 3.0, 4.0, 4.0,
-      2.0, 3.0, 0.0, 0.0, 4.0, 4.0,
-      0.0, 0.0, 4.0, 0.0, 4.0, 4.0,
-      2.0, 3.0, 0.0, 0.0, 0.0, 0.0,
-      2.0, 3.0, 0.0, 0.0, 0.0, 0.0
-    ),
-    y_line = c(
-      up(y0, 2), up(y0, 1), up(y0, 0), 0.76, 0.73, 0.0,
-      0.0,       up(y0, 1), up(y0, 0), up(y0, 3), up(y0, 2), up(y0, 3),
-      0.0,       up(y0, 1), up(y0, 0), up(y0, 3), up(y0, 2), up(y0, 3),
-      0.9,       up(y0, 0), 0.0, 0.0, up(y0, 1), 0.9,
-      0.0,       0.0, up(y0, 0), 0.0, up(y0, 1), up(y0, 2),
-      up(y0, 1), up(y0, 0), 0.0, 0.0, 0.0, 0.0,
-      up(y0, 1), up(y0, 0), 0.0, 0.0, 0.0, 0.0
-    )
-  )

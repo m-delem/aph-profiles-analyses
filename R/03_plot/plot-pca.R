@@ -1,6 +1,7 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(factoextra, ggplot2, see)
 
+# Plot a PCA projection of the clustering solution
 plot_pca <- function(
     clustering,
     palette = c("#56B4E9", "#E69F00", "#009E73"),

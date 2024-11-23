@@ -1,6 +1,7 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(ggplot2, see, superb)
 
+# Plot two radar plots side by side with the cluster and subcluster results
 plot_clusters_radars <- function(df, clustering) {
   radar_vars <- c(
     "Cluster"               = "cluster",

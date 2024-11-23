@@ -9,6 +9,7 @@ pacman::p_load(
   see
 )
 
+# Plot a correlation matrix and a circular correlation graph
 plot_correlations <- function(
     correlations, 
     shape = 21,

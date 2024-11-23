@@ -10,6 +10,7 @@ pacman::p_load(
   tibble
 )
 
+# Plot the group scores on all variables as violins
 plot_groups_violins <- function(
     df, 
     txt_size_strip = 14,
