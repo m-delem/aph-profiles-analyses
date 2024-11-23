@@ -27,9 +27,9 @@ format: html
 if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(
   conflicted, 
-  correlation,
+  # correlation,
   here,
-  factoextra,
+  # factoextra,
   fs, 
   ggplot2,
   mclust,
@@ -123,7 +123,6 @@ if (!file.exists(path_c_models)) {
   
   cluster_models <-
     df |> 
-    scale_vars() |> 
     add_cluster_vars(clustering) |>
     select(
       cluster, age, visual_imagery:spatial_span, 
@@ -142,7 +141,6 @@ if (!file.exists(path_sc_models)) {
   
   subcluster_models <-
     df |> 
-    scale_vars() |> 
     add_cluster_vars(clustering) |>
     select(
       subcluster, age, visual_imagery:spatial_span, 
@@ -224,12 +222,6 @@ Correlation matrix and graph of all the original variables (standardized beforeh
 
 The number of clusters was determined using the `NbClust` package [@R-NbClust], which provides 30 indices for determining the number of clusters in a dataset. The most common indices are the silhouette, Dunn, and gap statistics. The `NbClust` package provides the optimal number of clusters based on the majority rule of the indices. The results of this analysis are displayed in @suppfig-nbclust.
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-A MODIFIER
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 ::: {#suppfig-nbclust}
 ```{r}
 #| label: show-nbclust-plots
@@ -283,12 +275,20 @@ cluster_models |>
     Difference,  `95% CI`, `$log(BF_{10})$`
   ) |>
   knitr::kable()
+
+subcluster_models |>
+  select(
+    Variable, 
+    `Subcluster 1`, `Subcluster 2`,
+    Difference,  `95% CI`, `$log(BF_{10})$`
+  ) |>
+  knitr::kable()
 ```
 :::
 
 ## Visualizations
 
-::: {#suppfig-cluster-pca-radar-plots}
+::: {#suppfig-cluster-radar-plots}
 ```{r}
 #| label: cluster-radar-plots
 #| fig-width: 15
@@ -300,316 +300,51 @@ if (params$save_figures) ggsave(here("figures/cluster-radar.png"), dpi = 600)
 ```
 :::
 
-Contrasts that must appear:
-- Visual partout
-- Sensory partout
-- Spatial AB et BC
-- Verbal AC et BC
-- Non-v reas None
-- V reas AB
-- Spatial span AB, AC négligeable
-- WCST Reading rien
-
-```{r}
-#| fig-width: 14
-#| fig-height: 7
-
-txt_size_strip = 14
-txt_size_legend = 18
-legend_margins = c(0, 0, 0, 0)
-panel_spacing_y = 0.1
-size = 1
-lw = 1
-lw_sd = 1
-lw_bg = 0.5
-pal <- c("#56B4E9", "#E69F00", "#009E73")
-pal_4 <- c("#56B4E9", "#F5C710", "#E69F00", "#009E73")
-
-df |> 
-  add_cluster_vars_2(clustering_2) |> 
-  scale_vars() |>  
-  select(
-    cluster, 
-    subcluster,
-    visual_imagery,
-    auditory_imagery = psiq_aud, 
-    sensory_imagery:span_spatial_std, 
-    wcst_accuracy, score_comprehension
-  ) |> 
-  get_long_format_2() |> 
-  group_by(subcluster, Variable) |>
-  mutate(
-    Cluster = fct_relabel(cluster, ~ paste("Cluster", .)),
-    Variable = factor(Variable) |> fct_inorder(),
-    mean = round(mean(value), digits = 2),
-    sd = round(sd(value), digits = 2)
-  ) |> 
-  # --------------------------------------------------------------------
-  ggplot(aes(y = value, x = subcluster, color = subcluster, fill = subcluster)) +
-    geom_violinhalf(
-      alpha = .3, 
-      scale = "width", 
-      color = "transparent",
-      # show.legend = FALSE
-    ) +
-    geom_quasirandom(
-      width = 0.15, 
-      alpha = 0.3, 
-      size = 1, 
-      show.legend = FALSE
-    ) +
-    geom_line(
-      aes(x = subcluster, y = mean, group = 1),
-      color = "grey80",
-      linewidth = lw
-    ) +
-    geom_pointrange2(
-      aes(
-        x = subcluster, 
-        y = mean,
-        ymin = if_else(mean - sd <= 0, 0, mean - sd),
-        ymax = if_else(mean + sd >= 1, 1, mean + sd),
-        group = subcluster
-      ),
-      show.legend = FALSE,
-      # color       = "black",
-      size        = size,
-      linewidth   = lw_sd
-    ) +
-  # -------------------------
-    # add_significance(group_effects) +
-    # add_significance(group_effect_verbal) +
-  # ----------------------------
-  labs(
-    x = NULL,
-    y = "Standardised scores",
-    # fill = "Cluster:  "
-    fill = NULL
-  ) +
-    scale_y_continuous(
-      expand = expansion(c(0.05, 0.15)), 
-      limits = c(0, 1),
-      breaks = seq(0, 1, .2)
-    ) +
-  scale_colour_manual(values = pal_4) +
-  scale_fill_manual(values   = pal_4) +
-  # -------------------------------
-  facet_wrap(~Variable, nrow = 2) +
-  # -------------------------------
-  theme_modern() +
-  theme(
-    legend.position    = "top",
-    legend.title       = element_text(size = txt_size_legend),
-    legend.text        = element_text(size = txt_size_legend),
-    legend.box.margin  = margin(legend_margins),
-    axis.title.y       = element_text(size = txt_size_legend),
-    axis.text.y        = element_text(size = txt_size_strip - 4),
-    axis.ticks.y       = element_line(colour = "grey80"),
-    axis.text.x        = element_blank(),
-    axis.ticks.x       = element_blank(), 
-    axis.line          = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.major.y = element_line(),
-    panel.grid.minor.y = element_line(),
-    panel.spacing.x    = unit(0, "in"),
-    panel.spacing.y    = unit(panel_spacing_y, "in"),
-    strip.text         = element_text(size = txt_size_strip, face = "plain"),
-    strip.background   = element_rect(
-      fill      = "grey95",
-      color     = "grey80",
-      linewidth = lw_bg
-    ),
-    panel.border = element_rect(color = "grey80", fill = NA)
-  )
-  
-if (params$save_figures) ggsave(here("figures/subcluster-violins.png"), dpi = 600)
-```
-
 ```{r}
 #| label: cluster-violin-plots
+#| fig-width: 14
+#| fig-height: 7
+#| include: false
 
-# legend
-name   = "Cluster:  "
-labels = c(" A  ", " B  ", " C ")
-nrows = 2
-# sizes
-lw = 1
-# y scale
-y_scale = c(0, 1.2)
-# text sizes
-txt_legend = 26
-txt_panels = 20
-txt_y = 16
-# transparency
-alpha_violins = .3
+p1 <- 
+plot_clusters_violins(
+  df, clustering, Cluster, 
+  pal = c("#56B4E9", "#E69F00", "#009E73")
+  ) +
+  add_significance(cluster_effects)
 
-y_star_low = 1.05
-y_line_low = 1.03
-y_star_high = 1.14
-y_line_high = 1.12
-
-cluster_signif_l2 <- factor(c("WCST", "Reading comprehension")) |> fct_inorder()
-cluster_signif_l3 <- factor(c(
-    "VVIQ","Visual imagery", "Spatial imagery", 
-    "Non-verbal reasoning", "Verbal reasoning", 
-    "Spatial span", "Digit span")) |> fct_inorder()
-
-cluster_signif_t2 <- factor(c("Verbal reasoning")) |> fct_inorder()
-cluster_signif_t3 <- factor(c(
-    "VVIQ","Visual imagery", "Verbal strategies", 
-    "Non-verbal reasoning", "Spatial span")) |> fct_inorder()
-
-cluster_signif_r1 <- factor(c("Spatial span")) |> fct_inorder()
-cluster_signif_r2 <- factor(c("Verbal reasoning")) |> fct_inorder()
-cluster_signif_r3 <- factor(c(
-    "VVIQ","Visual imagery", "Spatial imagery", "Verbal strategies", 
-    "Non-verbal reasoning", "Digit span")) |> fct_inorder()
-
-cluster_violins <-
-  df |>
-  add_cluster_vars(clustering) |> 
-  scale_vars() |>  
-  select(
-    cluster, vviq, visual_imagery:span_digit_std, 
-    wcst_accuracy, score_comprehension
-  ) |> 
-  # select(!c(group, age)) |>
-  pivot_longer(
-    !cluster,
-    names_to = "Variable", 
-    values_to = "value"
-  ) |>
-  group_by(cluster, Variable) |> 
-  mutate(
-    cluster = fct_relabel(cluster, ~ paste("Cluster", .)),
-    mean = round(mean(value), digits = 2),
-    sd = round(sd(value), digits = 2)
-  ) |> 
-  ungroup() |> 
-  mutate(
-    Variable = Variable |> 
-      str_to_title() |> 
-      str_replace_all(c(
-        "_" = " ",
-        "Non verbal reasoning" = "Non-verbal reasoning",
-        "Span spatial std" = "Spatial span",
-        "Span digit std" = "Digit span",
-        "Vviq" = "VVIQ",
-        "Wcst accuracy" = "WCST", 
-        "Score comprehension" = "Reading comprehension"
-      )) |> 
-      fct_inorder() |> 
-      fct_relevel("VVIQ")
-  ) |> 
-  
-  # Geoms
-  ggplot(aes(y = value, x = cluster, color = cluster, fill = cluster)) +
-  geom_line(
-    aes(
-      x = cluster,
-      y = mean,
-      group = 1
-      ),
-    color = "grey80",
-    linewidth = lw
-    ) +
-  geom_violinhalf(alpha = alpha_violins, scale = "width") +
-  geom_pointrange2(
-    aes(
-      x = cluster, 
-      y = mean,
-      ymin = if_else(mean - sd <= 0, 0, mean - sd),
-      ymax = if_else(mean + sd >= 1, 1, mean + sd),
-      group = cluster
-      ),
-    show.legend = FALSE,
-    color = "black",
-    size  = lw,
-    linewidth = lw
-    ) +
-  
-  # Significance labels
-  # Left
-  add_significance(
-    cluster_signif_l2, stars = "**",
-    x_star = 1.5, y_star = y_star_low - .075,
-    x_line = 1, x_line_end = 1.95, y_line = y_line_low - .075
-    ) +
-  add_significance(
-    cluster_signif_l3, stars = "***",
-    x_star = 1.5, y_star = y_star_low,
-    x_line = 1, x_line_end = 1.95, y_line = y_line_low
-    ) +
-  # Right
-  add_significance(
-    cluster_signif_r1, stars = "*",
-    x_star = 2.5, y_star = y_star_low,
-    x_line = 2.05, x_line_end = 3, y_line = y_line_low
-    ) +
-  add_significance(
-    cluster_signif_r2, stars = "**",
-    x_star = 2.5, y_star = y_star_low,
-    x_line = 2.05, x_line_end = 3, y_line = y_line_low
-    ) +
-  add_significance(
-    cluster_signif_r3, stars = "***",
-    x_star = 2.5, y_star = y_star_low,
-    x_line = 2.05, x_line_end = 3, y_line = y_line_low
-    ) +
-  # Top
-  add_significance(
-    cluster_signif_t2, stars = "**",
-    x_star = 2, y_star = y_star_high,
-    x_line = 1, x_line_end = 3, y_line = y_line_high
-    ) +
-  add_significance(
-    cluster_signif_t3, stars = "***",
-    x_star = 2, y_star = y_star_high,
-    x_line = 1, x_line_end = 3, y_line = y_line_high
-    ) +
-  
-  # Scales
-  scale_y_continuous(
-    expand = c(0, 0), 
-    limits = y_scale,
-    breaks = seq(0, 1, .2)
-    ) +
-  scale_color_manual(
-    values = pal_trio, 
-    name   = name,
-    labels = labels
-    )+
-  scale_fill_manual(
-    values = pal_trio, 
-    name = name,
-    labels = labels
-    ) +
-    labs(
-      x = NULL,
-      y = "Standardised scores"
-    ) +
-
-  # Facet
-  facet_wrap(~Variable, nrow = nrows) +
-
-  # Custom theme
-  theme_violins(
-    txt_size_legend = 18,
-    panel_spacing_y = 0.1
-  )
+# p1
+# if (params$save_figures) ggsave(here("figures/cluster-violins.png"), dpi = 600)
 ```
 
-::: {#suppfig-cluster-violin-plots}
 ```{r}
-#| label: show-cluster-violin-plots
-#| fig-width: 13
+#| label: subcluster-violin-plots
+#| fig-width: 14
 #| fig-height: 7
+#| include: false
 
-print(cluster_violins)
+p2 <- 
+plot_clusters_violins(
+  df, clustering, Subcluster,
+  pal = c("#56B4E9", "#F5C710", "#E69F00", "#009E73")
+  ) +
+  theme(plot.margin = margin(1, 0, 0, 0, "cm")) +
+  add_significance(subcluster_effects)
 
-if (params$save_figures) {
-  ggsave(here("figures/cluster-violins.png"), cluster_violins, dpi = 600)
-}
+# p2
+# if (params$save_figures) ggsave(here("figures/subcluster-violins.png"), dpi = 600)
+```
+
+::: {#suppfig-cluster-violin-joint-plots}
+```{r}
+#| label: cluster-violin-plots
+#| fig-width: 14
+#| fig-height: 14
+
+p1 / p2 + plot_annotation(tag_levels = "A") & 
+  theme(plot.tag = element_text(size = 26))
+
+if (params$save_figures) ggsave(here("figures/cluster-violins-joint.png"), dpi = 600)
 ```
 :::
 
@@ -655,7 +390,7 @@ df |>
   ) |> 
   select(Variable, log_bf10) |> 
   rename(`$log(BF_{10})$` = log_bf10) |> 
-  display()
+  knitr::kable()
 ```
 :::
 

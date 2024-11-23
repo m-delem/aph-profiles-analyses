@@ -3,33 +3,39 @@
 add_significance <- function(
     df_effects, 
     size_star = 6, 
-    y_star = 1.08, 
-    y_line = 1.05, 
     lw = 0.5
 ){
+  # df_effects must contain:
+  # - Variable
+  # - x_star
+  # - y_star
+  # - stars
+  # - x_line
+  # - x_line_end
+  # - y_line
   list(
     geom_text(
       data = df_effects,
       aes(
-        x = x_star,
+        x     = x_star,
+        y     = y_star,
         label = stars
       ),
-      y = y_star,
-      size = size_star,
-      inherit.aes = FALSE,
-      color = "black"
+      size        = size_star,
+      color       = "black",
+      inherit.aes = FALSE
     ),
     geom_segment(
       data = df_effects,
       aes(
-        x = x_line,
+        x    = x_line,
         xend = x_line_end,
+        y    = y_line,
+        yend = y_line,
       ),
-      inherit.aes = FALSE,
-      color = "black",
-      y = y_line,
-      yend = y_line,
-      linewidth = lw
+      color       = "black",
+      linewidth   = lw,
+      inherit.aes = FALSE
     )
   )
 }

@@ -11,7 +11,7 @@ plot_clusters_radars <- function(df, clustering) {
     "Verbal\nstrategies"    = "verbal_strategies",
     "Fluid\nintelligence"   = "fluid_intelligence",
     "Verbal\nreasoning"     = "verbal_reasoning", 
-    "Spatial\nspan"         = "span_spatial_std"
+    "Spatial\nspan"         = "spatial_span"
   )
   
   radar_data_3 <-
@@ -25,7 +25,7 @@ plot_clusters_radars <- function(df, clustering) {
     )) |>
     select(
       cluster, 
-      sensory_imagery:span_spatial_std, 
+      sensory_imagery:spatial_span, 
       visual_imagery
     ) |> 
     rename(any_of(radar_vars)) |> 
@@ -41,7 +41,7 @@ plot_clusters_radars <- function(df, clustering) {
     add_cluster_vars(clustering) |>
     select(
       subcluster, 
-      sensory_imagery:span_spatial_std, 
+      sensory_imagery:spatial_span, 
       visual_imagery
     ) |> 
     rename(any_of(radar_vars)) |> 

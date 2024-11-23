@@ -9,9 +9,6 @@ pacman::p_load(
   stringr,
   tibble
 )
-# source(here("R/02_wrangle/get-long-format.R"))
-# source(here("R/02_wrangle/transform-vars.R"))
-# source(here("R/03_plot/plot-helpers.R"))
 
 plot_groups_violins <- function(
     df, 
@@ -34,18 +31,22 @@ plot_groups_violins <- function(
         "Psi-Q Touch", "Psi-Q Sensations", "Psi-Q Feelings",
         "OSIVQ-Object")) |> fct_inorder(),
       x_star = 1.5,
+      y_star = 1.08,
       stars = "***",
       x_line = x_star - 0.5,
-      x_line_end = x_star + 0.5
+      x_line_end = x_star + 0.5,
+      y_line = 1.05
     )
   
   group_effect_verbal <- 
     tibble(
       Variable = factor("OSIVQ-Verbal"),
       x_star = 1.5,
+      y_star = 1.08,
       stars = "**",
       x_line = x_star - 0.5,
-      x_line_end = x_star + 0.5
+      x_line_end = x_star + 0.5,
+      y_line = 1.05
     )
   
   # For the legend
@@ -105,8 +106,8 @@ plot_groups_violins <- function(
     add_significance(group_effect_verbal) +
     # -------------------------------------
     scale_y_continuous(
-      expand = expansion(c(0.05, 0.15)), 
-      limits = c(0, 1),
+      expand = expansion(c(0.05, 0)), 
+      limits = c(0, 1.15),
       breaks = seq(0, 1, .2)
     ) +
     scale_color_manual(values = palette, name = "", labels = labels) +

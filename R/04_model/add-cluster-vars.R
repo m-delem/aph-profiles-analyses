@@ -10,6 +10,8 @@ source(here("R/02_wrangle/reduce-vars.R"))
 #' @return A data frame with the clustering classification and reduced variables
 #' 
 add_cluster_vars <- function(df, clustering) {
+  withr::local_options(list(warn = -1))
+  
   new_cols <-
     df |> 
     reduce_vars() |> 
