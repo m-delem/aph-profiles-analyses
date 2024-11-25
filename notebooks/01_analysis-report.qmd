@@ -16,7 +16,7 @@ crossref:
 supptbl-cap-location: top
 echo: false # do not show the code unless explicitly asked
 params:
-  save_figures: false
+  save_figures: true
 format: html
 ---
 
@@ -196,12 +196,22 @@ Means and standard deviations of the scores of each VVIQ group for every variabl
 ::: {#suppfig-group-violin-plots .column-page-inset}
 ```{r}
 #| label: group-violin-plots
-#| fig-width: 16
-#| fig-height: 7
+#| fig-width: 8
+#| fig-height: 3.5
 
 plot_groups_violins(df)
   
-if (params$save_figures) ggsave(here("figures/group-violins.png"), dpi = 600)
+if (params$save_figures) {
+  ggsave(
+    filename = here("figures/group-violins.pdf"), 
+    # plot = p,
+    device = "pdf",
+    width = 180,
+    height = 80,
+    units = "mm",
+    dpi = 600
+    )
+}
 ```
 
 Standardised scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been rescaled and standardised between 0 and 1 to be represented on the same scale. The coloured shapes represent the distribution of the scores in each group. The black dots represent the mean of each group, while the black bars represent the standard deviations. The stars represent weight of evidence thresholds in favour of a difference between the groups: \* = "*Substantial evidence*", \*\* = "*Strong evidence*", \*\*\* = "*Decisive evidence*".

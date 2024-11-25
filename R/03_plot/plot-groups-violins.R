@@ -13,15 +13,8 @@ pacman::p_load(
 # Plot the group scores on all variables as violins
 plot_groups_violins <- function(
     df, 
-    txt_size_strip = 14,
-    txt_size_legend = 18,
-    legend_margins = c(0, 0, 0, 0),
-    panel_spacing_y = 0.1,
     palette = c("#56B4E9", "#009E73"),
-    size = 1,
-    lw = 1,
-    lw_sd = 1.2,
-    lw_bg = 0.5
+    lw_bg = 0.1
 ) {
   # Defining the effects to label with stars
   group_effects <-
@@ -81,13 +74,13 @@ plot_groups_violins <- function(
     geom_quasirandom(
       width = 0.15, 
       alpha = 0.3, 
-      size = 1, 
+      size  = 0.25, 
       show.legend = FALSE
     ) +
     geom_line(
       aes(x = Group, y = mean, group = 1),
       color = "grey80",
-      linewidth = lw
+      linewidth = 0.3
     ) +
     geom_pointrange2(
       aes(
@@ -99,8 +92,8 @@ plot_groups_violins <- function(
       ),
       # show.legend = FALSE,
       # color       = "black",
-      size        = size,
-      linewidth   = lw_sd
+      size        = 0.3,
+      linewidth   = 0.3
     ) +
     # -------------------------------------
     add_significance(group_effects) +
@@ -111,8 +104,8 @@ plot_groups_violins <- function(
       limits = c(0, 1.15),
       breaks = seq(0, 1, .2)
     ) +
-    scale_color_manual(values = palette, name = "", labels = labels) +
-    scale_fill_manual(values  = palette, name = "", labels = labels) +
+    scale_color_manual(values = palette, labels = labels) +
+    scale_fill_manual(values  = palette, labels = labels) +
     labs(
       x = NULL,
       y = "Standardised scores"
@@ -123,27 +116,33 @@ plot_groups_violins <- function(
     theme_modern() +
     theme(
       legend.position    = "top",
-      legend.title       = element_text(size = txt_size_legend),
-      legend.text        = element_text(size = txt_size_legend),
-      legend.box.margin  = margin(legend_margins),
-      axis.title.y       = element_text(size = txt_size_legend),
-      axis.text.y        = element_text(size = txt_size_strip - 4),
-      axis.ticks.y       = element_line(colour = "grey80"),
+      legend.title       = element_blank(),
+      legend.text        = element_text(size = 7),
+      legend.box.margin  = margin(1, 0, 0, 0, "mm"),
+      legend.box.spacing = unit(1, "mm"),
+      legend.margin = margin(0, 0, 0, 0, "mm"),
+      axis.title.y       = element_text(
+        size = 7, 
+        margin = margin(0, 1.5, 0, 0, "mm")
+      ),
+      axis.text.y        = element_text(size = 5),
+      axis.ticks.y       = element_line(colour = "grey80", linewidth = lw_bg),
       axis.text.x        = element_blank(),
       axis.ticks.x       = element_blank(), 
       axis.line          = element_blank(),
       panel.grid.major.x = element_blank(),
-      panel.grid.major.y = element_line(),
-      panel.grid.minor.y = element_line(),
-      panel.spacing.x    = unit(0, "in"),
-      panel.spacing.y    = unit(panel_spacing_y, "in"),
-      strip.text         = element_text(size = txt_size_strip, face = "plain"),
+      panel.grid.major.y = element_line(linewidth = lw_bg),
+      panel.grid.minor.y = element_line(linewidth = lw_bg),
+      panel.spacing.x    = unit(0, "mm"),
+      panel.spacing.y    = unit(3, "mm"),
+      strip.text         = element_text(size = 6, face = "plain"),
       strip.background   = element_rect(
         fill      = "grey95",
         color     = "grey80",
         linewidth = lw_bg
       ),
-      panel.border = element_rect(color = "grey80", fill = NA)
+      panel.border = element_rect(color = "grey80", fill = NA),
+      plot.margin = margin(0, 1, 0, 1, "mm")
     )
   
   return(p)
