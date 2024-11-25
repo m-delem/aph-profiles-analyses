@@ -13,8 +13,15 @@ pacman::p_load(
 # Plot the group scores on all variables as violins
 plot_groups_violins <- function(
     df, 
-    palette = c("#56B4E9", "#009E73"),
-    lw_bg = 0.1
+    palette   = c("#56B4E9", "#009E73"),
+    txt_big   = 7,
+    txt_mid   = 6,
+    txt_smol  = 5.5,
+    dot_big   = 0.3,
+    dot_smol  = 0.15,
+    lw_big    = 0.3,
+    lw_smol   = 0.1,
+    alpha     = 0.3
 ) {
   # Defining the effects to label with stars
   group_effects <-
@@ -26,7 +33,7 @@ plot_groups_violins <- function(
         "OSIVQ-Object")) |> fct_inorder(),
       x_star = 1.5,
       y_star = 1.08,
-      stars = "***",
+      stars  = "***",
       x_line = x_star - 0.5,
       x_line_end = x_star + 0.5,
       y_line = 1.05
@@ -34,17 +41,18 @@ plot_groups_violins <- function(
   
   group_effect_verbal <- 
     tibble(
-      Variable = factor("OSIVQ-Verbal"),
-      x_star = 1.5,
-      y_star = 1.08,
-      stars = "**",
-      x_line = x_star - 0.5,
+      Variable   = factor("OSIVQ-Verbal"),
+      x_star     = 1.5,
+      y_star     = 1.08,
+      stars      = "**",
+      x_line     = x_star - 0.5,
       x_line_end = x_star + 0.5,
-      y_line = 1.05
+      y_line     = 1.05
     )
   
   # For the legend
-  labels <- c(" Control    ", " Aphantasic")
+  # labels <- c(" Control    ", " Aphantasic")
+  # labels <- c("Control", "Aphantasic")
   
   p <- 
     df |> 
@@ -66,21 +74,22 @@ plot_groups_violins <- function(
     ggplot(aes(y = value, x = Group, color = Group, fill = Group)) +
     geom_violinhalf(
       flip  = c(1),
-      alpha = .3, 
+      alpha = alpha, 
       scale = "width", 
       color = "transparent",
       # show.legend = FALSE
     ) +
     geom_quasirandom(
       width = 0.15, 
-      alpha = 0.3, 
-      size  = 0.25, 
+      shape = 16,
+      alpha = alpha, 
+      size  = dot_big, 
       show.legend = FALSE
     ) +
     geom_line(
       aes(x = Group, y = mean, group = 1),
-      color = "grey80",
-      linewidth = 0.3
+      color     = "grey80",
+      linewidth = lw_big
     ) +
     geom_pointrange2(
       aes(
@@ -90,10 +99,8 @@ plot_groups_violins <- function(
         ymax = if_else(mean + sd >= 1, 1, mean + sd),
         group = Group
       ),
-      # show.legend = FALSE,
-      # color       = "black",
-      size        = 0.3,
-      linewidth   = 0.3
+      size        = dot_big,
+      linewidth   = lw_big
     ) +
     # -------------------------------------
     add_significance(group_effects) +
@@ -104,45 +111,53 @@ plot_groups_violins <- function(
       limits = c(0, 1.15),
       breaks = seq(0, 1, .2)
     ) +
-    scale_color_manual(values = palette, labels = labels) +
-    scale_fill_manual(values  = palette, labels = labels) +
-    labs(
-      x = NULL,
-      y = "Standardised scores"
-    ) +
+    scale_color_manual(values = palette) +
+    scale_fill_manual(values  = palette) +
+    labs(y = "Standardised scores") +
     # -------------------------------
     facet_wrap(~Variable, nrow = 2) +
     # -------------------------------
     theme_modern() +
     theme(
+      # whole plot
+      plot.margin = margin(0, 1, 0, 1, "mm"),
+      # legend
       legend.position    = "top",
       legend.title       = element_blank(),
-      legend.text        = element_text(size = 7),
+      legend.text        = element_text(size = txt_big),
+      legend.margin      = margin(0, 0, 0, 0, "mm"),
       legend.box.margin  = margin(1, 0, 0, 0, "mm"),
       legend.box.spacing = unit(1, "mm"),
-      legend.margin = margin(0, 0, 0, 0, "mm"),
+      # y axis
       axis.title.y       = element_text(
-        size = 7, 
+        size = txt_big, 
         margin = margin(0, 1.5, 0, 0, "mm")
       ),
-      axis.text.y        = element_text(size = 5),
-      axis.ticks.y       = element_line(colour = "grey80", linewidth = lw_bg),
+      axis.text.y        = element_text(size = txt_smol),
+      axis.ticks.y       = element_line(colour = "grey80", linewidth = lw_smol),
+      # x axis
+      axis.title.x       = element_blank(),
       axis.text.x        = element_blank(),
       axis.ticks.x       = element_blank(), 
       axis.line          = element_blank(),
+      # panel lines
       panel.grid.major.x = element_blank(),
-      panel.grid.major.y = element_line(linewidth = lw_bg),
-      panel.grid.minor.y = element_line(linewidth = lw_bg),
+      panel.grid.major.y = element_line(linewidth = lw_smol),
+      panel.grid.minor.y = element_line(linewidth = lw_smol),
+      # facets
+      panel.border       = element_rect(
+        color = "grey80", 
+        fill = NA, 
+        linewidth = lw_smol
+      ),
       panel.spacing.x    = unit(0, "mm"),
       panel.spacing.y    = unit(3, "mm"),
-      strip.text         = element_text(size = 6, face = "plain"),
+      strip.text         = element_text(size = txt_smol, face = "plain"),
       strip.background   = element_rect(
         fill      = "grey95",
         color     = "grey80",
-        linewidth = lw_bg
-      ),
-      panel.border = element_rect(color = "grey80", fill = NA),
-      plot.margin = margin(0, 1, 0, 1, "mm")
+        linewidth = lw_smol
+      )
     )
   
   return(p)

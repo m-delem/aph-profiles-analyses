@@ -5,6 +5,3 @@
 /.quarto/
 _products
 _freeze
-data/r-data-structures/cluster_models_2.rds
-
-data/r-data-structures/cluster_models.rds

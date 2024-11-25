@@ -204,7 +204,6 @@ plot_groups_violins(df)
 if (params$save_figures) {
   ggsave(
     filename = here("figures/group-violins.pdf"), 
-    # plot = p,
     device = "pdf",
     width = 180,
     height = 80,
