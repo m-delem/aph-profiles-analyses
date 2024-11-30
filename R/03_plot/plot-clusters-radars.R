@@ -10,7 +10,7 @@ plot_clusters_radars <- function(df, clustering) {
     "Sensory\nimagery"      = "sensory_imagery",
     "Spatial\nimagery"      = "spatial_imagery", 
     "Verbal\nstrategies"    = "verbal_strategies",
-    "Fluid\nintelligence"   = "fluid_intelligence",
+    "Raven +\nDigit Span"   = "fluid_intelligence",
     "Verbal\nreasoning"     = "verbal_reasoning", 
     "Spatial\nspan"         = "spatial_span"
   )
@@ -59,27 +59,34 @@ plot_clusters_radars <- function(df, clustering) {
         value ~ Variable + Cluster, 
         data = radar_data,
         plotStyle = "circularline",
+        pointParams = list(size = .4),
+        lineParams = list(linewidth = .3),
+        errorbarParams = list(linewidth = .3),
         adjustments = list(purpose = "single"),
         factorOrder = c("Variable", "Cluster")
       ) + 
       scale_colour_manual(values = palette) +
       scale_fill_manual(values   = palette) +
+      scale_y_continuous(
+        breaks = breaks_pretty(),
+        expand = expansion(c(0, 0.1))
+      ) +
       labs(colour = NULL) +
-      theme_minimal(base_size = 14) +
+      theme_minimal(base_size = 6) +
       theme(
         panel.grid.minor = element_blank(),
-        legend.position = "top",
-        legend.text = element_text(size = 14),
-        axis.text.y = element_text(
-          size = 8, 
-          margin = margin(0, -8.4, 0, 0, "cm"),
+        legend.position  = "top",
+        legend.text      = element_text(size = 6),
+        axis.text.y      = element_text(
+          size = 4.5, 
+          margin = margin(0, -37, 0, 0, "mm"),
           hjust = 0, vjust = 0.5
         ),
-        axis.line = element_blank(),
-        axis.title.y = element_blank(),
-        axis.text.x = element_text(size = 14),
-        axis.title.x = element_blank(),
-        plot.margin = margin(0, 1, 0, 1, "cm")
+        axis.line        = element_blank(),
+        axis.title.y     = element_blank(),
+        axis.text.x      = element_text(size = 6),
+        axis.title.x     = element_blank(),
+        plot.margin      = margin(0, 10, 0, 10, "mm")
       )
     
     p

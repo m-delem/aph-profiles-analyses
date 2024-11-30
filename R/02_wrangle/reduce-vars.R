@@ -28,21 +28,22 @@ reduce_vars <- function(df){
         digits = 3
       ),
       # merging SRI and Raven relative to their number of items
-      # non_verbal_reasoning = round(
-      #   (30*score_sri + 18*score_raven)/48,
-      #   digits = 3
-      # )
+      non_verbal_reasoning = round(
+        (30*score_sri + 18*score_raven)/48,
+        digits = 3
+      )
     ) |> 
     select(
       visual_imagery,
       auditory_imagery = psiq_aud,
       sensory_imagery,
       spatial_imagery,
+      spatial_imagery_2 = osivq_s,
       verbal_strategies = osivq_v,
       fluid_intelligence,
-      # non_verbal_reasoning,
+      non_verbal_reasoning,
       verbal_reasoning = score_similarities,
-      # span_digit,
+      span_digit,
       span_spatial
     )
   

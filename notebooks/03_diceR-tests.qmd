@@ -1,0 +1,400 @@
+```{r}
+#| label: setup
+#| echo: true
+#| code-fold: false
+
+if (!requireNamespace("pacman")) install.packages("pacman")
+pacman::p_load(
+  conflicted, 
+  blockcluster,
+  diceR,
+  dimRed,
+  fastICA,
+  fs, 
+  here,
+  ggplot2,
+  kernlab,
+  mclust,
+  NbClust,
+  NMF,
+  parameters,
+  patchwork,
+  purrr,
+  Rtsne,
+  sessioninfo,
+  umap
+)
+
+# source all our functions
+dir_ls(here("R"), type = "file", recurse = TRUE) |> walk(source)
+
+# resolve package conflicts
+conflicts_prefer(
+  dplyr::filter(), 
+  dplyr::select(),
+  scales::rescale(), 
+  purrr::map(),
+  base::as.data.frame(),
+  .quiet = TRUE
+  )
+
+# load the data
+df <- import_jatos_data()$data_final
+```
+
+à retravailler:
+
+```{r}
+clustering$indices$pac |> 
+  mutate(across(2:5, ~as.numeric(scale(.)))) |> 
+  rowwise() |> 
+  mutate(mean = mean(c(DIANA_Maximum, PAM_Maximum, GMM, CMEANS))) |> 
+  arrange(mean) |> 
+  ungroup() |> 
+  slice(1) |> 
+  pull(k) |> 
+  as.numeric()
+
+# this returns the optimal k based on the relative "preferences" of each algo
+# we'll then use this value to select the cluster solution among those returned
+```
+
+```{r}
+cluster_vars <- function(
+    df, 
+    df_to_clust, 
+    k, 
+    consensus_f = c("kmodes", "CSPA", "majority"),
+    distance = "maximum",
+    ...
+){
+  clustering <-
+    df_to_clust |>
+    dice(
+      nk     = 2:4,
+      k.method = "all",
+      p.item = 0.95,
+      reps   = 10,
+      algorithms = c(
+        # "hc",
+        "diana",
+        # "km",
+        "pam",
+        "gmm",
+        "cmeans"
+        ),
+      hc.method = "complete",
+      distance  = distance,
+      cons.funs = consensus_f,
+      trim      = TRUE,
+      reweigh   = TRUE,
+      # plot      = TRUE,
+      seed      = 140598
+    )
+  
+  return(clustering)
+}
+
+cluster_summary <- function(clustering, method, ...){
+  df <- 
+    clustering$clusters |> 
+    as_tibble() |> 
+    mutate(group = df$group) |> 
+    pivot_longer(cols = -group, names_to = "consensus", values_to = "cluster") |>
+    group_by(consensus, cluster, group) |>
+    count() |> 
+    mutate(method = method) |> 
+    relocate(method) |> 
+    arrange(desc(consensus))
+  
+  return(df)
+}
+
+plot_clustering <- function(embeddings, clustering, cons_function, ...) {
+  x <- sym(names(embeddings)[1])
+  y <- sym(names(embeddings)[2])
+  
+  p <- 
+    embeddings |> 
+    mutate(cluster = clustering$clusters[, cons_function]) |> 
+    ggplot(aes({{ x }}, {{ y }}, color = factor(cluster))) +
+    geom_point(size = 3) +
+    scale_colour_okabeito() +
+    theme_modern()
+  
+  print(p)
+}
+
+# partial_corr_selected_vars <- c(
+#   "visual_imagery",
+#   "sensory_imagery",
+#   "spatial_imagery", 
+#   "verbal_strategies",
+#   "fluid_intelligence", 
+#   "verbal_reasoning", 
+#   "span_spatial"
+# )
+# 
+# df_scaled <-
+#   df |> 
+#   reduce_vars() |> 
+#   select(any_of(partial_corr_selected_vars)) |> 
+#   stats::dist(method = "maximum")
+
+df_scaled <-
+  df |>
+  scale_vars() |>
+  select(vviq:span_digit, score_similarities)
+
+dimRedMethodList()
+embed_methods <- c(
+  "DiffusionMaps",
+  "Isomap",
+  "kPCA",
+  "MDS",
+  "tSNE",
+  "UMAP"
+  )
+
+# additional params for each method
+params <- list(
+  Diff = c(list(d = function(x) stats::dist(x, method = "maximum"), ndim = 2)),
+  Iso  = c(list(knn = 3)),
+  kPCA = c(list(kernel = "laplacedot")),
+  MDS  = c(list(d = function(x) stats::dist(x, method = "maximum"))),
+  tSNE = c(list(d = function(x) stats::dist(x, method = "maximum"), theta = 0)),
+  UMAP = c(list(d = "pearson2", knn = 3, method = "naive"))
+)
+
+results <-
+  tibble(
+    method = embed_methods,
+    params = params
+    ) |> 
+  rowwise() |> 
+  mutate(
+    dim_reds = list(do.call(
+      dimRed::embed, 
+      modifyList(c(list(.data = df_scaled, .method = method)), params))),
+    embeddings = list(
+      dim_reds |> 
+      getDimRedData() |> 
+      dimRed::as.data.frame() |> 
+      mutate(across(everything(), ~as.numeric(scale(.))))
+    ),
+    q_local    = quality(dim_reds, "Q_local"),
+    q_global   = quality(dim_reds, "Q_global"),
+    q_R_NX     = quality(dim_reds, "mean_R_NX"),
+    q_cophen   = quality(dim_reds, "cophenetic_correlation"),
+    q_distance = quality(dim_reds, "distance_correlation")
+  ) |> 
+  mutate(
+    # nc_object  = list(n_clusters(embeddings)),
+    # nb_of_clst = attr(nc_object, "n"),
+    # clustering = list(cluster_vars(df, embeddings, nb_of_clst)),
+    clustering = list(cluster_vars(df, embeddings, 2:4)),
+    summary    = list(cluster_summary(clustering, method))
+  )
+
+walk(results$summary, print)
+pwalk(
+  results |> mutate(cons_function = "majority"),
+  plot_clustering
+)
+```
+
+
+--------------------------------------------------------------------------------
+
+First tests on different dimensionality reduction methods below.
+
+# Manual merging based on correlations and theory
+
+My initial proposal for a long time.
+
+```{r}
+corr_selected_vars <- c(
+  "visual_imagery",
+  "spatial_imagery_2", 
+  "verbal_strategies",
+  "non_verbal_reasoning", 
+  "verbal_reasoning", 
+  "span_digit",
+  "span_spatial"
+)
+
+df_manual_1 <-
+  df |> 
+  reduce_vars() |> 
+  select(any_of(corr_selected_vars)) |>
+  mutate(across(everything(), ~as.numeric(scale(.))))
+  
+nc_manual_1 <- n_clusters(df_manual_1)
+
+clust_manual_1 <- cluster_vars(df, df_manual_1, attr(nc_manual_1, "n"))
+
+plot(nc)
+cluster_summary(clust_manual_1)
+```
+
+The consensus clustering isolates all aphants in a group and splits the control group into two clusters.
+
+# Manual merging based on partial correlations
+
+My recent discovery of the relevance of partial correlations led to another proposal of manual variable merging.
+
+```{r}
+partial_corr_selected_vars <- c(
+  "visual_imagery",
+  "sensory_imagery",
+  "spatial_imagery", 
+  "verbal_strategies",
+  "fluid_intelligence", 
+  "verbal_reasoning", 
+  "span_spatial"
+)
+
+df_manual_2 <-
+  df |> 
+  reduce_vars() |> 
+  select(any_of(partial_corr_selected_vars)) |>
+  mutate(across(everything(), ~as.numeric(scale(.))))
+  
+nc_manual_2 <- n_clusters(df_manual_2)
+
+clust_manual_2 <- cluster_vars(df, df_manual_2, attr(nc_manual_2, "n"))
+
+plot(nc)
+cluster_summary(clust_manual_2)
+```
+
+The consensus clustering yield broadly the same results as the previous manual merging. Overall, at this point, switching from GMM to consensus clustering broke my initial results. This might reflect the lack of stability of my initial variable reduction, which we'll try to solve by exploring unsupervised techniques.
+
+# PCA
+
+```{r}
+#| fig-width: 8
+#| fig-height: 6
+
+df_pca <- 
+  df |> 
+  scale_vars() |>
+  select(vviq:span_digit, score_similarities)
+
+n_comp <- attr(n_components(df_pca), "n")
+
+pca <- prcomp(df_pca, center = TRUE, rank. = n_comp)
+
+df_pca <-
+  pca$x |>
+  as_tibble() |> 
+  mutate(across(everything(), ~as.numeric(scale(.))))
+
+nc_pca <- n_clusters(df_pca)
+
+clust_pca <- cluster_vars(df, df_pca, attr(nc_pca, "n"))
+
+plot(nc_pca)
+cluster_summary(clust_pca)
+df_pca |> 
+  mutate(cluster = clust_pca$clusters[, "kmodes"]) |> 
+  ggplot(aes(PC1, PC2, color = factor(cluster))) +
+  geom_point(size = 3) +
+  scale_colour_okabeito() +
+  theme_modern()
+```
+
+Using the three first components extracted from the PCA as recommended by `n_components`, the consensus clustering returns a 4-cluster solution which is especially well defined with k-modes consensus: two aph (32 and 13) and two control (29 and 20). Besides, contrary to manual dimensionality reduction, this solution holds even against 2 and 3-cluster solutions. Interesting, we'll keep this one in the bag.
+
+# t-SNE
+
+```{r}
+tsne <-
+  df |>
+  scale_vars() |>
+  select(vviq:span_digit, score_similarities) |>
+  stats::dist(method = "maximum") |>
+  Rtsne(
+    is_distance = TRUE,
+    theta = 0.0,
+    max_iter = 30000
+    )
+
+df_tsne <- 
+  as_tibble(tsne$Y) |> 
+  mutate(across(everything(), ~as.numeric(scale(.))))
+
+nc_tsne <- n_clusters(df_tsne)
+
+clust_tsne <- cluster_vars(df, df_tsne, attr(nc_tsne, "n"))
+
+plot(nc_tsne)
+cluster_summary(clust_tsne)
+df_tsne |> 
+  mutate(cluster = clust_tsne$clusters[, "majority"]) |> 
+  ggplot(aes(V1, V2, color = factor(cluster))) +
+  geom_point(size = 3) +
+  scale_colour_okabeito() +
+  theme_modern()
+```
+
+OK t-SNE alternates between two results, both 3-cluster solutions with 1 aph 1 mix 1 control, but the numbers are different. The first is 37 aph, 17 cont / 8 aph, and 33 cont; the second is 32 aph, 7 cont / 13 aph, and 44 controls.
+
+# MDS
+
+```{r}
+df_mds_2 <- 
+  df |> 
+  scale_vars() |>
+  select(vviq:span_digit, score_similarities) |>
+  stats::dist(method = "maximum") |> 
+  cmdscale(k = 2, add = FALSE) |>
+  as_tibble() |> 
+  mutate(across(everything(), ~as.numeric(scale(.))))
+
+nc_mds_2 <- n_clusters(df_mds_2)
+
+clust_mds_2 <- cluster_vars(df, df_mds_2, attr(nc_mds_2, "n"))
+
+plot(nc_mds_2)
+cluster_summary(clust_mds_2)
+df_mds_2 |> 
+  mutate(cluster = clust_mds_2$clusters[, "majority"]) |> 
+  ggplot(aes(V1, V2, color = factor(cluster))) +
+  geom_point(size = 3) +
+  scale_colour_okabeito() +
+  theme_modern()
+```
+
+The MDS in 2D yields a very interesting 3-cluster solution with one aphant cluster (30), one mixed (10 cont / 15 aph) and one control cluster (40). This is a clean pattern that looks close to our initial results, and it is stable across the three consensus functions. However, when confronted to 2 and 4-cluster solution, the consensus prefers two clusters, one mixed and one aphant.
+
+# Kernel PCA
+
+```{r}
+kpc <- 
+  df |> 
+  scale_vars() |>
+  select(vviq:span_digit, score_similarities)
+
+kpc <- kernlab::kpca(~., kpc, features = 2)
+
+df_kpca <-
+  kpc@pcv |>
+  as_tibble() |>
+  mutate(across(everything(), ~as.numeric(scale(.))))
+
+nc_kpca <- n_clusters(df_kpca)
+
+clust_kpca <- cluster_vars(df, df_kpca, attr(nc_kpca, "n"))
+
+plot(nc_kpca)
+cluster_summary(clust_kpca)
+df_kpca |> 
+  mutate(cluster = clust_kpca$clusters[, "kmodes"]) |> 
+  ggplot(aes(V1, V2, color = factor(cluster))) +
+  geom_point(size = 3) +
+  scale_colour_okabeito() +
+  theme_modern()
+```
+
+

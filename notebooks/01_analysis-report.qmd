@@ -309,12 +309,22 @@ subcluster_models |>
 ::: {#suppfig-cluster-radar-plots .column-page-inset}
 ```{r}
 #| label: cluster-radar-plots
-#| fig-width: 15
-#| fig-height: 8
+#| fig-width: 8
+#| fig-height: 3.5
 
 plot_clusters_radars(df, clustering)
 
-if (params$save_figures) ggsave(here("figures/cluster-radar.png"), dpi = 600)
+if (params$save_figures) {
+  # ggsave(here("figures/cluster-radar.png"), dpi = 600)
+  ggsave(
+    filename = here("figures/cluster-radar.pdf"), 
+    device = "pdf",
+    width = 180,
+    height = 80,
+    units = "mm",
+    dpi = 600
+    )
+  }
 ```
 :::
 
