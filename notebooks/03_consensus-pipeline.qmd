@@ -1,0 +1,111 @@
+```{r}
+#| label: setup
+#| echo: true
+#| code-fold: false
+
+if (!requireNamespace("pacman")) install.packages("pacman")
+pacman::p_load(
+  conflicted, 
+  fs, 
+  here,
+  ggplot2,
+  patchwork,
+  purrr,
+  sessioninfo
+)
+
+# source all our functions
+dir_ls(here("R"), type = "file", recurse = TRUE) |> walk(source)
+
+# resolve package conflicts
+conflicts_prefer(
+  dplyr::filter(), 
+  dplyr::select(),
+  scales::rescale(), 
+  purrr::map(),
+  base::as.data.frame(),
+  .quiet = TRUE
+  )
+```
+
+
+```{r}
+#| label: load-data
+
+df <- import_jatos_data()$data_final
+
+partial_correlation_vars <- c(
+  "visual_imagery", "sensory_imagery", "spatial_imagery", "verbal_strategies",
+  "fluid_intelligence", "verbal_reasoning", "span_spatial")
+
+dfs_to_cluster <- list(
+  # Solution 1: simply scale then cluster the embedded raw variables
+  scaled = 
+    df |> 
+    scale_vars() |> 
+    select(vviq:span_digit, score_similarities),
+  # Solution 2: manual reduction based on partial correlation first
+  reduced = 
+    df |> 
+    reduce_vars() |> 
+    select(any_of(partial_correlation_vars)) |> 
+    mutate(across(everything(), ~as.numeric(scale(.))))
+)
+```
+
+```{r}
+#| label: embed-and-cluster
+
+cluster_results <- 
+  map(
+    dfs_to_cluster, 
+    embed_and_cluster, 
+    df = df
+  )
+```
+
+```{r}
+#| label: print-summary
+
+walk(cluster_results, ~walk(.$summary, print))
+```
+
+```{r}
+#| label: plot-embeddings
+
+p_embeds <- 
+  map(
+    cluster_results,
+    ~pmap(
+      .x |> mutate(consensus_function = "majority"), 
+      plot_clusters_embedded
+    )
+  )
+
+walk(p_embeds, ~walk(., print))
+```
+
+```{r}
+#| label: plot-radars
+#| fig-width: 8
+#| fig-height: 6
+
+p_radars <- map(cluster_results, plot_clusters_radars_2, df = df)
+
+walk(p_radars, ~print(.))
+
+walk2(
+  p_radars, 
+  c("scaled", "reduced"), 
+  ~ggsave(
+    plot = .x,
+    filename = here(glue("figures/cluster-radar-{.y}.pdf")), 
+    device = "pdf",
+    width = 180,
+    height = 135,
+    units = "mm",
+    dpi = 600
+  )
+)
+```
+
