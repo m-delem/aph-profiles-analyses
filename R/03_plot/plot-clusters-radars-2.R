@@ -26,6 +26,26 @@ plot_clusters_radars_2 <- function(
       contains("cluster"), group,
       vviq:score_comprehension
     ) |>
+    # Lines 30-50: dirty hack to align A/B/C cluster names
+    mutate(DM_mean   = mean(vviq), DM_n = n(), .by = c(cluster_DM, group)) |> 
+    mutate(kPCA_mean = mean(vviq), kPCA_n = n(), .by = c(cluster_kPCA, group)) |> 
+    mutate(MDS_mean  = mean(vviq), MDS_n = n(), .by = c(cluster_MDS, group)) |> 
+    mutate(
+      cluster_DM = case_when(
+        DM_mean == max(DM_mean) ~ "A", 
+        DM_mean == min(DM_mean) ~ "C", 
+        TRUE ~ "B"),
+      cluster_kPCA = case_when(
+        kPCA_mean == max(kPCA_mean) ~ "A", 
+        kPCA_mean == min(kPCA_mean) ~ "C", 
+        TRUE ~ "B"),
+      cluster_MDS = case_when(
+        MDS_mean == max(MDS_mean) ~ "A", 
+        MDS_mean == min(MDS_mean) ~ "C", 
+        TRUE ~ "B")
+    ) |> 
+    filter(MDS_n >= 7) |> 
+    select(!c(contains("mean"), contains("_n"))) |>
     scale_vars() |> 
     get_long_format() |> 
     get_long_clusters() |> 
@@ -44,9 +64,8 @@ plot_clusters_radars_2 <- function(
     radar_data_3 |> 
     unite("Cluster", Cluster, Group) |> 
     group_by(Cluster, Method, Variable) |> 
-    mutate(n = n()) |> 
-    ungroup() |> 
-    filter(n >= 7) |> 
+    mutate(n = n()) |>
+    ungroup() |>
     mutate(n = paste0("n", n)) |> 
     unite("Cluster", Cluster, n)
   
