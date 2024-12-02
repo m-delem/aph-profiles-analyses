@@ -22,5 +22,5 @@ plot_clusters_embedded <- function(
     ) +
     theme_modern()
   
-  print(p)
+  return(p)
 }

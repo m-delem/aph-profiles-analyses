@@ -8,28 +8,28 @@ scale_vars <- function(df, min = 0, max = 1){
     df |> 
     mutate(
       across(
-        contains("age"), ~ rescale(., c(min, max), c(min(age),max(age)))
+        contains("age"),     ~ rescale(., c(min, max), c(min(age),max(age)))
       ),
       across(
-        contains("vviq"), ~ rescale(., c(min, max), c(16,80))
+        contains("vviq"),    ~ rescale(., c(min, max), c(16,80))
       ),
       across(
-        contains("osivq"), ~ rescale(., c(min, max), c(15, 75))
+        contains("osivq"),   ~ rescale(., c(min, max), c(15, 75))
       ),
       across(
-        contains("psiq"), ~ rescale(., c(min, max), c(1, 10))
+        contains("psiq"),    ~ rescale(., c(min, max), c(1, 10))
       ),
       across(
-        contains("raven"), ~ rescale(., c(min, max), c(0, 36))
+        contains("raven"),   ~ rescale(., c(min, max), c(0, 36))
       ),
       across(
-        contains("sri"), ~ rescale(., c(min, max), c(0, 30))
+        contains("sri"),     ~ rescale(., c(min, max), c(0, 30))
       ),
       across(
-        contains("span"), ~ rescale(., c(min, max), c(0, max(.)))
+        contains("span"),    ~ rescale(., c(min, max), c(0, max(.)))
       ),
       across(
-        contains("wcst"), ~ rescale(., c(min, max), c(0, 100))
+        contains("wcst"),    ~ rescale(., c(min, max), c(0, 100))
       ),
       across(
         contains("similar"), ~ rescale(., c(min, max), c(0, 36))

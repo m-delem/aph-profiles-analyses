@@ -1,104 +1,95 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(ggplot2, see, superb)
+pacman::p_load(glue, ggplot2, see, superb)
 
 # Plot two radar plots side by side with the cluster and subcluster results
-plot_clusters_radars <- function(df, clustering) {
-  radar_vars <- c(
-    "Cluster"               = "cluster",
-    "Cluster"               = "subcluster",
-    "Visual\nimagery"       = "visual_imagery", 
-    "Sensory\nimagery"      = "sensory_imagery",
-    "Spatial\nimagery"      = "spatial_imagery", 
-    "Verbal\nstrategies"    = "verbal_strategies",
-    "Raven +\nDigit Span"   = "fluid_intelligence",
-    "Verbal\nreasoning"     = "verbal_reasoning", 
-    "Spatial\nspan"         = "spatial_span"
-  )
-  
+plot_clusters_radars_2 <- function(
+    df, 
+    cluster_results,
+    txt_big   = 5,
+    txt_mid   = 4,
+    txt_smol  = 2.5,
+    dot_big   = 0.3,
+    dot_smol  = 0.1,
+    lw_big    = 0.3,
+    lw_smol   = 0.1,
+    y_off     = 20,
+    h_off     = 2,
+    v_off     = 0,
+    key       = 2,
+    ...
+    ) {
   radar_data_3 <-
-    df |>
-    add_cluster_vars(clustering) |>
-    mutate(cluster = case_when(
-      cluster == "Cluster A" ~ "A (Control)",
-      cluster == "Cluster B" ~ "B (Mixed)",
-      cluster == "Cluster C" ~ "C (Aphantasic)",
-      TRUE ~ cluster
-    )) |>
+    df |> 
+    add_clusters(cluster_results) |>
     select(
-      cluster, 
-      sensory_imagery:spatial_span, 
-      visual_imagery
+      contains("cluster"), group,
+      vviq:score_comprehension
+    ) |>
+    # Dirty hack to align A/B/C cluster names, from here...
+    mutate(DM_mean   = mean(vviq), DM_n = n(), .by = c(cluster_DM, group)) |> 
+    mutate(kPCA_mean = mean(vviq), kPCA_n = n(), .by = c(cluster_kPCA, group)) |> 
+    mutate(MDS_mean  = mean(vviq), MDS_n = n(), .by = c(cluster_MDS, group)) |> 
+    mutate(
+      cluster_DM = case_when(
+        DM_mean == max(DM_mean) ~ "A", 
+        DM_mean == min(DM_mean) ~ "C", 
+        TRUE ~ "B"),
+      cluster_kPCA = case_when(
+        kPCA_mean == max(kPCA_mean) ~ "A", 
+        kPCA_mean == min(kPCA_mean) ~ "C", 
+        TRUE ~ "B"),
+      cluster_MDS = case_when(
+        MDS_mean == max(MDS_mean) ~ "A", 
+        MDS_mean == min(MDS_mean) ~ "C", 
+        TRUE ~ "B")
     ) |> 
-    rename(any_of(radar_vars)) |> 
-    pivot_longer(
-      -Cluster,
-      names_to = "Variable", 
-      values_to = "value"
+    filter(MDS_n >= 7) |> 
+    select(!c(contains("mean"), contains("_n"))) |>
+    # ... to here
+    scale_vars() |> 
+    get_long_format() |> 
+    get_long_clusters() |> 
+    mutate(
+      Variable = 
+        Variable |> 
+        str_replace("Reading\ncomprehension", "Reading") |> 
+        str_replace("Psi-Q Sensations", "Psi-Q Sens.") |> 
+        factor() |> 
+        fct_inorder() |> 
+        fct_relevel("VVIQ", after = Inf)
     ) |> 
-    mutate(Variable = factor(Variable) |> fct_inorder())
+    select(Group, Cluster, Method, Variable, value)
   
-  radar_data_4 <-
-    df |>
-    add_cluster_vars(clustering) |>
-    select(
-      subcluster, 
-      sensory_imagery:spatial_span, 
-      visual_imagery
-    ) |> 
-    rename(any_of(radar_vars)) |> 
-    pivot_longer(
-      -Cluster,
-      names_to = "Variable", 
-      values_to = "value"
-    ) |> 
-    mutate(Variable = factor(Variable) |> fct_inorder())
-  
-  plot_radar <- function(radar_data, palette) {
-    p <- 
-      superb(
-        value ~ Variable + Cluster, 
-        data = radar_data,
-        plotStyle = "circularline",
-        pointParams = list(size = .4),
-        lineParams = list(linewidth = .3),
-        errorbarParams = list(linewidth = .3),
-        adjustments = list(purpose = "single"),
-        factorOrder = c("Variable", "Cluster")
-      ) + 
-      scale_colour_manual(values = palette) +
-      scale_fill_manual(values   = palette) +
-      scale_y_continuous(
-        breaks = breaks_pretty(),
-        expand = expansion(c(0, 0.1))
-      ) +
-      labs(colour = NULL) +
-      theme_minimal(base_size = 6) +
-      theme(
-        panel.grid.minor = element_blank(),
-        legend.position  = "top",
-        legend.text      = element_text(size = 6),
-        axis.text.y      = element_text(
-          size = 4.5, 
-          margin = margin(0, -37, 0, 0, "mm"),
-          hjust = 0, vjust = 0.5
-        ),
-        axis.line        = element_blank(),
-        axis.title.y     = element_blank(),
-        axis.text.x      = element_text(size = 6),
-        axis.title.x     = element_blank(),
-        plot.margin      = margin(0, 10, 0, 10, "mm")
-      )
-    
-    p
-  }
+  radar_data_4 <- 
+    radar_data_3 |> 
+    unite("Cluster", Cluster, Group) |> 
+    group_by(Cluster, Method, Variable) |> 
+    mutate(n = n()) |>
+    ungroup() |>
+    mutate(n = paste0("n", n)) |> 
+    unite("Cluster", Cluster, n)
   
   pal_3 <- c("#56B4E9", "#E69F00", "#009E73")
   pal_4 <- c("#56B4E9", "#E69F00", "#F5C710", "#009E73")
   
-  p3 <- plot_radar(radar_data_3, pal_3)
-  p4 <- plot_radar(radar_data_4, pal_4)
+  methods <- unique(radar_data_3$Method)
   
-  p <- p3 + p4
+  p3 <- map(
+    methods, 
+    ~ plot_clusters_radar(radar_data_3 |> filter(Method == .x), pal_3) + 
+      labs(title = glue("Clustering with {.x} embedding"))
+      )
+  
+  methods <- unique(radar_data_4$Method)
+  
+  p4 <- map(
+    methods, 
+    ~ plot_radar(radar_data_4 |> filter(Method == .x), pal_4) + 
+      labs(title = glue("Clustering with {.x} embedding")) +
+      theme(plot.margin = margin(4, 2, 0, 2, "mm"))
+  )
+  
+  p <- wrap_plots(c(p3, p4), ncol = length(methods), nrows = 2)
   
   return(p)
 }
