@@ -154,8 +154,8 @@ plot_groups_violins <- function(
       panel.spacing.y    = unit(3, "mm"),
       strip.text         = element_text(size = txt_smol, face = "plain"),
       strip.background   = element_rect(
-        fill      = "grey95",
         color     = "grey80",
+        fill      = "grey95",
         linewidth = lw_smol
       )
     )

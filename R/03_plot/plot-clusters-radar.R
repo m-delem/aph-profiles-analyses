@@ -5,17 +5,17 @@ plot_clusters_radar <- function(
     data, 
     formula,
     palette,
-    txt_big   = 5,
-    txt_mid   = 4,
-    txt_smol  = 2.5,
+    # txt_big   = 7,
+    txt_mid   = 5.5,
+    txt_smol  = 3.5,
     # dot_big   = 0.3,
     dot_smol  = 0.1,
     # lw_big    = 0.3,
     lw_smol   = 0.1,
-    y_off     = 20,
-    h_off     = 2,
+    y_off     = 40,
+    h_off     = 0,
     v_off     = 0,
-    key       = 2,
+    key       = 3,
     ...
 ) {
   p <- 
@@ -37,10 +37,10 @@ plot_clusters_radar <- function(
       breaks = breaks_pretty(),
       expand = expansion(c(0, 0.02))
     ) +
-    theme_minimal(base_size = txt_mid) +
+    theme_minimal(base_size = txt_smol) +
     theme(
       # plot wise elements
-      plot.title       = element_text(size = txt_big),
+      plot.title       = element_blank(),
       panel.grid.minor = element_blank(),
       plot.margin      = margin(0, h_off, v_off, h_off, "mm"),
       # legend
@@ -48,12 +48,13 @@ plot_clusters_radar <- function(
       legend.title     = element_blank(),
       legend.text      = element_text(size = txt_mid),
       legend.key.size  = unit(key, "mm"),
+      legend.key.spacing.x = unit(3, "mm"),
       # y axis
       axis.text.y      = element_text(
         size   = txt_smol, 
         margin = margin(0, -y_off, 0, 0, "mm"),
         hjust  = 0, 
-        vjust  = 0.5
+        vjust  = -0.5
       ),
       axis.line        = element_blank(),
       axis.title.y     = element_blank(),

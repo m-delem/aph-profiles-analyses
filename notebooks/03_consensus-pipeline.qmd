@@ -28,7 +28,6 @@ conflicts_prefer(
   )
 ```
 
-
 ```{r}
 #| label: load-data
 
@@ -70,9 +69,26 @@ cluster_results <-
 walk(cluster_results, ~walk(.$summary, print))
 ```
 
-New stuff
+```{r}
+#| label: plot-embeddings
+#| fig-width: 8
+#| fig-height: 4
+
+p_embeds <- plot_clusters_embeds(cluster_results, df)
+
+print(p_embeds)
+
+ggsave(
+  filename = "figures/cluster-embeddings.pdf",
+  plot = p_embeds,
+  width = 180,
+  height = 90,
+  units = "mm"
+)
+```
 
 ```{r}
+#| label: plot-radars
 #| fig-width: 8
 #| fig-height: 4
 #| 
@@ -90,6 +106,8 @@ df_clustered <-
       Variable |> 
       str_replace("Reading\ncomprehension", "Reading") |> 
       str_replace("Psi-Q Sensations", "Psi-Q Sens.") |> 
+      str_replace("Psi-Q Feelings", "Psi-Q Feel.") |>  
+      str_replace("Audition", "Auditory") |> 
       factor() |> 
       fct_inorder() |> 
       fct_relevel("VVIQ", after = Inf)
@@ -100,56 +118,28 @@ p1 <-
     df_clustered,
     value ~ Variable + Cluster,
     palette = c("#56B4E9", "#E69F00", "#009E73")
-  )
+  ) +
+  theme(plot.margin = margin(0, 3.5, 0, 2, "mm"))
 
 p2 <-
   plot_clusters_radar(
     df_clustered,
     value ~ Variable + Subcluster,
     palette = c("#56B4E9", "#E69F00", "#F5C710", "#009E73")
-  )
+  ) +
+   theme(plot.margin = margin(0, 2, 0, 3.5, "mm"))
 
-p1 + p2
-```
+p_radars <- p1 + p2
 
+print(p_radars)
 
-
-```{r}
-#| label: plot-embeddings
-
-p_embeds <- 
-  map(
-    cluster_results,
-    ~pmap(
-      .x |> mutate(consensus_function = "majority"), 
-      plot_clusters_embedded
-    )
-  )
-
-walk(p_embeds, ~walk(., print))
-```
-
-```{r}
-#| label: plot-radars
-#| fig-width: 8
-#| fig-height: 6
-
-p_radars <- map(cluster_results, plot_clusters_radars_2, df = df)
-
-walk(p_radars, ~print(.))
-
-walk2(
-  p_radars, 
-  c("scaled", "reduced"), 
-  ~ggsave(
-    plot = .x,
-    filename = here(glue("figures/cluster-radar-{.y}.pdf")), 
-    device = "pdf",
-    width = 180,
-    height = 135,
-    units = "mm",
-    dpi = 600
-  )
+ggsave(
+  filename = "figures/cluster-radars.pdf",
+  plot = p_radars,
+  width = 180,
+  height = 90,
+  units = "mm"
 )
 ```
+
 
