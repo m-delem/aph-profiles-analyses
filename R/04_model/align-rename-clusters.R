@@ -22,19 +22,27 @@ rename_clusters <- function(cluster_col, vviq_col) {
 
 # Get the majority cluster assignment for each subject across all clusterings
 align_clusters <- function(df) {
+  most_freq <- function(x) {
+    m <- names(which.max(table(c_across(contains(x)))))
+    if (is.null(m)) return(NA)
+    
+    return(m)
+  }
+  
   df |> 
     rowwise() |>
     mutate(
       A_count = sum(c_across(contains("cluster")) == "A"),
       B_count = sum(c_across(contains("cluster")) == "B"),
       C_count = sum(c_across(contains("cluster")) == "C"),
+      scaled_choice  = most_freq("scaled"),
       cluster = case_when(
         A_count > B_count & A_count > C_count ~ "A",
         B_count > A_count & B_count > C_count ~ "B",
         C_count > A_count & C_count > B_count ~ "C",
-        A_count == B_count & vviq >= 58 ~ "A", # mean of the subgroup
-        B_count == C_count & vviq >= 32 ~ "B", # controls/aph.
-        TRUE ~ "B"
+        B_count == C_count ~ "B",
+        A_count == B_count ~ scaled_choice,
+        TRUE               ~ scaled_choice
       )
     ) |>   
     unite("subcluster", cluster, group, remove = FALSE) |> 
@@ -50,7 +58,7 @@ align_clusters <- function(df) {
         labels = c("A (Control)", "B-Control", "B-Aphant.", "C (Aphant.)")
       )
     ) |> 
-    select(!c(contains("count"), contains("cluster_"))) |>
+    # select(!c(contains("count"), contains("cluster_"))) |>
     select(id, group, cluster, subcluster, everything()) |> 
     ungroup()
 }

@@ -1,5 +1,6 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(dimRed, dplyr)
+# dimRed::installSuggests()
 
 embed_and_cluster <- function(
     df,

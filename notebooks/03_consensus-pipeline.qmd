@@ -24,6 +24,7 @@ conflicts_prefer(
   scales::rescale(), 
   purrr::map(),
   base::as.data.frame(),
+  base::which.max(),
   .quiet = TRUE
   )
 ```
@@ -52,6 +53,8 @@ dfs_to_cluster <- list(
 )
 ```
 
+# Computing clustering consensus
+
 ```{r}
 #| label: embed-and-cluster
 
@@ -68,6 +71,34 @@ cluster_results <-
 
 walk(cluster_results, ~walk(.$summary, print))
 ```
+
+# Number of clusters
+
+```{r}
+#| fig-width: 10
+#| fig-height: 6
+
+p1 <-
+  cluster_results$scaled$clustering[[3]]$E |> 
+  diceR::graph_cdf() + 
+  theme_minimal() + 
+  facet_grid(~Method) + 
+  scale_colour_brewer() + 
+  theme(panel.border = element_rect(colour = "grey50", fill = NA))
+
+p2 <-
+  cluster_results$scaled$clustering[[3]]$E |> 
+  diceR::graph_delta_area() + 
+  theme_minimal() + 
+  facet_grid(~Method) + 
+  scale_colour_brewer() + 
+  theme(panel.border = element_rect(colour = "grey50", fill = NA))
+
+p1 / p2
+```
+
+
+# Variable embeddings
 
 ```{r}
 #| label: plot-embeddings
@@ -87,6 +118,8 @@ ggsave(
 )
 ```
 
+# Cluster radars
+
 ```{r}
 #| label: plot-radars
 #| fig-width: 8
@@ -95,8 +128,8 @@ ggsave(
 
 df_clustered <- 
   df |> 
-  add_clusters(cluster_results$scaled) |>
-  add_clusters(cluster_results$reduced) |>
+  add_clusters(cluster_results$scaled,  "scaled") |>
+  add_clusters(cluster_results$reduced, "reduced") |>
   mutate(across(contains("cluster"), ~ rename_clusters(., vviq))) |> 
   align_clusters() |>
   scale_vars() |> 

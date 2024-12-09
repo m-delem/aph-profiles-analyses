@@ -15,6 +15,7 @@ cluster_vars <- function(
       p.item   = 0.95,
       reps     = 100,
       algorithms = c(
+        "hc",
         "gmm",
         "pam",
         "km",
