@@ -43,13 +43,13 @@ dfs_to_cluster <- list(
   scaled = 
     df |> 
     scale_vars() |> 
-    select(vviq:span_digit, score_similarities),
+    select(vviq:span_digit, score_similarities)
   # Solution 2: manual reduction based on partial correlation first
-  reduced = 
-    df |> 
-    reduce_vars() |> 
-    select(any_of(partial_correlation_vars)) |> 
-    mutate(across(everything(), ~as.numeric(scale(.))))
+  # reduced = 
+  #   df |> 
+  #   reduce_vars() |> 
+  #   select(any_of(partial_correlation_vars)) |> 
+  #   mutate(across(everything(), ~as.numeric(scale(.))))
 )
 ```
 
@@ -121,15 +121,85 @@ ggsave(
 # Cluster radars
 
 ```{r}
+cluster_results <- 
+  tibble(
+    name        = c("scaled", "reduced"),
+    df_to_clust = list(
+      # Solution 1: simply scale then cluster the embedded raw variables
+      df |> 
+        scale_vars() |> 
+        select(vviq:span_digit, score_similarities),
+      # Solution 2: manual reduction based on partial correlation first
+      df |>
+        reduce_vars() |>
+        select(any_of(partial_correlation_vars)) |>
+        mutate(across(everything(), ~as.numeric(scale(.))))
+    )
+  ) |> 
+  rowwise() |> 
+  mutate(results = list(embed_and_cluster(df_to_clust, df))) |> 
+  unnest(results)
+```
+
+```{r}
+cluster_results |>
+# cluster_results_ap |> 
+  select(
+    name, 
+    method, 
+    contains("q_"),
+    renamed_clusters
+  ) |> 
+  unnest(!c(name, method)) |> 
+  mutate(method = case_match(method, "DiffusionMaps" ~ "DM",.default = method)) |> 
+  rowwise() |>
+  mutate(q = sum(c_across(contains("q_"))), .keep = "unused") |>
+  mutate(
+    A_weight = sum(c_across(contains("cluster")) == 1) * q |> round(2),
+    B_weight = sum(c_across(contains("cluster")) == 2) * q |> round(2),
+    C_weight = sum(c_across(contains("cluster")) == 3) * q |> round(2)
+  ) |> 
+  ungroup() |> 
+  select(!c(contains("cluster"), q)) |> 
+  pivot_wider(
+    names_from = c(name, method), 
+    values_from = c(contains("weight"))
+  ) |> 
+  rowwise() |>
+  mutate(
+    A_score = sum(c_across(contains("A_weight"))),
+    B_score = sum(c_across(contains("B_weight"))),
+    C_score = sum(c_across(contains("C_weight"))),
+    cluster = case_when(
+      A_score > B_score & A_score > C_score ~ "A",
+      B_score > A_score & B_score > C_score ~ "B",
+      C_score > A_score & C_score > B_score ~ "C",
+      TRUE ~ "WAT why"
+    ),
+    .keep = "unused"
+  ) |> 
+  ungroup() |> 
+  mutate(
+    id = df$id,
+    group = df$group,
+    g_vviq  = df$vviq,
+    g_spatial = df$osivq_s,
+    g_verbal  = df$osivq_v,
+    g_raven = df$score_raven,
+    g_sri   = df$score_sri
+  )
+```
+
+
+```{r}
 #| label: plot-radars
 #| fig-width: 8
 #| fig-height: 4
-#| 
 
 df_clustered <- 
   df |> 
-  add_clusters(cluster_results$scaled,  "scaled") |>
-  add_clusters(cluster_results$reduced, "reduced") |>
+  # add_clusters(cluster_results$scaled,  "scaled") |>
+  # add_clusters(cluster_results$reduced, "reduced") |>
   mutate(across(contains("cluster"), ~ rename_clusters(., vviq))) |> 
   align_clusters() |>
   scale_vars() |> 

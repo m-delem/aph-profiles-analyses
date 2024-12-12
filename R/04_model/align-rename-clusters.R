@@ -1,24 +1,3 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(dplyr, tidyr)
-
-# Rename clusters to A = high VVIQ, B = medium VVIQ, C = low VVIQ
-rename_clusters <- function(cluster_col, vviq_col) {
-  mini_df <- tibble(vviq = vviq_col, cluster = cluster_col)
-  
-  renamed_clusters <-
-    mini_df |> 
-    mutate(mean = mean(vviq), .by = cluster) |> 
-    mutate(
-      cluster = case_when(
-        mean == max(mean) ~ "A",
-        mean == min(mean) ~ "C",
-        TRUE ~ "B"
-      )
-    ) |> 
-    pull(cluster)
-  
-  return(renamed_clusters)
-}
 
 # Get the majority cluster assignment for each subject across all clusterings
 align_clusters <- function(df) {
