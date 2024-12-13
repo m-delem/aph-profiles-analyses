@@ -4,8 +4,6 @@ pacman::p_load(ggplot2, see, superb)
 # Plot two radar plots side by side with the cluster and subcluster results
 plot_clusters_radars <- function(df_clust) {
   radar_vars <- c(
-    # "Cluster"               = "cluster",
-    # "Cluster"               = "subcluster",
     "Sensory\nimagery"      = "sensory_imagery",
     "Spatial\nimagery"      = "spatial_imagery", 
     "Verbal\nstrategies"    = "verbal_strategies",

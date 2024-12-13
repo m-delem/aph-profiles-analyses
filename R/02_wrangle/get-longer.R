@@ -29,7 +29,7 @@ get_longer <- function(df){
     "Sensory imagery"        = "sensory_imagery",
     "Spatial imagery"        = "spatial_imagery",
     "Verbal strategies"      = "verbal_strategies",
-    "Fluid\nintelligence"    = "fluid_intelligence",
+    "Raven +\nDigit Span"    = "fluid_intelligence",
     "Non-verbal\nreasoning"  = "non_verbal_reasoning",
     "Verbal reasoning"       = "verbal_reasoning",
     "Spatial span std."      = "spatial_span",

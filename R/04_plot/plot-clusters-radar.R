@@ -20,15 +20,13 @@ plot_clusters_radar <- function(
 ) {
   p <- 
     superb(
-      # formula        = value ~ Variable + Subcluster, 
-      formula        = formula,
+      formula        = formula,  # e.g., value ~ Variable + Cluster
       data           = data,
       plotStyle      = "circularline",
       pointParams    = list(size = dot_smol),
       lineParams     = list(linewidth = lw_smol),
       errorbarParams = list(linewidth = lw_smol, show.legend = FALSE),
       adjustments    = list(purpose = "single")
-      # factorOrder    = c("Variable", "Subcluster")
     ) + 
     scale_colour_manual(values = palette) +
     scale_fill_manual(values   = palette) +

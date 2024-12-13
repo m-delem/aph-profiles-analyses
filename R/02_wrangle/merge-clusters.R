@@ -1,5 +1,5 @@
 # Add the clustering and reduced variables to the main data frame
-add_cluster_vars <- function(df_raw, df_reduced, clustering) {
+merge_clusters <- function(df_raw, df_reduced, clustering) {
   withr::local_options(list(warn = -1))
   
   new_cols <-

@@ -2,7 +2,7 @@
 pacman::p_load(BayesFactor, dplyr, tidyr)
 
 # Model the association between education, field and occupation with a variable
-model_life_associations <- function(df, clustering, var) {
+model_lives <- function(df, clustering, var) {
   associations <- 
     df |> 
     add_cluster_vars(clustering) |> 
