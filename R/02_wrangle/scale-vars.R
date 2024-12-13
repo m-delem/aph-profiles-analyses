@@ -8,7 +8,7 @@ scale_vars <- function(df, min = 0, max = 1){
     df |> 
     mutate(
       across(
-        contains("age"),     ~ rescale(., c(min, max), c(min(age),max(age)))
+        starts_with("age"),  ~ rescale(., c(min, max), c(min(age),max(age)))
       ),
       across(
         contains("vviq"),    ~ rescale(., c(min, max), c(16,80))

@@ -123,7 +123,7 @@ if (!file.exists(here(path_n_models))) {
 # cluster the data
 clustering <- 
   df |> 
-  reduce_vars() |> 
+  scale_reduce_vars() |> 
   select(any_of(selected_vars)) |>
   Mclust(G = 3, verbose = FALSE)
 
@@ -261,11 +261,20 @@ Determination of the optimal number of clusters through an unsupervised "agreeme
 #| label: show-cluster-repartition
 
 df |> 
+  scale_reduce_vars() |>
   add_cluster_vars(clustering) |> 
   group_by(group) |> 
   count(Cluster = cluster) |> 
   pivot_wider(names_from = group, values_from = n, values_fill = 0) |> 
   knitr::kable()
+
+df |> 
+  scale_reduce_vars() |>
+  add_cluster_vars(clustering) |> 
+  group_by(subcluster) |> 
+  reframe(
+    n = n(),
+    across(c(vviq, osivq_s, osivq_v, score_raven, span_digit.x, score_sri), ~mean(.) |> round(2)))
 ```
 :::
 
@@ -311,8 +320,24 @@ subcluster_models |>
 #| label: cluster-radar-plots
 #| fig-width: 8
 #| fig-height: 3.5
+#| warning: false
 
-plot_clusters_radars(df, clustering)
+df |> 
+  scale_reduce_vars() |>
+  add_cluster_vars(df_raw = df, clustering) |>
+  plot_clusters_radars()
+
+df2 <-
+  df |> 
+  scale_reduce_vars() |>
+  add_cluster_vars(df_raw = df, clustering)
+
+models_path <- here("data/r-data-structures/models.rds")
+models <- list(
+  group_models      = df2 |> scale_vars() |> get_longer() |> model_groups(groups = Group),
+  cluster_models    = df2 |> scale_vars() |> get_longer() |> model_groups(groups = Cluster),
+  subcluster_models = df2 |> scale_vars() |> get_longer() |> model_groups(groups = Subcluster)
+  )
 
 if (params$save_figures) {
   # ggsave(here("figures/cluster-radar.png"), dpi = 600)

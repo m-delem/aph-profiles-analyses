@@ -1,0 +1,72 @@
+```{r}
+if (!requireNamespace("pacman")) install.packages("pacman")
+pacman::p_load(
+  conflicted, 
+  here,
+  fs, 
+  ggplot2,
+  mclust,
+  NbClust,
+  patchwork,
+  purrr,
+  sessioninfo
+)
+
+source(here("R/01_import/import-jatos-data.R"))
+dir_ls(here("R/02_wrangle"), type = "file", recurse = TRUE) |> walk(source)
+source(here("R/03_model/correlate-vars.R"))
+source(here("R/03_model/model-groups.R"))
+
+# resolve package conflicts
+conflicts_prefer(
+  dplyr::filter(), 
+  dplyr::select(),
+  scales::rescale(), 
+  purrr::map(),
+  .quiet = TRUE
+  )
+```
+
+```{r}
+df <- import_jatos_data()$data_final
+```
+
+```{r}
+corrs_simple  <- correlate_vars(df, partial = FALSE, correction = "bonferroni")
+corrs_partial <- correlate_vars(df, partial = TRUE,  correction = "bonferroni")
+```
+
+```{r}
+#| warning: false
+
+selected_vars <- c(
+  "visual_imagery", "sensory_imagery", "spatial_imagery", "verbal_strategies",
+  "fluid_intelligence", "verbal_reasoning", "span_spatial"
+)
+
+bic <- df |> scale_reduce_vars() |> select(any_of(selected_vars)) |> mclustBIC()
+
+clustering <- 
+  df |> 
+  scale_reduce_vars() |> 
+  select(any_of(selected_vars)) |>
+  Mclust(G = 3, verbose = FALSE)
+
+df2 <- add_cluster_vars(df, scale_reduce_vars(df), clustering)
+
+models_path <- here("data/r-data-structures/models.rds")
+if (!file.exists(models_path)) {
+  group_models      <- df2 |> scale_vars() |> get_longer() |> model_groups(groups = Group)
+  cluster_models    <- df2 |> scale_vars() |> get_longer() |> model_groups(groups = Cluster)
+  subcluster_models <- df2 |> scale_vars() |> get_longer() |> model_groups(groups = Subcluster)
+  
+  saveRDS(
+    list(
+      group_models = group_models,
+      cluster_models = cluster_models,
+      subcluster_models = subcluster_models
+      ), 
+    models_path)
+} else models <- readRDS(models_path)
+```
+

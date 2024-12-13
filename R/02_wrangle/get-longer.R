@@ -2,7 +2,7 @@
 pacman::p_load(dplyr, tidyr, withr)
 
 # Transform the main data frame to long format
-get_long_format <- function(df){
+get_longer <- function(df){
   withr::local_options(list(warn = -1))
   
   vars <- c(
@@ -32,7 +32,7 @@ get_long_format <- function(df){
     "Fluid\nintelligence"    = "fluid_intelligence",
     "Non-verbal\nreasoning"  = "non_verbal_reasoning",
     "Verbal reasoning"       = "verbal_reasoning",
-    "Spatial span"           = "spatial_span",
+    "Spatial span std."      = "spatial_span",
     # Complex tasks
     "WCST"                   = "wcst_accuracy",
     "Reading\ncomprehension" = "score_comprehension"
@@ -56,7 +56,7 @@ get_long_format <- function(df){
         contains("strategies"),
         contains("intelligence"),
         contains("reasoning"),
-        matches("spatial_span"),
+        ends_with("spatial_span"),
         # complex
         contains("wcst"),
         contains("comprehension")

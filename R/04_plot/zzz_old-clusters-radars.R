@@ -2,34 +2,35 @@
 pacman::p_load(ggplot2, see, superb)
 
 # Plot two radar plots side by side with the cluster and subcluster results
-plot_clusters_radars <- function(df, clustering) {
+plot_clusters_radars <- function(df_clust) {
   radar_vars <- c(
-    "Cluster"               = "cluster",
-    "Cluster"               = "subcluster",
-    "Visual\nimagery"       = "visual_imagery", 
+    # "Cluster"               = "cluster",
+    # "Cluster"               = "subcluster",
     "Sensory\nimagery"      = "sensory_imagery",
     "Spatial\nimagery"      = "spatial_imagery", 
     "Verbal\nstrategies"    = "verbal_strategies",
     "Raven +\nDigit Span"   = "fluid_intelligence",
     "Verbal\nreasoning"     = "verbal_reasoning", 
-    "Spatial\nspan"         = "spatial_span"
+    "Spatial\nspan"         = "spatial_span",
+    "Visual\nimagery"       = "visual_imagery"
   )
   
   radar_data_3 <-
-    df |>
-    add_cluster_vars(clustering) |>
+    df_clust |>
+    # add_cluster_vars(clustering) |>
     mutate(cluster = case_when(
       cluster == "Cluster A" ~ "A (Control)",
       cluster == "Cluster B" ~ "B (Mixed)",
       cluster == "Cluster C" ~ "C (Aphantasic)",
       TRUE ~ cluster
     )) |>
-    select(
-      cluster, 
-      sensory_imagery:spatial_span, 
-      visual_imagery
-    ) |> 
-    rename(any_of(radar_vars)) |> 
+    # select(
+    #   cluster, 
+    #   sensory_imagery:spatial_span, 
+    #   visual_imagery
+    # ) |> 
+    # rename(any_of(radar_vars)) |>
+    select("Cluster" = cluster, any_of(radar_vars)) |> 
     pivot_longer(
       -Cluster,
       names_to = "Variable", 
@@ -38,14 +39,15 @@ plot_clusters_radars <- function(df, clustering) {
     mutate(Variable = factor(Variable) |> fct_inorder())
   
   radar_data_4 <-
-    df |>
-    add_cluster_vars(clustering) |>
-    select(
-      subcluster, 
-      sensory_imagery:spatial_span, 
-      visual_imagery
-    ) |> 
-    rename(any_of(radar_vars)) |> 
+    df_clust |>
+    # add_cluster_vars(clustering) |>
+    # select(
+    #   subcluster, 
+    #   sensory_imagery:spatial_span, 
+    #   visual_imagery
+    # ) |> 
+    # rename(any_of(radar_vars)) |> 
+    select("Cluster" = subcluster, any_of(radar_vars)) |> 
     pivot_longer(
       -Cluster,
       names_to = "Variable", 

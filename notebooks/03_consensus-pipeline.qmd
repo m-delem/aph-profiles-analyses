@@ -36,40 +36,53 @@ df <- import_jatos_data()$data_final
 
 partial_correlation_vars <- c(
   "visual_imagery", "sensory_imagery", "spatial_imagery", "verbal_strategies",
-  "fluid_intelligence", "verbal_reasoning", "span_spatial")
-
-dfs_to_cluster <- list(
-  # Solution 1: simply scale then cluster the embedded raw variables
-  scaled = 
-    df |> 
-    scale_vars() |> 
-    select(vviq:span_digit, score_similarities)
-  # Solution 2: manual reduction based on partial correlation first
-  # reduced = 
-  #   df |> 
-  #   reduce_vars() |> 
-  #   select(any_of(partial_correlation_vars)) |> 
-  #   mutate(across(everything(), ~as.numeric(scale(.))))
-)
+  "fluid_intelligence", "verbal_reasoning", "span_spatial"
+  )
 ```
 
 # Computing clustering consensus
 
 ```{r}
-#| label: embed-and-cluster
+#| label: consensus-clustering
 
 cluster_results <- 
-  map(
-    dfs_to_cluster, 
-    embed_and_cluster, 
-    df = df
-  )
+  tibble(
+    # We compute the clustering on two datasets
+    name        = c(
+      # "scaled", 
+      "reduced"
+      ),
+    df_to_clust = list(
+      # Option 1: simple variable scaling --------------------------------------
+      # df |> 
+      #   scale_vars() |> 
+      #   select(vviq:span_digit, score_similarities),
+      # Option 2: reduction based on partial correlations ----------------------
+      df |>
+        scale_reduce_vars() |>
+        select(any_of(partial_correlation_vars)) |>
+        mutate(across(everything(), ~as.numeric(scale(.))))
+    )
+  ) |> 
+  rowwise() |> 
+  mutate(results = list(embed_and_cluster(df_to_clust, df))) |> 
+  unnest(results)
 ```
 
-```{r}
-#| label: print-summary
+# Summary
 
-walk(cluster_results, ~walk(.$summary, print))
+```{r}
+#| label: clustering-summary
+
+df2 <- align_clusters(cluster_results, df)
+
+df2 |>
+  group_by(cluster, group, subcluster) |>
+  reframe(
+    n = n(),
+    across(where(is.numeric), ~ mean(., na.rm = TRUE) |> round(2))
+  ) |> 
+  relocate(score_raven, score_sri)
 ```
 
 # Number of clusters
@@ -97,7 +110,6 @@ p2 <-
 p1 / p2
 ```
 
-
 # Variable embeddings
 
 ```{r}
@@ -119,77 +131,6 @@ ggsave(
 ```
 
 # Cluster radars
-
-```{r}
-cluster_results <- 
-  tibble(
-    name        = c("scaled", "reduced"),
-    df_to_clust = list(
-      # Solution 1: simply scale then cluster the embedded raw variables
-      df |> 
-        scale_vars() |> 
-        select(vviq:span_digit, score_similarities),
-      # Solution 2: manual reduction based on partial correlation first
-      df |>
-        reduce_vars() |>
-        select(any_of(partial_correlation_vars)) |>
-        mutate(across(everything(), ~as.numeric(scale(.))))
-    )
-  ) |> 
-  rowwise() |> 
-  mutate(results = list(embed_and_cluster(df_to_clust, df))) |> 
-  unnest(results)
-```
-
-```{r}
-cluster_results |>
-# cluster_results_ap |> 
-  select(
-    name, 
-    method, 
-    contains("q_"),
-    renamed_clusters
-  ) |> 
-  unnest(!c(name, method)) |> 
-  mutate(method = case_match(method, "DiffusionMaps" ~ "DM",.default = method)) |> 
-  rowwise() |>
-  mutate(q = sum(c_across(contains("q_"))), .keep = "unused") |>
-  mutate(
-    A_weight = sum(c_across(contains("cluster")) == 1) * q |> round(2),
-    B_weight = sum(c_across(contains("cluster")) == 2) * q |> round(2),
-    C_weight = sum(c_across(contains("cluster")) == 3) * q |> round(2)
-  ) |> 
-  ungroup() |> 
-  select(!c(contains("cluster"), q)) |> 
-  pivot_wider(
-    names_from = c(name, method), 
-    values_from = c(contains("weight"))
-  ) |> 
-  rowwise() |>
-  mutate(
-    A_score = sum(c_across(contains("A_weight"))),
-    B_score = sum(c_across(contains("B_weight"))),
-    C_score = sum(c_across(contains("C_weight"))),
-    cluster = case_when(
-      A_score > B_score & A_score > C_score ~ "A",
-      B_score > A_score & B_score > C_score ~ "B",
-      C_score > A_score & C_score > B_score ~ "C",
-      TRUE ~ "WAT why"
-    ),
-    .keep = "unused"
-  ) |> 
-  ungroup() |> 
-  mutate(
-    id = df$id,
-    group = df$group,
-    g_vviq  = df$vviq,
-    g_spatial = df$osivq_s,
-    g_verbal  = df$osivq_v,
-    g_raven = df$score_raven,
-    g_sri   = df$score_sri
-  )
-```
-
 
 ```{r}
 #| label: plot-radars
@@ -245,4 +186,17 @@ ggsave(
 )
 ```
 
+# Modelling
+
+```{r}
+#| label: modelling
+#| warning: false
+
+models_path <- here("data/r-data-structures/models.rds")
+models <- list(
+  group_models      = df2 |> scale_vars() |> get_longer() |> model_groups(groups = Group),
+  cluster_models    = df2 |> scale_vars() |> get_longer() |> model_groups(groups = Cluster),
+  subcluster_models = df2 |> scale_vars() |> get_longer() |> model_groups(groups = Subcluster)
+  )
+```
 

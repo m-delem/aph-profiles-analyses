@@ -2,10 +2,50 @@
 pacman::p_load(dplyr)
 
 # Reduce the number of variables to prepare for clustering
-reduce_vars <- function(df){
+scale_reduce_vars <- function(df, min = 0, max = 1){
   df_reduced <- 
     df |> 
-    scale_vars() |> 
+    mutate(
+      across(
+        matches("age"),     ~ rescale(., c(min, max), c(min(age),max(age)))
+      ),
+      across(
+        contains("vviq"),    ~ rescale(., c(min, max), c(16,80))
+      ),
+      across(
+        contains("osivq"),   ~ rescale(., c(min, max), c(15, 75))
+      ),
+      across(
+        contains("psiq"),    ~ rescale(., c(min, max), c(1, 10))
+      ),
+      across(
+        contains("raven"),   ~ rescale(., c(min, max), c(0, 36))
+      ),
+      across(
+        contains("sri"),     ~ rescale(., c(min, max), c(0, 30))
+      ),
+      across(
+        contains("span"),    ~ rescale(., c(min, max), c(0, max(.)))
+      ),
+      across(
+        contains("wcst"),    ~ rescale(., c(min, max), c(0, 100))
+      ),
+      across(
+        contains("similar"), ~ rescale(., c(min, max), c(0, 36))
+      ),
+      across(
+        contains("comprehension"), ~ rescale(., c(min, max), c(0, max(.) + 3))
+      ),
+      across(any_of(
+        c(
+          contains("age"), 
+          contains("vviq"), contains("osivq"), contains("psiq"),
+          contains("score"), contains("span"), contains("wcst")
+        )
+      ),
+      ~ round(., 3)
+      )
+    ) |> 
     mutate(
       # merging the normalized vviq, osviq-o, and psiq visual scores
       visual_imagery = round(
@@ -38,12 +78,10 @@ reduce_vars <- function(df){
       auditory_imagery = psiq_aud,
       sensory_imagery,
       spatial_imagery,
-      spatial_imagery_2 = osivq_s,
       verbal_strategies = osivq_v,
       fluid_intelligence,
-      non_verbal_reasoning,
+      # non_verbal_reasoning,
       verbal_reasoning = score_similarities,
-      span_digit,
       span_spatial
     )
   

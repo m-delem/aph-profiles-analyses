@@ -35,7 +35,8 @@ embed_and_cluster <- function(
       "CSPA",
       "majority"
       ),
-    distance = "maximum",
+    distance = "euclidean",
+    # distance = "maximum",
     ...
   ){
     clustering <-
@@ -47,17 +48,16 @@ embed_and_cluster <- function(
         reps     = 100,
         algorithms = c(
           "gmm",
-          "cmeans",
           "hc",
-          "diana",
           "pam",
+          "cmeans",
           "km"
         ),
         hc.method = "complete",
         distance  = distance,
         cons.funs = consensus_f,
         trim      = TRUE,
-        reweigh   = FALSE
+        reweigh   = TRUE
       )
     
     return(clustering)
@@ -145,25 +145,6 @@ embed_and_cluster <- function(
     
     return(renamed_assignments)
   }
-
-  # Sub-function X: Summary of the embeddings and consensus clusterings --------
-  cluster_summary <- function(df, assignments, method, ...){
-    df_summary <- 
-      assignments |> 
-      mutate(group = df$group) |> 
-      pivot_longer(
-        cols = !c(id, group), 
-        names_to = "consensus", 
-        values_to = "cluster"
-      ) |>
-      group_by(consensus, cluster, group) |>
-      count() |> 
-      mutate(method = method) |> 
-      relocate(method) |> 
-      arrange(desc(consensus))
-    
-    return(df_summary)
-  }
   
   # Main computation: all the results above gathered in a tibble ---------------
   results <- 
@@ -190,58 +171,15 @@ embed_and_cluster <- function(
       q_R_NX     = quality(dim_reds, "mean_R_NX"),
       q_cophen   = quality(dim_reds, "cophenetic_correlation"),
       q_distance = quality(dim_reds, "distance_correlation"),
-      clustering = list(cluster_vars(embeddings, k = 2:4)),
+      clustering = list(cluster_vars(df_to_clust, k = 2:4)),
+      # clustering = list(cluster_vars(embeddings, k = 2:4)),
       pac_scaled = list(scale_pac(method, clustering)),
       optimal_k  = list(get_k(method, clustering)),
       assignment = list(assign_clusters(df, method, clustering)),
-      renamed_clusters = list(rename_assigns(df, assignment)),
-      # clusters_summary = list(cluster_summary(df, assignments, method))
+      clusters   = list(rename_assigns(df, assignment))
     ) |> 
     ungroup()
   
   return(results)
-}
-
-align_clusters <- function(df) {
-  most_freq <- function(x) {
-    m <- names(which.max(table(c_across(contains(x)))))
-    if (is.null(m)) return(NA)
-
-    return(m)
-  }
-
-  df |>
-    rowwise() |>
-    mutate(
-      A_count = sum(c_across(contains("cluster")) == "A"),
-      B_count = sum(c_across(contains("cluster")) == "B"),
-      C_count = sum(c_across(contains("cluster")) == "C"),
-      # scaled_choice  = most_freq("scaled"),
-      cluster = case_when(
-        A_count > B_count & A_count > C_count ~ "A",
-        B_count > A_count & B_count > C_count ~ "B",
-        C_count > A_count & C_count > B_count ~ "C",
-        B_count == C_count ~ "B",
-        A_count == B_count ~ "A",
-        all(sapply(list(A_count, B_count), function(x) x == C_count)) ~ "B",
-        TRUE               ~ "B"
-      )
-    ) |>
-    unite("subcluster", cluster, group, remove = FALSE) |>
-    mutate(
-      cluster = factor(
-        cluster,
-        levels = c("A", "B", "C"),
-        labels = c("A (Control)", "B (Control + Aphant.)", "C (Aphant.)")
-      ),
-      subcluster = factor(
-        subcluster,
-        levels = c("A_Control", "B_Control", "B_Aphantasic", "C_Aphantasic"),
-        labels = c("A (Control)", "B-Control", "B-Aphant.", "C (Aphant.)")
-      )
-    ) |>
-    # select(!c(contains("count"), contains("cluster_"))) |>
-    select(id, group, cluster, subcluster, everything()) |>
-    ungroup()
 }
 

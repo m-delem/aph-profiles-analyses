@@ -17,7 +17,7 @@ pacman::p_load(
 # Import, tidy and save JATOS data
 import_jatos_data <- function() {
   
-  # Retrieving metadata ------------------------------
+  # Retrieving metadata --------------------------------------------------------
   
   df_meta <- 
     read_xlsx(here("data/data-raw/metadata.xlsx")) |> 
@@ -33,7 +33,7 @@ import_jatos_data <- function() {
     )
   
   
-  # Extracting and tidying raw data ----------
+  # Extracting and tidying raw data --------------------------------------------
   
   df <-
     tibble(path = dir_ls(
