@@ -7,23 +7,68 @@ pacman::p_load(
   ggplot2, 
   see,
   stringr,
-  tibble
+  tibble,
+  withr
 )
 
 # Plot the group scores on all variables as violins
 plot_groups_violins <- function(
-    df, 
+    df_long, 
+    var_selection = "original",
     palette   = c("#56B4E9", "#009E73"),
     txt_big   = 7,
     txt_mid   = 6,
-    txt_smol  = 5.5,
+    txt_smol  = 5,
     dot_big   = 0.3,
     dot_smol  = 0.15,
     lw_big    = 0.3,
     lw_smol   = 0.1,
     alpha     = 0.3
 ) {
-  # Defining the effects to label with stars
+  withr::local_options(list(warn = -1))
+  
+  # Sub-function: Add significance labels above plots --------------------------
+  add_significance <- function(
+    df_effects, 
+    size_star = 2.5, 
+    lw = 0.2
+  ){
+    # df_effects must contain:
+    # - Variable
+    # - x_star
+    # - y_star
+    # - stars
+    # - x_line
+    # - x_line_end
+    # - y_line
+    list(
+      geom_text(
+        data = df_effects,
+        aes(
+          x     = x_star,
+          y     = y_star,
+          label = stars
+        ),
+        size        = size_star,
+        color       = "black",
+        inherit.aes = FALSE
+      ),
+      geom_segment(
+        data = df_effects,
+        aes(
+          x    = x_line,
+          xend = x_line_end,
+          y    = y_line,
+          yend = y_line,
+        ),
+        color       = "black",
+        linewidth   = lw,
+        inherit.aes = FALSE
+      )
+    )
+  }
+  
+  # Defining the effects to label with stars -----------------------------------
   group_effects <-
     tibble(
       Variable = factor(c(
@@ -50,14 +95,54 @@ plot_groups_violins <- function(
       y_line     = 1.05
     )
   
-  # For the legend
-  # labels <- c(" Control    ", " Aphantasic")
-  # labels <- c("Control", "Aphantasic")
+  # Variable selections --------------------------------------------------------
+  if (var_selection == "original") {
+    vars <- c(
+      # Original scores
+      "VVIQ",
+      "OSIVQ-Object",
+      "OSIVQ-Spatial",
+      "OSIVQ-Verbal",
+      "Psi-Q Vision",
+      "Psi-Q Audition",
+      "Psi-Q Smell",
+      "Psi-Q Taste",
+      "Psi-Q Touch",
+      "Psi-Q Sensations",
+      "Psi-Q Feelings",
+      "Raven matrices",
+      "SRI",
+      "Digit span",
+      "Spatial span",
+      "Similarities test",
+      # Complex tasks
+      "WCST",
+      "Reading\ncomprehension"
+    )
+  } else if (var_selection == "reduced") {
+    vars <- c(
+      # Reduced variables
+      "Visual imagery",
+      "Auditory imagery",
+      "Sensory imagery",
+      "Spatial imagery",
+      "Verbal strategies",
+      "Raven +\nDigit Span",
+      "Non-verbal\nreasoning",
+      "Verbal reasoning",
+      "Spatial span std.",
+      # Complex tasks
+      "WCST",
+      "Reading\ncomprehension"
+    )
+  } else {
+    stop("var_selection must be either 'original' or 'reduced'.")
+  }
   
+  # Main plot ------------------------------------------------------------------
   p <- 
-    df |> 
-    scale_vars() |>
-    get_long_format() |> 
+    df_long |>
+    filter(Variable %in% vars) |> 
     group_by(Group, Variable) |>
     reframe(value = value, mean = mean(value), sd = sd(value)) |> 
     mutate(
@@ -134,7 +219,7 @@ plot_groups_violins <- function(
         margin = margin(0, 1.5, 0, 0, "mm")
       ),
       axis.text.y        = element_text(size = txt_smol),
-      axis.ticks.y       = element_line(colour = "grey80", linewidth = lw_smol),
+      axis.ticks.y       = element_line(colour = "grey92", linewidth = lw_smol),
       # x axis
       axis.title.x       = element_blank(),
       axis.text.x        = element_blank(),
@@ -146,16 +231,16 @@ plot_groups_violins <- function(
       panel.grid.minor.y = element_line(linewidth = lw_smol),
       # facets
       panel.border       = element_rect(
-        color = "grey80", 
+        color = "grey92", 
         fill = NA, 
         linewidth = lw_smol
       ),
       panel.spacing.x    = unit(0, "mm"),
       panel.spacing.y    = unit(3, "mm"),
-      strip.text         = element_text(size = txt_smol, face = "plain"),
+      strip.text         = element_text(size = txt_big, face = "plain"),
       strip.background   = element_rect(
-        color     = "grey80",
-        fill      = "grey95",
+        color     = "grey92",
+        fill      = "grey98",
         linewidth = lw_smol
       )
     )

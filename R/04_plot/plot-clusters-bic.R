@@ -6,7 +6,7 @@ plot_clusters_bic <- function(mclust_object) {
     fviz_mclust_bic(
       clustering, 
       shape = "model",
-      size = 0.1,
+      size = 0.2,
       palette = colorRampPalette(see::okabeito_colors())(14)
     ) + 
     labs(
@@ -15,16 +15,18 @@ plot_clusters_bic <- function(mclust_object) {
       shape = "Model type"
     ) +
     theme(
-      plot.subtitle = element_text(size = 7),
-      plot.margin = margin(1, 1, 0, 1, "mm"),
-      legend.position = "bottom",
-      legend.margin = margin(0, 0, 1, 0, "mm"),
-      legend.box.spacing = unit(0, "mm"),
+      plot.subtitle         = element_text(size = 7),
+      plot.margin           = margin(1, 1, 0, 1, "mm"),
+      legend.position       = "bottom",
+      legend.margin         = margin(0, 0, 1, 0, "mm"),
+      legend.box.spacing    = unit(0, "mm"),
       legend.title.position = "top",
-      legend.title = element_text(size = 7),
-      legend.text = element_text(size = 6),
-      axis.title = element_text(size = 7),
-      axis.text = element_text(size = 5.5),
+      legend.title          = element_text(size = 7),
+      legend.text           = element_text(size = 6),
+      axis.title            = element_text(size = 7),
+      axis.text             = element_text(size = 5),
+      axis.line             = element_line(size = 0.2),
+      axis.ticks            = element_line(size = 0.2),
     )
   
   return(p)

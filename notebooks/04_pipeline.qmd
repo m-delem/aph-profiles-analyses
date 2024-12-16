@@ -14,11 +14,7 @@ pacman::p_load(
   sessioninfo
 )
 
-source(here("R/01_import/import-jatos-data.R"))
-dir_ls(here("R/02_wrangle"), type = "file", recurse = TRUE) |> walk(source)
-source(here("R/03_model/correlate-vars.R"))
-source(here("R/03_model/model-groups.R"))
-source(here("R/04_plot/plot-clusters-radar.R"))
+dir_ls(here("R"), type = "file", recurse = TRUE) |> walk(source)
 
 # resolve package conflicts
 conflicts_prefer(
@@ -30,16 +26,23 @@ conflicts_prefer(
   )
 ```
 
+# Pipeline
+
 ```{r}
+#| label: load-data
+
 df <- import_jatos_data()$data_final
 ```
 
 ```{r}
+#| label: correlations
+
 corrs_simple  <- correlate_vars(df, partial = FALSE, correction = "bonferroni")
 corrs_partial <- correlate_vars(df, partial = TRUE,  correction = "bonferroni")
 ```
 
 ```{r}
+#| label: clustering
 #| warning: false
 
 selected_vars <- c(
@@ -55,19 +58,21 @@ clustering <-
   select(any_of(selected_vars)) |>
   Mclust(verbose = FALSE)
 
-df2 <- 
-  merge_clusters(df_raw = df, df_reduced = scale_reduce_vars(df), clustering) |> 
-  scale_vars() |> 
-  get_longer()
+df2 <- merge_clusters(df_raw = df, df_red = scale_reduce_vars(df), clustering)
+
+df_long <- df2 |> scale_vars() |> get_longer()
 ```
 
 ```{r}
+#| label: modelling
+#| warning: false
+
 models_path <- here("data/r-data-structures/models.rds")
 
 if (!file_exists(models_path)) {
-  group_models      <- df2 |> model_groups(groups = Group)
-  cluster_models    <- df2 |> model_groups(groups = Cluster)
-  subcluster_models <- df2 |> model_groups(groups = Subcluster)
+  group_models      <- df_long |> model_groups(groups = Group)
+  cluster_models    <- df_long |> model_groups(groups = Cluster)
+  subcluster_models <- df_long |> model_groups(groups = Subcluster)
   
   saveRDS(
     list(
@@ -80,83 +85,47 @@ if (!file_exists(models_path)) {
 } else models <- readRDS(models_path)
 ```
 
-# Checks
+```{r}
+#| label: plots
+#| warning: false
+
+p_groups_violins <- plot_groups_violins(df_long, var_selection = "original")
+p_groups_radar   <- plot_radars(df_long, Group,  var_selection = "original")
+
+p_partial <- plot_correlations(corrs_partial)
+p_simple  <- plot_correlations(corrs_simple)
+
+p_bic <- plot_clusters_bic(clustering)
+p_clusters <- 
+  plot_radars(df_long, Cluster, r_off = 6) + 
+  plot_radars(df_long, Subcluster, l_off = 6)
+
+ggsave_double_col("figures/groups-violins.pdf", p_groups_violins, height = 88)
+ggsave_single_col("figures/groups-radar.pdf",   p_groups_radar,   height = 88)
+
+ggsave_double_col("figures/correlations-partial.pdf", p_partial, height = 120)
+ggsave_double_col("figures/correlations-simple.pdf",  p_simple,  height = 120)
+
+ggsave_single_col("figures/clusters-bic.pdf",    p_bic,      height = 88)
+ggsave_double_col("figures/clusters-radars.pdf", p_clusters, height = 90)
+```
+
+# Cluster repartition
 
 ```{r}
-df2 |> 
+df_long |> 
   select(id, Subcluster) |> 
   distinct() |> 
   group_by(Subcluster) |> 
   count()
 ```
 
-# Plots
-
-## Correlations
-
-```{r}
-#| fig-width: 8
-#| fig-height: 5
-
-plot_correlations(corrs_partial)
-
-ggsave(
-  here("figures/correlations-partial.pdf"),
-  width = 180,
-  height = 120,
-  units = "mm",
-  dpi = 600
-)
-
-plot_correlations(corrs_simple)
-
-ggsave(
-  here("figures/correlations-simple.pdf"),
-  width = 180,
-  height = 120,
-  units = "mm",
-  dpi = 600
-)
-
-```
-
-## Number of components
+# BIC legend
 
 ```{r}
 #| fig-cap: "Comparison of the goodness of fit of mixture models as a function of model type and number of components. A high BIC indicates a good model fit. The three-letter acronyms describe the components of the mixture model. The first letter describes the volume of the components, the second the shape and the last the orientation. E = equal variance, V = variable variance. Acronyms of the form ‘XII’ indicate spherical components, ‘XXI’ diagonal components and ‘XXX’ ellipsoidal components."
 #| fig-width: 3.5
 #| fig-height: 3.5
-
-plot_clusters_bic(clustering)
-
-ggsave(
-  here("figures/clusters-bic.pdf"),
-  width = 88,
-  height = 88,
-  units = "mm",
-  dpi = 600
-)
 ```
 
-
-## Radars
-
-```{r}
-df2 |> 
-  mutate(
-    Variable = 
-      Variable |> 
-      str_replace("Reading\ncomprehension", "Reading") |> 
-      str_replace("Psi-Q Sensations", "Psi-Q Sens.") |> 
-      str_replace("Psi-Q Feelings", "Psi-Q Feel.") |>  
-      str_replace("Audition", "Auditory") |> 
-      factor() |> 
-      fct_inorder() |> 
-      fct_relevel("VVIQ", after = Inf)
-  ) |> 
-  plot_clusters_radar(
-    value ~ Variable + Cluster,
-    palette = c("#56B4E9", "#E69F00", "#009E73")
-  )
-```
 
