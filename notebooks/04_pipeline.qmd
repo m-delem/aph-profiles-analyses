@@ -1,8 +1,10 @@
 ```{r}
 if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(
+  BiocManager,
   conflicted, 
   here,
+  factoextra,
   fs, 
   ggplot2,
   mclust,
@@ -51,7 +53,7 @@ clustering <-
   df |> 
   scale_reduce_vars() |> 
   select(any_of(selected_vars)) |>
-  Mclust(G = 3, verbose = FALSE)
+  Mclust(verbose = FALSE)
 
 df2 <- 
   merge_clusters(df_raw = df, df_reduced = scale_reduce_vars(df), clustering) |> 
@@ -82,11 +84,62 @@ if (!file_exists(models_path)) {
 
 ```{r}
 df2 |> 
-  group_by(subcluster) |> 
+  select(id, Subcluster) |> 
+  distinct() |> 
+  group_by(Subcluster) |> 
   count()
 ```
 
 # Plots
+
+## Correlations
+
+```{r}
+#| fig-width: 8
+#| fig-height: 5
+
+plot_correlations(corrs_partial)
+
+ggsave(
+  here("figures/correlations-partial.pdf"),
+  width = 180,
+  height = 120,
+  units = "mm",
+  dpi = 600
+)
+
+plot_correlations(corrs_simple)
+
+ggsave(
+  here("figures/correlations-simple.pdf"),
+  width = 180,
+  height = 120,
+  units = "mm",
+  dpi = 600
+)
+
+```
+
+## Number of components
+
+```{r}
+#| fig-cap: "Comparison of the goodness of fit of mixture models as a function of model type and number of components. A high BIC indicates a good model fit. The three-letter acronyms describe the components of the mixture model. The first letter describes the volume of the components, the second the shape and the last the orientation. E = equal variance, V = variable variance. Acronyms of the form ‘XII’ indicate spherical components, ‘XXI’ diagonal components and ‘XXX’ ellipsoidal components."
+#| fig-width: 3.5
+#| fig-height: 3.5
+
+plot_clusters_bic(clustering)
+
+ggsave(
+  here("figures/clusters-bic.pdf"),
+  width = 88,
+  height = 88,
+  units = "mm",
+  dpi = 600
+)
+```
+
+
+## Radars
 
 ```{r}
 df2 |> 

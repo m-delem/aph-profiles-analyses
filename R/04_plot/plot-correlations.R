@@ -13,17 +13,22 @@ pacman::p_load(
 plot_correlations <- function(
     correlations, 
     shape = 21,
-    stroke = 1
+    stroke = 0.1,
+    axis_text = 6,
+    matrix_text = 5,
+    node_size = 14,
+    node_text_size = 5,
+    label_text_size = 2
 ) {
-  # Matrix ------------------------------
+  # Matrix ---------------------------------------------------------------------
   correlation_matrix <-
     correlations |> 
-    summary() |>
+    mutate(r = if_else(abs(r) < 0.01, 0, r)) |>
+    summary(digits = 2) |>
     visualisation_recipe(
       show_data = "tiles", 
-      tile = list(colour = "black"),
-      # show_data = "points",
-      # scale = list(range = c(10, 20)),
+      tile = list(colour = "black", linewidth = 0.05),
+      text = list(size = matrix_text, size.unit = "pt"),
       scale_fill = list(
         high = "#009e73", 
         low  = "firebrick2", 
@@ -31,24 +36,18 @@ plot_correlations <- function(
       )
     ) |> 
     plot() +
-    # coord_fixed() +
-    scale_x_discrete(
-      position = "top", 
-      # limits = rev
-    ) +
-    scale_y_discrete(
-      position = "left",
-    ) +
+    scale_x_discrete(position = "top") +
+    scale_y_discrete(position = "left") +
     labs(title = NULL) + 
     theme_modern() + 
     theme(
       legend.position = "none",
-      axis.text.x     = element_text(angle = 45, hjust = 0),
-      axis.line       = element_blank(),
-      plot.margin     = margin(0, 0, 0, 0, "cm")
+      axis.text.x     = element_text(size = axis_text, angle = 45, hjust = 0),
+      axis.text.y     = element_text(size = axis_text),
+      axis.line       = element_blank()
     )
   
-  # Graph ------------------------------
+  # Graph ----------------------------------------------------------------------
   correlation_graph <-
     correlations |>
     ggraph(
@@ -62,54 +61,90 @@ plot_correlations <- function(
         filter = (p < 0.05),
         edge_colour = r,
         edge_width  = r
-      )
+      ),
+      label_size = unit(label_text_size, "pt"),
+      check_overlap = TRUE
     ) +
-    geom_node_point(size = 25) +
+    # Base black nodes ---------------------------------------------------------
     geom_node_point(
-      aes(filter = (str_detect(name, "Psi") & !str_detect(name, "Audition"))),
-      size = 25,
-      shape = shape,
-      # fill = "black",
-      fill = "#D55E00",
+      shape  = shape, 
+      size   = node_size, 
+      stroke = 0, 
+      fill   = "black"
+    ) +
+    # Coloured nodes -----------------------------------------------------------
+    # Psi-Q's in dark blue
+    geom_node_point(
+      aes(
+        filter = (str_detect(name, "Psi") & !str_detect(name, "Audition"))
+      ),
+      shape  = shape,
+      size   = node_size,
+      fill   = "#0072B2",
       stroke = stroke,
-      # colour = "#D55E00"
       colour = "black"
     ) +
+    # Visual imagery in blue
     geom_node_point(
       aes(filter = str_detect(name, "VVIQ|OSIVQ\nObject|Psi-Q\nVisual")),
-      size = 25,
-      shape = shape,
-      # fill = "black",
-      fill = "#56B4E9",
+      shape  = shape,
+      size   = node_size,
+      fill   = "#56B4E9",
       stroke = stroke,
-      # colour = "#56B4E9"
       colour = "black"
     ) +
+    # Spatial imagery in light orange
     geom_node_point(
       aes(filter = str_detect(name, "SRI|OSIVQ\nSpatial")),
-      size = 25,
-      shape = shape,
-      # fill = "black",
-      fill = "#E69F00",
+      shape  = shape,
+      size   = node_size,
+      fill   = "#E69F00",
       stroke = stroke,
-      # colour = "#E69F00",
       colour = "black"
     ) +
+    # Verbal strategies in green
+    geom_node_point(
+      aes(filter = str_detect(name, "OSIVQ\nVerbal")),
+      shape  = shape,
+      size   = node_size,
+      fill   = "#009E73",
+      stroke = stroke,
+      colour = "black"
+    ) +
+    # Raven + Digit in pink
     geom_node_point(
       aes(filter = str_detect(name, "Digit\nspan|Raven\nMatrices")),
-      size = 25,
-      shape = shape,
-      # fill = "black",
-      fill = "#009E73",
+      shape  = shape,
+      size   = node_size,
+      fill   = "#CC79A7",
       stroke = stroke,
-      # colour = "#009E73"
       colour = "black"
     ) +
+    # Spatial span in yellow
+    geom_node_point(
+      aes(filter = str_detect(name, "Spatial\nspan")),
+      shape  = shape,
+      size   = node_size,
+      fill   = "#999999",
+      stroke = stroke,
+      colour = "black"
+    ) +
+    # Verbal reasoning in dark orange
+    geom_node_point(
+      aes(filter = str_detect(name, "Similarities")),
+      shape  = shape,
+      size   = node_size,
+      fill   = "#D55E00",
+      stroke = stroke,
+      colour = "black"
+    ) +
+    # End of coloured nodes ----------------------------------------------------
     geom_node_text(
       aes(label = name), 
       colour = "white", 
       fontface = "bold",
-      size = 3.3
+      size = node_text_size,
+      size.unit = "pt"
     ) +
     scale_edge_colour_gradient2(
       limits = c(-1, 1),
@@ -118,12 +153,12 @@ plot_correlations <- function(
       high   = "#009e73",
       breaks = breaks_pretty(8)
     ) +
-    scale_edge_width(range = c(4, 8)) +
+    scale_edge_width(range = c(2, 3)) +
+    coord_fixed(clip = "off") +
     guides(edge_width = "none") +
     labs(title = NULL) +
     theme(
       panel.background = element_rect(fill = "transparent"),
-      plot.margin      = margin(0, 0, 0, 0.5, "cm"),
       legend.position  = "none"
     )
   
@@ -136,7 +171,10 @@ plot_correlations <- function(
   # Final figure
   correlation_joint <-
     (correlation_matrix + correlation_graph) +
-    plot_layout(design = layout)
+    plot_layout(design = layout) &
+    theme(
+      plot.margin = margin(0, 1, 0, 0, "mm")
+      )
   
   return(correlation_joint)
 }
