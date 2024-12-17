@@ -19,7 +19,7 @@ merge_clusters <- function(df_raw, df_red, clustering) {
       cluster = factor(
         cluster,
         levels = c("A", "B", "C"),
-        labels = c("A (Aphant.)", "B (Aphant. + Control)", "C (Control)")
+        labels = c("A (Aphant.)", "B (Mixed)", "C (Control)")
       ),
       subcluster = factor(
         subcluster,

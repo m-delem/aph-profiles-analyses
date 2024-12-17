@@ -12,7 +12,7 @@ pacman::p_load(
 )
 
 # Plot the group scores on all variables as violins
-plot_groups_violins <- function(
+plot_violins <- function(
     df_long, 
     var_selection = "original",
     palette   = c("#56B4E9", "#009E73"),
@@ -21,7 +21,7 @@ plot_groups_violins <- function(
     txt_smol  = 5,
     dot_big   = 0.3,
     dot_smol  = 0.15,
-    lw_big    = 0.1
+    lw_big    = 0.1,
     lw_smol   = 0.1,
     alpha     = 0.3
 ) {
@@ -128,7 +128,7 @@ plot_groups_violins <- function(
       "Spatial imagery",
       "Verbal strategies",
       "Raven +\nDigit Span",
-      "Non-verbal\nreasoning",
+      # "Non-verbal\nreasoning",
       "Verbal reasoning",
       "Spatial span std.",
       # Complex tasks
@@ -142,7 +142,7 @@ plot_groups_violins <- function(
   # Main plot ------------------------------------------------------------------
   p <- 
     df_long |>
-    filter(Variable %in% vars) |> 
+    filter(Variable %in% vars) |>
     group_by(Group, Variable) |>
     reframe(value = value, mean = mean(value), sd = sd(value)) |> 
     mutate(

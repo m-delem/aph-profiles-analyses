@@ -23,11 +23,12 @@ model_groups <- function(df_long, groups) {
     group_by(Variable) |> 
     nest() |> 
     # filter(Variable %in% c(
-    #   "VVIQ", 
-    #   "OSIVQ-Spatial", 
+    #   "VVIQ",
+    #   # "OSIVQ-Spatial",
     #   "OSIVQ-Verbal",
-    #   "Raven matrices", 
-    #   "SRI")
+    #   # "Raven matrices",
+    #   "SRI"
+    #   )
     # ) |> # for testing
     rowwise() |> 
     mutate(
@@ -70,7 +71,11 @@ model_groups <- function(df_long, groups) {
           contr_bf   |> as_tibble() |> rename(contrast = 1),
           by = "contrast"
         ) |>
-          rename(`$log(BF_{10})$` = log_BF) |>
+          rename(
+            Comparison = contrast,
+            `Difference ($\\Delta$)` = estimate,
+            `$log(BF_{10})$` = log_BF
+            ) |>
           mutate(across(where(is.numeric), ~ round(., digits = 2))) |> 
           unite(
             "95% CrI",

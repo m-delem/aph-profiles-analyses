@@ -54,7 +54,7 @@ plot_radars <- function(
       "Spatial imagery",
       "Verbal strategies",
       "Raven +\nDigit Span",
-      "Non-verbal\nreasoning",
+      # "Non-verbal\nreasoning",
       "Verbal reasoning",
       "Spatial span std.",
       # Complex tasks

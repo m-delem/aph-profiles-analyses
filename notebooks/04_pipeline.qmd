@@ -70,26 +70,26 @@ df_long <- df2 |> scale_vars() |> get_longer()
 models_path <- here("data/r-data-structures/models.rds")
 
 if (!file_exists(models_path)) {
-  group_models      <- df_long |> model_groups(groups = Group)
+  group_models      <- df2 |> get_longer() |> model_groups(groups = Group)
   cluster_models    <- df_long |> model_groups(groups = Cluster)
   subcluster_models <- df_long |> model_groups(groups = Subcluster)
   
-  saveRDS(
-    list(
-      group_models      = group_models,
-      cluster_models    = cluster_models,
-      subcluster_models = subcluster_models
-      ), 
-    models_path)
+  models <- list(
+    group_models      = group_models,
+    cluster_models    = cluster_models,
+    subcluster_models = subcluster_models
+  )
   
-} else models <- readRDS(models_path)
+  saveRDS(models, models_path)
+  
+  } else models <- readRDS(models_path)
 ```
 
 ```{r}
 #| label: plots
 #| warning: false
 
-p_groups_violins <- plot_groups_violins(df_long, var_selection = "original")
+p_groups_violins <- plot_violins(df_long, var_selection = "original")
 p_groups_radar   <- plot_radars(df_long, Group,  var_selection = "original")
 
 p_partial <- plot_correlations(corrs_partial)
@@ -113,11 +113,17 @@ ggsave_double_col("figures/clusters-radars.pdf", p_clusters, height = 90)
 # Cluster repartition
 
 ```{r}
+#| label: clsuter-repartition
+
 df_long |> 
-  select(id, Subcluster) |> 
-  distinct() |> 
+  select(id, Subcluster, Variable, value) |> 
+  filter(Variable == "VVIQ") |> 
+  distinct() |>
   group_by(Subcluster) |> 
-  count()
+  reframe(
+    n = n(),
+    VVIQ_std = mean(value) |> round(2)
+  )
 ```
 
 
