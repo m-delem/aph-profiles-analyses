@@ -120,12 +120,4 @@ df_long |>
   count()
 ```
 
-# BIC legend
-
-```{r}
-#| fig-cap: "Comparison of the goodness of fit of mixture models as a function of model type and number of components. A high BIC indicates a good model fit. The three-letter acronyms describe the components of the mixture model. The first letter describes the volume of the components, the second the shape and the last the orientation. E = equal variance, V = variable variance. Acronyms of the form ‘XII’ indicate spherical components, ‘XXI’ diagonal components and ‘XXX’ ellipsoidal components."
-#| fig-width: 3.5
-#| fig-height: 3.5
-```
-
 

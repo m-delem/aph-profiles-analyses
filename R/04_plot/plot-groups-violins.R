@@ -21,7 +21,7 @@ plot_groups_violins <- function(
     txt_smol  = 5,
     dot_big   = 0.3,
     dot_smol  = 0.15,
-    lw_big    = 0.3,
+    lw_big    = 0.1
     lw_smol   = 0.1,
     alpha     = 0.3
 ) {

@@ -430,7 +430,7 @@
     },
     "broom": {
       "Package": "broom",
-      "Version": "1.0.6",
+      "Version": "1.0.7",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -446,7 +446,7 @@
         "tibble",
         "tidyr"
       ],
-      "Hash": "a4652c36d1f8abfc3ddf4774f768c934"
+      "Hash": "8fcc818f3b9887aebaf206f141437cc9"
     },
     "bslib": {
       "Package": "bslib",
@@ -676,10 +676,10 @@
     },
     "corrplot": {
       "Package": "corrplot",
-      "Version": "0.94",
+      "Version": "0.95",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "b575018abd67c252491ffce5ecb94630"
+      "Hash": "f52d5babd10d348f9c0771386b61ea4a"
     },
     "cowplot": {
       "Package": "cowplot",
@@ -762,7 +762,7 @@
     },
     "dendextend": {
       "Package": "dendextend",
-      "Version": "1.17.1",
+      "Version": "1.19.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -774,7 +774,7 @@
         "utils",
         "viridis"
       ],
-      "Hash": "043fafb791081fc553f29021bd0a9a01"
+      "Hash": "1eac6e791abbd86638185314ad588f4a"
     },
     "desc": {
       "Package": "desc",
@@ -819,7 +819,7 @@
     },
     "doBy": {
       "Package": "doBy",
-      "Version": "4.6.22",
+      "Version": "4.6.24",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -839,7 +839,7 @@
         "tibble",
         "tidyr"
       ],
-      "Hash": "a9b56885b9596c284168df26d6179c40"
+      "Hash": "8ddf795104defe53c5392a588888ec68"
     },
     "dplyr": {
       "Package": "dplyr",
@@ -2075,7 +2075,7 @@
       "Package": "posterior",
       "Version": "1.6.0",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "https://stan-dev.r-universe.dev",
       "Requirements": [
         "R",
         "abind",
@@ -2174,7 +2174,7 @@
     },
     "quantreg": {
       "Package": "quantreg",
-      "Version": "5.98",
+      "Version": "5.99.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -2188,7 +2188,7 @@
         "stats",
         "survival"
       ],
-      "Hash": "017561f17632c065388b7062da030952"
+      "Hash": "c48844cd7961de506a1b4d22b2e082c7"
     },
     "rappdirs": {
       "Package": "rappdirs",
