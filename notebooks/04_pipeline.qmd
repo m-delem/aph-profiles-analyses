@@ -126,4 +126,9 @@ df_long |>
   )
 ```
 
+```{r}
+model_lives(df2, group)      |> select(1, 4)
+model_lives(df2, cluster)    |> select(1, 4)
+model_lives(df2, subcluster) |> select(1, 4)
+```
 

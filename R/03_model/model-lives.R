@@ -2,7 +2,7 @@
 pacman::p_load(BayesFactor, dplyr, tidyr)
 
 # Model the association between education, field and occupation with a variable
-model_lives <- function(df, groups_var) {
+model_lives <- function(df, groups_var, type = "indepMulti") { # or "jointMulti"
   associations <- 
     df |> 
     pivot_longer(
@@ -10,17 +10,17 @@ model_lives <- function(df, groups_var) {
       names_to = "Variable", 
       values_to = "value"
     ) |> 
-    select({{ var }}, Variable, value) |> 
+    select({{ groups_var }}, Variable, value) |> 
     group_by(Variable) |> 
     nest() |> 
     rowwise() |> 
     mutate(
       table = list(
         data |> 
-          group_by({{ var }}, value) |>
+          group_by({{ groups_var }}, value) |>
           count() |> 
           pivot_wider(
-            names_from = {{ var }},
+            names_from = {{ groups_var }},
             values_from = n
           ) |>
           as_tibble() |> 
@@ -29,13 +29,13 @@ model_lives <- function(df, groups_var) {
       log_bf10 =
         contingencyTableBF(
           as.matrix(table[, names(table) != "value"]), 
-          # sampleType = "jointMulti"
-          sampleType = "indepMulti",
+          sampleType = type,
           fixedMargin = "cols"
         ) |> 
         as_tibble() |> 
         pull(bf) |> 
-        log(),
+        log() |> 
+        round(2),
       Variable = str_to_title(Variable)
     )
   

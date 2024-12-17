@@ -10,7 +10,7 @@ plot_radars <- function(
     txt_big   = 7,
     txt_mid   = 6,
     txt_smol  = 5,
-    dot_size  = 0.6,
+    dot_size  = 0.8,
     lw        = 0.2,
     y_off     = 40, # to center the y axis text
     r_off     = 0,
@@ -80,7 +80,8 @@ plot_radars <- function(
         factor() |> 
         fct_inorder() |> 
         fct_relevel("Visual imagery", after = Inf) |> 
-        fct_relevel("VVIQ", after = Inf)
+        fct_relevel("VVIQ", after = Inf),
+      Cluster = fct_recode(Cluster, "B (Aphant. + Control)" = "B (Mixed)")
     )
   
   # Writing the formula for the "superb" plot ----------------------------------  
