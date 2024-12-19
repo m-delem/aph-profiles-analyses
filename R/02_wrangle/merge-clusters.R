@@ -1,3 +1,6 @@
+# if (!requireNamespace("pacman")) install.packages("pacman")
+pacman::p_load(dplyr, tidyr, withr)
+
 # Add the clustering and reduced variables to the main data frame
 merge_clusters <- function(df_raw, df_red, clustering) {
   withr::local_options(list(warn = -1))

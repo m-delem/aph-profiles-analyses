@@ -16,11 +16,11 @@ crossref:
 supptbl-cap-location: top
 echo: false # do not show the code unless explicitly asked
 params:
-  save_figures: true
+  save_figures: false
 format: html
 ---
 
-::: {.callout-note collapse="true"}
+:::: {.callout-note collapse="true"}
 # Packages and pipeline
 
 ```{r}
@@ -41,7 +41,7 @@ pacman::p_load(
   sessioninfo
 )
 
-# source all our functions
+# source all our custom functions
 dir_ls(here("R"), type = "file", recurse = TRUE) |> walk(source)
 
 # resolve package conflicts
@@ -56,10 +56,26 @@ conflicts_prefer(
 
 Most of the steps of the data analysis were performed using functions defined in 
 external R scripts in the `R/` directory (loaded in the chunk above). 
-The pipeline below runs all of these functions sequentially, sometimes saving 
-heavy computations along the way. This pipeline is designed to be fully 
-reproducible by anyone using the `renv` R environment from the project that has
-the raw JATOS data stored in the `data/raw-data/` directory.
+The interested reader can find their code in the tab below. 
+The pipeline code below it runs all of these functions sequentially, 
+sometimes saving heavy computations along the way. 
+This pipeline is designed to be fully reproducible by anyone using the `renv` 
+R environment from the project that has the raw JATOS data stored in the 
+`data/raw-data/` directory.
+
+:::{.callout-note collapse="true"}
+## Custom functions
+
+```{r}
+#| label: add-import
+#| add-from: ../R/R/03_model/build_behav_rdm.R
+#| code-summary: Behavioural RDM function
+#| echo: true
+
+#
+```
+
+:::
 
 ```{r}
 #| label: pipeline
@@ -163,7 +179,7 @@ if (!file.exists(path_sc_models)) {
   
 } else subcluster_models <- readRDS(path_sc_models)
 ```
-:::
+::::
 
 # VVIQ group analysis
 

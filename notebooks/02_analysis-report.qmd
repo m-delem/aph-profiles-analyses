@@ -1,0 +1,241 @@
+---
+title: Data Analysis Report
+subtitle: Uncovering spatial and verbal cognitive profiles in aphantasia through unsupervised clustering
+# setting for proper numbering of sections
+crossref: 
+  chapters: true
+  custom:
+    - kind: float
+      key: suppfig
+      reference-prefix: Figure S
+      space-before-numbering: false
+    - kind: float
+      key: supptbl
+      reference-prefix: Table S
+      space-before-numbering: false
+supptbl-cap-location: top
+echo: false # do not show the code unless explicitly asked
+params:
+  save_figures: false
+format: html
+---
+
+:::: {.callout-note collapse="true"}
+# Packages and pipeline
+
+```{r}
+#| label: setup
+#| echo: true
+#| code-fold: false
+
+if (!requireNamespace("pacman")) install.packages("pacman")
+pacman::p_load(
+  conflicted, 
+  here,
+  fs, 
+  ggplot2,
+  mclust,
+  NbClust,
+  patchwork,
+  purrr,
+  sessioninfo
+)
+
+# source all our custom functions
+dir_ls(here("R"), type = "file", recurse = TRUE) |> walk(source)
+
+# resolve package conflicts
+conflicts_prefer(
+  dplyr::filter(), 
+  dplyr::select(),
+  scales::rescale(), 
+  purrr::map(),
+  .quiet = TRUE
+  )
+```
+
+Most of the steps of the data analysis were performed using functions defined in 
+external R scripts in the `R/` directory (loaded in the chunk above). 
+The interested reader can find their code in the tab below. 
+
+:::{.callout-note collapse="true"}
+## Custom functions
+
+First, the `import_jatos_data` is a long function that extracts the data from the
+raw JATOS files, tidies it, computes various scores, exports data for manual scoring
+or loads the manually scored data, exports the data to Excel, CSV and RDS formats,
+and returns a list with the data and metadata. This way, the data used is always
+recreated from the raw data, enhancing reproducibility.
+
+```{r}
+#| label: add-import
+#| add-from: ../R/01_import/import-jatos-data.R
+#| code-summary: Data import function
+#| echo: true
+
+#
+```
+
+Four functions were created to manipulate the data in various ways.
+
+```{r}
+#| label: add-scale-vars
+#| add-from: ../R/02_wrangle/scale-vars.R
+#| code-summary: Scale variables from their original range to 0-1
+#| echo: true
+
+#
+```
+
+```{r}
+#| label: add-scale-reduce-vars
+#| add-from: ../R/02_wrangle/scale-reduce-vars.R
+#| code-summary: "Scale variables and compute reduced variables (based on correlations)"
+#| echo: true
+
+#
+```
+
+```{r}
+#| label: add-merge
+#| add-from: ../R/02_wrangle/merge-clusters.R
+#| code-summary: Add the clusters computed to the main dataframe
+#| echo: true
+
+#
+```
+
+```{r}
+#| label: add-longer
+#| add-from: ../R/02_wrangle/get-longer.R
+#| code-summary: Pivot the table to a long format and use pretty names
+#| echo: true
+
+#
+```
+
+Three functions were dedicated to modelling tasks.
+
+```{r}
+#| label: add-correlate
+#| add-from: ../R/03_model/correlate-vars.R
+#| code-summary: Compute correlations or partial correlation on the original variables
+#| echo: true
+
+#
+```
+
+```{r}
+#| label: add-model-groups
+#| add-from: ../R/03_model/model-groups.R
+#| code-summary: "Model all the variables with the Group, Cluster or Subcluster (+ Age) as predictors"
+#| echo: true
+
+#
+```
+
+```{r}
+#| label: add-model-lives
+#| add-from: ../R/03_model/model-lives.R
+#| code-summary: Assess association of education, field of study and occupation with Group, etc.
+#| echo: true
+
+#
+```
+
+Finally, four functions were created to plot the data, a helper function was used
+to save figures in appropriate formats conveniently, and a function helped 
+generating $\LaTeX$ tables automatically for the manuscript.
+
+```{r}
+#| label: add-violins
+#| add-from: ../R/04_plot/plot-violins.R
+#| code-summary: Plot group scores as violin-dot figures
+#| echo: true
+
+#
+```
+
+```{r}
+#| label: add-radars
+#| add-from: ../R/04_plot/plot-radars.R
+#| code-summary: Plot group, cluster or subcluster scores as radars
+#| echo: true
+
+#
+```
+
+```{r}
+#| label: add-correlation-plots
+#| add-from: ../R/04_plot/plot-correlations.R
+#| code-summary: Plot correlation matrices and graphs
+#| echo: true
+
+#
+```
+
+```{r}
+#| label: add-bic
+#| add-from: ../R/04_plot/plot-clusters-bic.R
+#| code-summary: Plot BIC evaluation of GMMs for clustering
+#| echo: true
+
+#
+```
+
+```{r}
+#| label: add-save
+#| add-from: ../R/04_plot/save-plots.R
+#| code-summary: Save plots in appropriate formats
+#| echo: true
+
+#
+```
+
+```{r}
+#| label: add-latex
+#| add-from: ../R/04_plot/get-latex-table.R
+#| code-summary: "Print $\\LaTeX$ tables for the manuscript"
+#| echo: true
+
+#
+```
+:::
+
+The pipeline code below then runs all of these functions sequentially, 
+sometimes saving heavy computations along the way. It saves the figures if this
+notebooks was parametrised to do so with `params: save_figures: true`.
+This pipeline is designed to be fully reproducible by anyone using the `renv` 
+R environment from the project that has the raw JATOS data stored in the 
+`data/raw-data/` directory.
+
+```{r}
+#| label: pipeline
+#| echo: true
+#| code-summary: Data analysis pipeline
+
+# load the data
+df <- import_jatos_data()$data_final
+
+# compute simple and partial correlations
+corrs_simple  <- correlate_vars(df, partial = FALSE, correction = "bonferroni")
+# corrs_partial <- correlate_vars(df, partial = TRUE,  correction = "bonferroni")
+
+```
+
+::::
+
+
+&nbsp;
+&nbsp;
+&nbsp;
+
+::: {.callout-note collapse="true"}
+# Session information
+
+```{r}
+#| label: session-information
+
+sessioninfo::session_info(pkgs = "attached")
+```
+:::
