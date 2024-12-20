@@ -4,6 +4,6 @@ This repository contains all the data, code and materials required to reproduce 
 
 This repository is a Quarto project endowed with a `renv` R environment to ensure the stability of the packages that were used to conduct the analysis and guarantee the reproducibility of the results.
 
-The main rendered notebooks can be found in the `_outputs/notebooks/` folder.
+Read the "analysis-report.html" first.
 
 <img src='figures/logo-emc-lyon2.png' align="right" width="250" />

@@ -214,17 +214,98 @@ R environment from the project that has the raw JATOS data stored in the
 #| echo: true
 #| code-summary: Data analysis pipeline
 
-# load the data
+# load the data directly from the raw files
 df <- import_jatos_data()$data_final
 
 # compute simple and partial correlations
 corrs_simple  <- correlate_vars(df, partial = FALSE, correction = "bonferroni")
-# corrs_partial <- correlate_vars(df, partial = TRUE,  correction = "bonferroni")
+corrs_partial <- correlate_vars(df, partial = TRUE,  correction = "bonferroni")
 
+# variables selected for clustering after the analysis of partial correlations
+selected_vars <- c(
+  "visual_imagery", "sensory_imagery", 
+  "spatial_imagery", "verbal_strategies",
+  "fluid_intelligence", "verbal_reasoning", 
+  "span_spatial"
+)
+
+# determine the best model (GMM) and number of clusters for clustering with BIC
+bic <- df |> scale_reduce_vars() |> select(any_of(selected_vars)) |> mclustBIC()
+
+# compute the clustering on the selected variables with the model
+clustering <- 
+  df |> 
+  scale_reduce_vars() |> 
+  select(any_of(selected_vars)) |>
+  Mclust(verbose = FALSE)
+
+# add the clusters and the reduced variables to the main dataset
+df2 <- merge_clusters(df_raw = df, df_red = scale_reduce_vars(df), clustering)
+
+# create a long format of this final dataset for modelling and plotting
+df_long <- df2 |> scale_vars() |> get_longer()
+
+# model all the variables with the groups, clusters and subclusters and save
+# them, or simply load them if they exist in the files 
+models_path <- here("data/r-data-structures/models.rds")
+
+if (!file_exists(models_path)) {
+  group_models      <- df2 |> get_longer() |> model_groups(groups = Group)
+  cluster_models    <- df_long |> model_groups(groups = Cluster)
+  subcluster_models <- df_long |> model_groups(groups = Subcluster)
+  
+  models <- list(
+    group_models      = group_models,
+    cluster_models    = cluster_models,
+    subcluster_models = subcluster_models
+  )
+  
+  saveRDS(models, models_path)
+  
+  } else models <- readRDS(models_path)
+
+# model the education, field of study and occupation with groups, etc.
+lives <- list(
+  group      = model_lives(df2, group),
+  cluster    = model_lives(df2, cluster),
+  subcluster = model_lives(df2, subcluster)
+)
+
+# Produce the plots for all these outputs --------------------------------------
+
+# the group comparisons, as violins
+p_groups_violins <- plot_violins(df_long, var_selection = "original")
+# and as radars
+p_groups_radar   <- plot_radars(df_long, Group,  var_selection = "original")
+
+# correlation matrices and graphs
+p_partial <- plot_correlations(corrs_partial)
+p_simple  <- plot_correlations(corrs_simple)
+
+# BIC values for all models and number of clusters tested
+p_bic <- plot_clusters_bic(clustering)
+
+# radars of the cluster and subcluster scores
+p_clusters <- 
+  plot_radars(df_long, Cluster, r_off = 6) + 
+  plot_radars(df_long, Subcluster, l_off = 6)
+
+# save the figures if this notebook is parametrised to do so
+if (params$save_figures) {
+  ggsave_double_col("figures/groups-violins.pdf", p_groups_violins, height = 88)
+  ggsave_single_col("figures/groups-radar.pdf",   p_groups_radar,   height = 88)
+  
+  ggsave_double_col("figures/correlations-partial.pdf", p_partial, height = 120)
+  ggsave_double_col("figures/correlations-simple.pdf",  p_simple,  height = 120)
+  
+  ggsave_single_col("figures/clusters-bic.pdf",    p_bic,      height = 88)
+  ggsave_double_col("figures/clusters-radars.pdf", p_clusters, height = 90)
+}
 ```
-
 ::::
 
+This document contains all the data analysis process related to the article in the subtitle.
+This analysis should be fully reproducible. See the tab below for the details on how to do so.
 
 &nbsp;
 &nbsp;
