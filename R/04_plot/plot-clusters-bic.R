@@ -4,15 +4,15 @@ pacman::p_load(BiocManager, factoextra, see)
 plot_clusters_bic <- function(mclust_object) {
   p <- 
     fviz_mclust_bic(
-      clustering, 
-      shape = "model",
-      size = 0.2,
+      mclust_object, 
+      shape   = "model",
+      size    = 0.2,
       palette = colorRampPalette(see::okabeito_colors())(14)
     ) + 
     labs(
-      title = NULL,
+      title  = NULL,
       colour = "Model type",
-      shape = "Model type"
+      shape  = "Model type"
     ) +
     theme(
       plot.subtitle         = element_text(size = 7),

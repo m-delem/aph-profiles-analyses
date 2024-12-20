@@ -67,7 +67,7 @@ scale_reduce_vars <- function(df, min = 0, max = 1){
         (score_raven + span_digit)/2,
         digits = 3
       ),
-      # merging SRI and Raven relative to their number of items
+      # merging SRI and Raven relative to their number of items (old tests)
       non_verbal_reasoning = round(
         (30*score_sri + 18*score_raven)/48,
         digits = 3

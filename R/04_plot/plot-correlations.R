@@ -12,12 +12,12 @@ pacman::p_load(
 # Plot a correlation matrix and a circular correlation graph
 plot_correlations <- function(
     correlations, 
-    shape = 21,
-    stroke = 0.1,
-    axis_text = 6,
+    shape       = 21,
+    stroke      = 0.1,
+    axis_text   = 6,
     matrix_text = 5,
-    node_size = 14,
-    node_text_size = 5,
+    node_size   = 14,
+    node_text_size  = 5,
     label_text_size = 2
 ) {
   # Matrix ---------------------------------------------------------------------
@@ -26,9 +26,9 @@ plot_correlations <- function(
     mutate(r = if_else(abs(r) < 0.01, 0, r)) |>
     summary(digits = 2) |>
     visualisation_recipe(
-      show_data = "tiles", 
-      tile = list(colour = "black", linewidth = 0.05),
-      text = list(size = matrix_text, size.unit = "pt"),
+      show_data  = "tiles", 
+      tile       = list(colour = "black", linewidth = 0.05),
+      text       = list(size = matrix_text, size.unit = "pt"),
       scale_fill = list(
         high = "#009e73", 
         low  = "firebrick2", 
@@ -51,18 +51,18 @@ plot_correlations <- function(
   correlation_graph <-
     correlations |>
     ggraph(
-      layout = "linear",
+      layout   = "linear",
       circular = TRUE
     ) +
     geom_edge_arc(
       strength = 0.2,
-      aes(
-        label = round(r, 2),
-        filter = (p < 0.05),
+      mapping  = aes(
+        label       = round(r, 2),
+        filter      = (p < 0.05),
         edge_colour = r,
         edge_width  = r
       ),
-      label_size = unit(label_text_size, "pt"),
+      label_size    = unit(label_text_size, "pt"),
       check_overlap = TRUE
     ) +
     # Base black nodes ---------------------------------------------------------
@@ -140,10 +140,10 @@ plot_correlations <- function(
     ) +
     # End of coloured nodes ----------------------------------------------------
     geom_node_text(
-      aes(label = name), 
-      colour = "white", 
-      fontface = "bold",
-      size = node_text_size,
+      mapping   = aes(label = name), 
+      colour    = "white", 
+      fontface  = "bold",
+      size      = node_text_size,
       size.unit = "pt"
     ) +
     scale_edge_colour_gradient2(

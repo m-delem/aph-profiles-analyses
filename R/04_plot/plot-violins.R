@@ -15,15 +15,15 @@ pacman::p_load(
 plot_violins <- function(
     df_long, 
     var_selection = "original",
-    palette   = c("#56B4E9", "#009E73"),
-    txt_big   = 7,
-    txt_mid   = 6,
-    txt_smol  = 5,
-    dot_big   = 0.3,
-    dot_smol  = 0.15,
-    lw_big    = 0.1,
-    lw_smol   = 0.1,
-    alpha     = 0.3
+    palette  = c("#56B4E9", "#009E73"),
+    txt_big  = 7,
+    txt_mid  = 6,
+    txt_smol = 5,
+    dot_big  = 0.3,
+    dot_smol = 0.15,
+    lw_big   = 0.1,
+    lw_smol  = 0.1,
+    alpha    = 0.3
 ) {
   withr::local_options(list(warn = -1))
   
@@ -172,16 +172,16 @@ plot_violins <- function(
       show.legend = FALSE
     ) +
     geom_line(
-      aes(x = Group, y = mean, group = 1),
+      mapping   = aes(x = Group, y = mean, group = 1),
       color     = "grey80",
       linewidth = lw_big
     ) +
     geom_pointrange2(
       aes(
-        x = Group, 
-        y = mean,
-        ymin = if_else(mean - sd <= 0, 0, mean - sd),
-        ymax = if_else(mean + sd >= 1, 1, mean + sd),
+        x     = Group, 
+        y     = mean,
+        ymin  = if_else(mean - sd <= 0, 0, mean - sd),
+        ymax  = if_else(mean + sd >= 1, 1, mean + sd),
         group = Group
       ),
       size        = dot_big,
@@ -205,7 +205,7 @@ plot_violins <- function(
     theme_modern() +
     theme(
       # whole plot
-      plot.margin = margin(0, 1, 0, 1, "mm"),
+      plot.margin        = margin(0, 1, 0, 1, "mm"),
       # legend
       legend.position    = "top",
       legend.title       = element_blank(),
@@ -215,7 +215,7 @@ plot_violins <- function(
       legend.box.spacing = unit(1, "mm"),
       # y axis
       axis.title.y       = element_text(
-        size = txt_big, 
+        size   = txt_big, 
         margin = margin(0, 1.5, 0, 0, "mm")
       ),
       axis.text.y        = element_text(size = txt_smol),
@@ -231,8 +231,8 @@ plot_violins <- function(
       panel.grid.minor.y = element_line(linewidth = lw_smol),
       # facets
       panel.border       = element_rect(
-        color = "grey92", 
-        fill = NA, 
+        color     = "grey92", 
+        fill      = NA, 
         linewidth = lw_smol
       ),
       panel.spacing.x    = unit(0, "mm"),

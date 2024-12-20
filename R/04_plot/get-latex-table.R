@@ -4,9 +4,11 @@ pacman::p_load(glue, Hmisc)
 get_latex_table <- function(
     models,
     groups, # "Group", "Cluster" or "Subcluster"
-    type = "original",
-    label = "tbl:test", rowname = NULL, ...) {
-  
+    type    = "original",
+    label   = "tbl:test", 
+    rowname = NULL, 
+    ...
+) {
   if (type == "original") {
     vars <- c(
       # Original scores

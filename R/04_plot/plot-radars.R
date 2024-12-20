@@ -4,19 +4,17 @@ pacman::p_load(dplyr, forcats, glue, ggplot2, see, stringr, superb, withr)
 plot_radars <- function(
     df_long, 
     groups,
-    # formula,
-    # palette,
     var_selection = "reduced", # or "original"
-    txt_big   = 7,
-    txt_mid   = 6,
-    txt_smol  = 5,
-    dot_size  = 0.8,
-    lw        = 0.2,
-    y_off     = 40, # to center the y axis text
-    r_off     = 0,
-    l_off     = 0,
-    v_off     = 0,
-    key       = 3,
+    txt_big  = 7,
+    txt_mid  = 6,
+    txt_smol = 5,
+    dot_size = 0.8,
+    lw       = 0.2,
+    y_off    = 40, # to center the y axis text
+    r_off    = 0,
+    l_off    = 0,
+    v_off    = 0,
+    key      = 3,
     ...
   ) {
   withr::local_options(list(warn = -1))

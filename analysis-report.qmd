@@ -18,7 +18,76 @@ echo: false # do not show the code unless explicitly asked
 params:
   save_figures: false
 format: html
+knitr: 
+  opts_chunk: 
+    dev: svg
 ---
+
+This document contains the entire data analysis process and an in-depth presentation 
+of the results related to the article in the sub-title. 
+These analyses should be fully reproducible. See the tab below for the details on how to do so.
+
+:::{.callout-tip collapse="true"}
+# How to reproduce the analyses
+
+You may have found this document either in the [GitHub repository](https://github.com/m-delem/aph-profiles-analyses/tree/main) 
+of this analysis project, or linked from GitHub in the [OSF repository](https://osf.io/7vsx6/) 
+of this study, which additionally contains all the experimental material to replicate the study.
+
+Either way, what you want to do is to have the complete GitHub repository as a
+folder on your computer.
+
+- If you use Git, clone the repo.
+- If you've never used Git, first, I'd recommend [you start using it](https://happygitwithr.com/), 
+  else go on the [repo's page](https://github.com/m-delem/aph-profiles-analyses/tree/main), 
+  click the green "Code" button and "Download ZIP". Extract the ZIP anywhere you
+  want on your computer.
+
+This project requires installing [Quarto](https://quarto.org/) on your computer, 
+and I'd recommend using it with [RStudio](https://posit.co/download/rstudio-desktop/).
+
+- Open the `open-this-file-first.Rproj` file. This should open RStudio and set the
+  directory you created as the working directory. This directory is an "R Project"
+  (in this case, a "Quarto project"). 
+- This project has its own "environment" thanks to the `renv` package, 
+  which means that the project is independent from your computer in terms of packages. 
+  What happens in this project, stays in this project. The packages installed 
+  on your computer will not be modified, but conversely they are not automatically 
+  available in the project either. This entails that the first step will be... 
+  To install the required packages in the project's directory (which is empty for now).
+
+But worry not! The next steps are straightforward.
+
+- Open the `analysis-report.qmd` file (you can see your files in RStudio's right panel).
+  This is a Quarto file, which allows mixing plain text with pieces of code called "chunks"
+  (and many, many other cool features). The present report is generated from this file.
+- Press Ctrl + Alt + R (if you are on Windows), or click the "Run" drop-down on 
+  the top right of the script window, and "Run All". This will start running all
+  the chunks in the file.
+- The only necessary packages to get all of this going are `pacman` and `remotes`.
+  You should have a prompt in the console asking you if you want to install them.
+  Accept!
+
+Then all the chunks below will run in sequence. First all the packages will
+be downloaded, installed and loaded automatically by `pacman`. Then computations
+will run, Bayesian models should be saved in the repo and will be loaded quickly 
+to avoid recomputing, plots will be produced and displayed. 
+If you want to re-run the Bayesian models, simply rename the files in 
+`data/r-data-structures` and run everything again to get new models. 
+Note that Bayesian modelling is probabilistic, so there will be slight variations 
+between each run, but *stable models are stable*.
+
+Done! You have everything you need to check things out, to test new things 
+and play around if you want. There are probably more things to find in this data,
+but I've done my best. Thank you for your interest in this research, and most of
+all, for digging this far. This whole exploration has required a tremendous amount 
+of work and dedication, but I've often doubted that anyone would ***ever*** 
+read this document (let alone this drop-down tab with technical stuff),
+so I'm really, really grateful.
+:::
+
+The tab below displays all the (heavily commented) code necessary to replicate 
+these analyses. The raw R scripts with the functions can be found in the `R/` folder.
 
 :::: {.callout-note collapse="true"}
 # Packages and pipeline
@@ -55,7 +124,7 @@ conflicts_prefer(
 ```
 
 Most of the steps of the data analysis were performed using functions defined in 
-external R scripts in the `R/` directory (loaded in the chunk above). 
+external R scripts in the `R/` folder (loaded in the chunk above). 
 The interested reader can find their code in the tab below. 
 
 :::{.callout-note collapse="true"}
@@ -69,7 +138,7 @@ recreated from the raw data, enhancing reproducibility.
 
 ```{r}
 #| label: add-import
-#| add-from: ../R/01_import/import-jatos-data.R
+#| add-from: R/01_import/import-jatos-data.R
 #| code-summary: Data import function
 #| echo: true
 
@@ -80,7 +149,7 @@ Four functions were created to manipulate the data in various ways.
 
 ```{r}
 #| label: add-scale-vars
-#| add-from: ../R/02_wrangle/scale-vars.R
+#| add-from: R/02_wrangle/scale-vars.R
 #| code-summary: Scale variables from their original range to 0-1
 #| echo: true
 
@@ -89,7 +158,7 @@ Four functions were created to manipulate the data in various ways.
 
 ```{r}
 #| label: add-scale-reduce-vars
-#| add-from: ../R/02_wrangle/scale-reduce-vars.R
+#| add-from: R/02_wrangle/scale-reduce-vars.R
 #| code-summary: "Scale variables and compute reduced variables (based on correlations)"
 #| echo: true
 
@@ -98,7 +167,7 @@ Four functions were created to manipulate the data in various ways.
 
 ```{r}
 #| label: add-merge
-#| add-from: ../R/02_wrangle/merge-clusters.R
+#| add-from: R/02_wrangle/merge-clusters.R
 #| code-summary: Add the clusters computed to the main dataframe
 #| echo: true
 
@@ -107,7 +176,7 @@ Four functions were created to manipulate the data in various ways.
 
 ```{r}
 #| label: add-longer
-#| add-from: ../R/02_wrangle/get-longer.R
+#| add-from: R/02_wrangle/get-longer.R
 #| code-summary: Pivot the table to a long format and use pretty names
 #| echo: true
 
@@ -118,8 +187,8 @@ Three functions were dedicated to modelling tasks.
 
 ```{r}
 #| label: add-correlate
-#| add-from: ../R/03_model/correlate-vars.R
-#| code-summary: Compute correlations or partial correlation on the original variables
+#| add-from: R/03_model/correlate-vars.R
+#| code-summary: Compute correlations or partial correlations on the original variables
 #| echo: true
 
 #
@@ -127,8 +196,8 @@ Three functions were dedicated to modelling tasks.
 
 ```{r}
 #| label: add-model-groups
-#| add-from: ../R/03_model/model-groups.R
-#| code-summary: "Model all the variables with the Group, Cluster or Subcluster (+ Age) as predictors"
+#| add-from: R/03_model/model-groups.R
+#| code-summary: "Model all the variables with the groups, clusters or subclusters (+ age) as predictors"
 #| echo: true
 
 #
@@ -136,7 +205,7 @@ Three functions were dedicated to modelling tasks.
 
 ```{r}
 #| label: add-model-lives
-#| add-from: ../R/03_model/model-lives.R
+#| add-from: R/03_model/model-lives.R
 #| code-summary: Assess association of education, field of study and occupation with Group, etc.
 #| echo: true
 
@@ -149,7 +218,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-violins
-#| add-from: ../R/04_plot/plot-violins.R
+#| add-from: R/04_plot/plot-violins.R
 #| code-summary: Plot group scores as violin-dot figures
 #| echo: true
 
@@ -158,7 +227,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-radars
-#| add-from: ../R/04_plot/plot-radars.R
+#| add-from: R/04_plot/plot-radars.R
 #| code-summary: Plot group, cluster or subcluster scores as radars
 #| echo: true
 
@@ -167,7 +236,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-correlation-plots
-#| add-from: ../R/04_plot/plot-correlations.R
+#| add-from: R/04_plot/plot-correlations.R
 #| code-summary: Plot correlation matrices and graphs
 #| echo: true
 
@@ -176,7 +245,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-bic
-#| add-from: ../R/04_plot/plot-clusters-bic.R
+#| add-from: R/04_plot/plot-clusters-bic.R
 #| code-summary: Plot BIC evaluation of GMMs for clustering
 #| echo: true
 
@@ -185,7 +254,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-save
-#| add-from: ../R/04_plot/save-plots.R
+#| add-from: R/04_plot/save-plots.R
 #| code-summary: Save plots in appropriate formats
 #| echo: true
 
@@ -194,7 +263,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-latex
-#| add-from: ../R/04_plot/get-latex-table.R
+#| add-from: R/04_plot/get-latex-table.R
 #| code-summary: "Print $\\LaTeX$ tables for the manuscript"
 #| echo: true
 
@@ -204,15 +273,16 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 The pipeline code below then runs all of these functions sequentially, 
 sometimes saving heavy computations along the way. It saves the figures if this
-notebooks was parametrised to do so with `params: save_figures: true`.
-This pipeline is designed to be fully reproducible by anyone using the `renv` 
+notebook was parametrised to do so with `params: save_figures: true`.
+This pipeline is designed to run smoothly by anyone using the `renv` 
 R environment from the project that has the raw JATOS data stored in the 
 `data/raw-data/` directory.
 
 ```{r}
 #| label: pipeline
-#| echo: true
 #| code-summary: Data analysis pipeline
+#| echo: true
+#| warning: false
 
 # load the data directly from the raw files
 df <- import_jatos_data()$data_final
@@ -232,7 +302,7 @@ selected_vars <- c(
 # determine the best model (GMM) and number of clusters for clustering with BIC
 bic <- df |> scale_reduce_vars() |> select(any_of(selected_vars)) |> mclustBIC()
 
-# compute the clustering on the selected variables with the model
+# compute the clustering on the selected variables with the selected model
 clustering <- 
   df |> 
   scale_reduce_vars() |> 
@@ -273,10 +343,10 @@ lives <- list(
 
 # Produce the plots for all these outputs --------------------------------------
 
-# the group comparisons, as violins
+# the group comparisons, as violins...
 p_groups_violins <- plot_violins(df_long, var_selection = "original")
-# and as radars
-p_groups_radar   <- plot_radars(df_long, Group,  var_selection = "original")
+# ...and as radars
+p_groups_radars  <- plot_radars(df_long, Group,  var_selection = "original")
 
 # correlation matrices and graphs
 p_partial <- plot_correlations(corrs_partial)
@@ -293,7 +363,7 @@ p_clusters <-
 # save the figures if this notebook is parametrised to do so
 if (params$save_figures) {
   ggsave_double_col("figures/groups-violins.pdf", p_groups_violins, height = 88)
-  ggsave_single_col("figures/groups-radar.pdf",   p_groups_radar,   height = 88)
+  ggsave_single_col("figures/groups-radars.pdf",  p_groups_radars,  height = 88)
   
   ggsave_double_col("figures/correlations-partial.pdf", p_partial, height = 120)
   ggsave_double_col("figures/correlations-simple.pdf",  p_simple,  height = 120)
@@ -304,8 +374,71 @@ if (params$save_figures) {
 ```
 ::::
 
-This document contains all the data analysis process related to the article in the subtitle.
-This analysis should be fully reproducible. See the tab below for the details on how to do so.
+# VVIQ group analysis
+
+## Modelling
+
+We first analysed the data in light of the VVIQ groups, examining differences between aphantasics and controls In order to model our variables with the VVIQ groups, we adjusted generalized linear models also controlling the effect of age on all variables to isolate the group effect:
+
+$$Variable = \alpha  + \beta_{1} \cdot Group \times \beta_{2} \cdot Age + \epsilon$$
+
+### Results
+
+
+
+### Visualisations
+
+::::{.panel-tabset}
+### Violin plots
+
+::: {#suppfig-g-violins}
+```{r}
+#| label: g-violins
+#| fig-width: 8
+#| fig-height: 3.5
+
+print(p_groups_violins)
+```
+
+Standardised scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been scaled and standardised between 0 and 1 to be represented on the same scale. The coloured shapes represent the distribution of the scores in each group. The coloured dots represent the mean of each group, while the bars represent the standard deviations. The stars represent weight of evidence thresholds in favour of an effect of the Group: \\* = '*Substantial evidence*', \\** = 'Strong evidence', \\*** = 'Decisive evidence'.
+:::
+
+### Radar plot
+
+::: {#suppfig-g-radars}
+```{r}
+#| label: g-radars
+#| fig-width: 3.5
+#| fig-height: 3.5
+
+print(p_groups_radars)
+```
+
+Standardised scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been scaled and standardised between 0 and 1 to be represented on the same scale. The coloured dots represent the mean of each group, while the bars represent the standard deviations.
+:::
+::::
+
+# Cluster repartition
+
+```{r}
+#| label: clsuter-repartition
+
+df_long |> 
+  select(id, Subcluster, Variable, value) |> 
+  filter(Variable == "VVIQ") |> 
+  distinct() |>
+  group_by(Subcluster) |> 
+  reframe(
+    n = n(),
+    VVIQ_std = mean(value) |> round(2)
+  )
+```
+
+```{r}
+model_lives(df2, group)      |> select(1, 4)
+model_lives(df2, cluster)    |> select(1, 4)
+model_lives(df2, subcluster) |> select(1, 4)
+```
 
 &nbsp;
 &nbsp;
