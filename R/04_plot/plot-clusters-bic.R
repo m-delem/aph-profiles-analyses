@@ -29,5 +29,8 @@ plot_clusters_bic <- function(mclust_object) {
       axis.ticks            = element_line(size = 0.2),
     )
   
+  # reorder the layers to put the red line in the background
+  p$layers <- p$layers[c(3, 1, 2)]
+  
   return(p)
 }

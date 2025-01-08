@@ -97,7 +97,7 @@ plot_radars <- function(
   } else if (n_groups == 3) {
     palette <- see::okabeito_colors(3, 1, 2)
   } else if (n_groups == 4) {
-    palette <- see::okabeito_colors(3, 1, 7, 2)
+    palette <- see::okabeito_colors(3, 4, 7, 2)
   } else {
     palette <- see::okabeito_colors()
   }

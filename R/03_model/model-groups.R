@@ -4,6 +4,7 @@ pacman::p_load(
   bayestestR,  # bf_inclusion, bf_parameters
   datawizard,  # rownames_as_column
   dplyr, 
+  # effectsize, # eta
   emmeans,     # pairs, emmeans
   glue,
   logspline,
@@ -100,7 +101,16 @@ model_groups <- function(df_long, groups) {
             sep = ", "
           ) |>
           mutate(`95% CrI` = paste0("[", `95% CrI`, "]"))
-      )
+      ),
+      # `$\\eta^{2}_{p}$` = list(
+      #   model_post |> 
+      #     eta_squared_posterior() |> 
+      #     describe_posterior() |> 
+      #     as_tibble() |> 
+      #     slice(1) |> 
+      #     pull(Median) |> 
+      #     round(2)
+      # )
     ) |> 
     # 5a) Unnesting the data to get a tibble with all the results side by side -
     unnest_wider(stats) |>
@@ -115,7 +125,7 @@ model_groups <- function(df_long, groups) {
       !!glue("{groups_str} $\\times$ Age") := model_bf_3
     ) |>
     select(!c(
-      any_of(c("data", "model_inclusion")), 
+      any_of(c("data", "model_inclusion")),
       contains("model_p"),
       contains("contr_")
     ))
