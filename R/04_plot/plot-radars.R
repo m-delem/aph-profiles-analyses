@@ -1,5 +1,16 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(dplyr, forcats, glue, ggplot2, see, stringr, superb, withr)
+pacman::p_load(
+  dplyr, 
+  forcats, 
+  glue, 
+  ggplot2, 
+  # ggtext, 
+  patchwork,
+  see, 
+  stringr, 
+  superb, 
+  withr
+  )
 
 plot_radars <- function(
     df_long, 
@@ -47,7 +58,6 @@ plot_radars <- function(
     vars <- c(
       # Reduced variables
       "Visual imagery",
-      "Auditory imagery",
       "Sensory imagery",
       "Spatial imagery",
       "Verbal strategies",
@@ -57,7 +67,8 @@ plot_radars <- function(
       "Spatial span std.",
       # Complex tasks
       "WCST",
-      "Reading\ncomprehension"
+      "Reading\ncomprehension",
+      "Auditory imagery"
     )
   } else {
     stop("var_selection must be either 'original' or 'reduced'.")
@@ -70,17 +81,32 @@ plot_radars <- function(
     mutate(
       Variable = 
         Variable |> 
-        str_replace("Reading\ncomprehension", "Reading") |> 
+        str_replace("Reading\ncomprehension", "Reading") |>
+        # The three lines below were ggtext tests to put these in italics
+        # str_replace("Reading\ncomprehension", "*Reading*") |>
+        # str_replace("Auditory imagery", "*Auditory imagery*") |>
+        # str_replace("WCST", "*WCST*") |>
         str_replace("Psi-Q Sensations", "Psi-Q Sens.") |> 
         str_replace("Psi-Q Feelings", "Psi-Q Feel.") |>  
         str_replace("Audition", "Auditory") |> 
         str_replace("Spatial span std.", "Spatial span") |> 
         factor() |> 
         fct_inorder() |> 
+        fct_relevel("Auditory imagery", after = Inf) |>
+        # fct_relevel("*Auditory imagery*", after = Inf) |> 
         fct_relevel("Visual imagery", after = Inf) |> 
         fct_relevel("VVIQ", after = Inf),
       Cluster = fct_recode(Cluster, "B (Aphant. + Control)" = "B (Mixed)")
     )
+  
+  # Preparing the labels for the variables (x axis text) -----------------------
+  labels <- df_to_plot$Variable |> levels()
+  labels <- replace(labels, labels == "Reading", expression(~italic("Reading")))
+  labels <- replace(
+    labels, 
+    labels == "Auditory imagery", 
+    expression(~italic("Auditory imagery")))
+  labels <- replace(labels, labels == "WCST", expression(~italic("WCST")))
   
   # Writing the formula for the "superb" plot ----------------------------------  
   groups_str <- deparse(substitute(groups))
@@ -97,7 +123,7 @@ plot_radars <- function(
   } else if (n_groups == 3) {
     palette <- see::okabeito_colors(3, 1, 2)
   } else if (n_groups == 4) {
-    palette <- see::okabeito_colors(3, 4, 7, 2)
+    palette <- see::okabeito_colors(3, 9, 6, 2)
   } else {
     palette <- see::okabeito_colors()
   }
@@ -116,6 +142,7 @@ plot_radars <- function(
     ) + 
     scale_colour_manual(values = palette) +
     scale_fill_manual(values   = palette) +
+    scale_x_discrete(labels = labels) +
     scale_y_continuous(
       limits = c(0, 1),
       breaks = breaks_pretty(),
@@ -138,13 +165,14 @@ plot_radars <- function(
       axis.line        = element_blank(),
       axis.title.x     = element_blank(),
       axis.title.y     = element_blank(),
+      axis.text.x      = element_text(size = txt_big),
+      # axis.text.x      = element_markdown(size = txt_big), # ggtext test
       axis.text.y      = element_text(
         size   = txt_smol, 
         margin = margin(0, -y_off, 0, y_off - 4, "mm"),
         hjust  = 0, 
         vjust  = -0.5
       ),
-      axis.text.x      = element_text(size = txt_big),
     )
   ) |> suppressMessages()
   

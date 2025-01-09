@@ -357,7 +357,7 @@ p_bic <- plot_clusters_bic(clustering)
 
 # radars of the cluster and subcluster scores
 p_clusters <- 
-  plot_radars(df_long, Cluster, r_off = 6) + 
+  plot_radars(df_long, Cluster, r_off = 6) +
   plot_radars(df_long, Subcluster, l_off = 6)
 
 # save the figures if this notebook is parametrised to do so
@@ -417,6 +417,16 @@ print(p_groups_radars)
 Standardised scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been scaled and standardised between 0 and 1 to be represented on the same scale. The coloured dots represent the mean of each group, while the bars represent the standard deviations.
 :::
 ::::
+
+```{r}
+#| label: c-radars
+#| fig-width: 7
+#| fig-height: 3.5
+
+plot_radars(df_long, Cluster, r_off = 6) + 
+  plot_radars(df_long, Subcluster, l_off = 6)
+```
+
 
 # Cluster repartition
 
