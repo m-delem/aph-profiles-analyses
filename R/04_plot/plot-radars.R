@@ -82,7 +82,8 @@ plot_radars <- function(
       Variable = 
         Variable |> 
         str_replace("Reading\ncomprehension", "Reading") |>
-        # The three lines below were ggtext tests to put these in italics
+        # The three lines below were ggtext attempts to put selected labels in 
+        # italics using markdown.
         # str_replace("Reading\ncomprehension", "*Reading*") |>
         # str_replace("Auditory imagery", "*Auditory imagery*") |>
         # str_replace("WCST", "*WCST*") |>
@@ -93,20 +94,24 @@ plot_radars <- function(
         factor() |> 
         fct_inorder() |> 
         fct_relevel("Auditory imagery", after = Inf) |>
-        # fct_relevel("*Auditory imagery*", after = Inf) |> 
+        # fct_relevel("*Auditory imagery*", after = Inf) |> # in ggtext version
         fct_relevel("Visual imagery", after = Inf) |> 
         fct_relevel("VVIQ", after = Inf),
       Cluster = fct_recode(Cluster, "B (Aphant. + Control)" = "B (Mixed)")
     )
   
-  # Preparing the labels for the variables (x axis text) -----------------------
-  labels <- df_to_plot$Variable |> levels()
-  labels <- replace(labels, labels == "Reading", expression(~italic("Reading")))
-  labels <- replace(
-    labels, 
-    labels == "Auditory imagery", 
+  # The lines below were an alternative clunky attempt to italicize selected 
+  # labels. We create an expression() vector to be used in scale_x_discrete.
+  # It worked for the italics, but the scale_x_discrete broke the radars by
+  # adding space between the first and last breaks.
+
+  label <- df_to_plot$Variable |> levels()
+  label <- replace(label, label == "Reading", expression(~italic("Reading")))
+  label <- replace(
+    label,
+    label == "Auditory imagery",
     expression(~italic("Auditory imagery")))
-  labels <- replace(labels, labels == "WCST", expression(~italic("WCST")))
+  label <- replace(label, label == "WCST", expression(~italic("WCST")))
   
   # Writing the formula for the "superb" plot ----------------------------------  
   groups_str <- deparse(substitute(groups))
@@ -142,7 +147,14 @@ plot_radars <- function(
     ) + 
     scale_colour_manual(values = palette) +
     scale_fill_manual(values   = palette) +
-    scale_x_discrete(labels = labels) +
+    # Below is the clunky attempt to italicize selected labels.
+    # It worked for the italics, but broke the radars.
+    # scale_x_discrete(
+    #   expand = expansion(add = 0, mult = 0),
+    #   limits = factor(df_to_plot$Variable |> levels()),
+    #   labels = label
+    # ) +
+    # coord_polar(start = pi/36) +
     scale_y_continuous(
       limits = c(0, 1),
       breaks = breaks_pretty(),
@@ -165,8 +177,17 @@ plot_radars <- function(
       axis.line        = element_blank(),
       axis.title.x     = element_blank(),
       axis.title.y     = element_blank(),
+      # Below is the ggtext attempt to italicize selected labels. 
+      # Once again, the italic worked, but this time ggtext broke the patchwork 
+      # layouts, creating the error: 
+      #   Error in grid.Call.graphics(C_setviewport, vp, TRUE)
+      # Sad. I was close to the solution.
+      # axis.text.x      = element_markdown(
+      #   size    = txt_big, 
+      #   margin  = unit(c(0, 0, 0, 0), "pt"),
+      #   padding = unit(c(0, 0, 0, 0), "pt"),
+      # ),
       axis.text.x      = element_text(size = txt_big),
-      # axis.text.x      = element_markdown(size = txt_big), # ggtext test
       axis.text.y      = element_text(
         size   = txt_smol, 
         margin = margin(0, -y_off, 0, y_off - 4, "mm"),

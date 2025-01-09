@@ -423,8 +423,11 @@ Standardised scores of the two VVIQ groups on all the questionnaires and tasks. 
 #| fig-width: 7
 #| fig-height: 3.5
 
-plot_radars(df_long, Cluster, r_off = 6) + 
+p_clusters <- 
+  plot_radars(df_long, Cluster, r_off = 6) + 
   plot_radars(df_long, Subcluster, l_off = 6)
+
+print(p_clusters)
 ```
 
 
