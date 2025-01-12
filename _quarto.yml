@@ -36,14 +36,14 @@ format:
     embed-resources: true 
     format-links: false     # no links to other formats
     theme: 
-      dark:
-        - scss/custom-theme.scss
-        - scss/default-vars.scss
-        - scss/colours-dark.scss
       light:
         - scss/custom-theme.scss
         - scss/default-vars.scss
         - scss/colours-light.scss
+      dark:
+        - scss/custom-theme.scss
+        - scss/default-vars.scss
+        - scss/colours-dark.scss
     highlight-style: github
     lightbox: true          
     code-fold: true         

@@ -98,16 +98,17 @@ these analyses. The raw R scripts with the functions can be found in the `R/` fo
 #| code-fold: false
 
 if (!requireNamespace("pacman")) install.packages("pacman")
+# loading packages easily with pacman
 pacman::p_load(
-  conflicted, 
-  here,
-  fs, 
-  ggplot2,
-  mclust,
-  NbClust,
-  patchwork,
-  purrr,
-  sessioninfo
+  conflicted, # resolve package conflicts
+  here,       # point to working directory
+  fs,         # work with file structures
+  ggplot2,    # plotting framework
+  mclust,     # model-based clustering
+  NbClust,    # number of clusters
+  patchwork,  # arrange multiple ggplots
+  purrr,      # iterate functions
+  sessioninfo # display session info
 )
 
 # source all our custom functions
@@ -274,7 +275,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 The pipeline code below then runs all of these functions sequentially, 
 sometimes saving heavy computations along the way. It saves the figures if this
 notebook was parametrised to do so with `params: save_figures: true`.
-This pipeline is designed to run smoothly by anyone using the `renv` 
+This pipeline is designed to run smoothly for anyone using the `renv` 
 R environment from the project that has the raw JATOS data stored in the 
 `data/raw-data/` directory.
 
@@ -357,7 +358,7 @@ p_bic <- plot_clusters_bic(clustering)
 
 # radars of the cluster and subcluster scores
 p_clusters <- 
-  plot_radars(df_long, Cluster, r_off = 6) +
+  plot_radars(df_long, Cluster,    r_off = 6) +
   plot_radars(df_long, Subcluster, l_off = 6)
 
 # save the figures if this notebook is parametrised to do so

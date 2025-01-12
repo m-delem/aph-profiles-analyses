@@ -237,7 +237,7 @@ plot_violins <- function(
       ),
       panel.spacing.x    = unit(0, "mm"),
       panel.spacing.y    = unit(3, "mm"),
-      strip.text         = element_text(size = txt_big, face = "plain"),
+      strip.text         = element_text(size = txt_mid, face = "plain"),
       strip.background   = element_rect(
         color     = "grey92",
         fill      = "grey98",
