@@ -18,9 +18,9 @@ echo: false # do not show the code unless explicitly asked
 params:
   save_figures: false
 format: html
-knitr: 
-  opts_chunk: 
-    dev: svg
+# knitr: 
+#   opts_chunk: 
+#     dev: svg
 ---
 
 This document contains the entire data analysis process and an in-depth presentation 
@@ -377,82 +377,315 @@ if (params$save_figures) {
 
 # VVIQ group analysis
 
-## Modelling
+We first analysed the data in light of the VVIQ groups, examining differences 
+between aphantasics and controls. 
 
-We first analysed the data in light of the VVIQ groups, examining differences between aphantasics and controls In order to model our variables with the VVIQ groups, we adjusted generalized linear models also controlling the effect of age on all variables to isolate the group effect:
+## Main variables
+
+In order to model our variables with the VVIQ groups, 
+we adjusted generalized linear models also controlling the effect of age on all 
+variables to isolate the group effect:
 
 $$Variable = \alpha  + \beta_{1} \cdot Group \times \beta_{2} \cdot Age + \epsilon$$
 
-### Results
-
-
-
 ### Visualisations
 
-::::{.panel-tabset}
-### Violin plots
+::::{.panel-tabset .column-page-inset}
+#### Violin plots
 
 ::: {#suppfig-g-violins}
 ```{r}
 #| label: g-violins
-#| fig-width: 8
-#| fig-height: 3.5
+#| fig-width: 10
+#| fig-height: 5
 
-print(p_groups_violins)
+plot_violins(
+  df_long, var_selection = "original",
+  txt_big  = 12,
+  txt_mid  = 10,
+  txt_smol = 8,
+  dot_big  = 0.5,
+  dot_smol = 0.25,
+  lw_big   = 0.5,
+  lw_smol  = 0.5
+  )
 ```
 
-Standardised scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been scaled and standardised between 0 and 1 to be represented on the same scale. The coloured shapes represent the distribution of the scores in each group. The coloured dots represent the mean of each group, while the bars represent the standard deviations. The stars represent weight of evidence thresholds in favour of an effect of the Group: \\* = '*Substantial evidence*', \\** = 'Strong evidence', \\*** = 'Decisive evidence'.
+Scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been rescaled between 0 and 1 to be represented on the same scale. The coloured shapes represent the distribution of the scores in each group. The coloured dots represent the mean of each group, while the bars represent the standard deviations. The stars represent weight of evidence thresholds in favour of an effect of the Group: \\* = '*Substantial evidence*', \\** = 'Strong evidence', \\*** = 'Decisive evidence'.
 :::
 
-### Radar plot
+#### Radar plot
 
 ::: {#suppfig-g-radars}
 ```{r}
 #| label: g-radars
-#| fig-width: 3.5
-#| fig-height: 3.5
+#| fig-width: 6
+#| fig-height: 6
 
-print(p_groups_radars)
-```
-
-Standardised scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been scaled and standardised between 0 and 1 to be represented on the same scale. The coloured dots represent the mean of each group, while the bars represent the standard deviations.
-:::
-::::
-
-```{r}
-#| label: c-radars
-#| fig-width: 7
-#| fig-height: 3.5
-
-p_clusters <- 
-  plot_radars(df_long, Cluster, r_off = 6) + 
-  plot_radars(df_long, Subcluster, l_off = 6)
-
-print(p_clusters)
-```
-
-
-# Cluster repartition
-
-```{r}
-#| label: clsuter-repartition
-
-df_long |> 
-  select(id, Subcluster, Variable, value) |> 
-  filter(Variable == "VVIQ") |> 
-  distinct() |>
-  group_by(Subcluster) |> 
-  reframe(
-    n = n(),
-    VVIQ_std = mean(value) |> round(2)
+plot_radars(
+  df_long, Group,  var_selection = "original",
+  txt_big  = 12,
+  txt_mid  = 10,
+  txt_smol = 8,
+  dot_size = 1.5,
+  lw       = 0.5
   )
 ```
 
+Scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been rescaled between 0 and 1 to be represented on the same scale. The coloured dots represent the mean of each group, while the bars represent the standard errors
+:::
+::::
+
+### Full results
+
+:::{#supptbl-g-results .column-page-inset}
 ```{r}
-model_lives(df2, group)      |> select(1, 4)
-model_lives(df2, cluster)    |> select(1, 4)
-model_lives(df2, subcluster) |> select(1, 4)
+#| label: g-results
+
+models$group_models |>
+  select(!Comparison) |> 
+  knitr::kable()
 ```
+
+Means and standard deviations of the scores of each VVIQ group for every variable. The weight of evidence for a main effect of Group, Age and Group $\times$ Age, the score differences, their 95% Credible Interval and weight of evidence in favour of a difference between the groups are reported for each variable.
+:::
+
+## Education, fields of study and occupation
+
+:::{#supptbl-g-lives layout-ncol=2 .column-page-inset}
+```{r}
+#| label: tbl-g-lives-bf
+#| tbl-cap: Weight of evidence in favour of an association between the variables and the VVIQ groups.
+
+lives$group |> 
+  select(1, 4) |> 
+  rename(`$log(BF_{10})$` = log_bf10) |> 
+  knitr::kable()
+```
+
+
+```{r}
+#| label: tbl-g-lives-edu
+#| tbl-cap: Distribution of education levels.
+
+show_lives <- function(lives_table, variable) {
+  lives_table |>
+    filter(Variable == variable) |> 
+    unnest(table) |> 
+    ungroup() |> 
+    select(!c(Variable, data, log_bf10)) |> 
+    rename(!!variable := value) |> 
+    knitr::kable()
+}
+
+show_lives(lives$group, "Education")
+```
+
+
+```{r}
+#| label: tbl-g-lives-field
+#| tbl-cap: Distribution of the fields of education.
+
+show_lives(lives$group, "Field")
+```
+
+
+```{r}
+#| label: tbl-g-lives-occupation
+#| tbl-cap: Distribution of occupational fields.
+
+show_lives(lives$group, "Occupation")
+```
+
+
+Complete summary of the education, fields of the study and occupation data from the sample, classified with the VVIQ.
+:::
+
+# Cluster analysis
+
+## Correlations
+
+We used partial correlations to identify the strongest unbiased links between 
+variables for variable reduction, while reducing the bias from spurious correlations.
+Standard Pearson correlations are also provided below as a reference for comparison.
+All *p*-values are Bonferroni-corrected.
+
+::::{.panel-tabset .column-page-inset}
+### Partial correlations
+
+:::{#suppfig-p-corrs}
+```{r}
+#| label: p-corrs
+#| fig-width: 14
+#| fig-height: 9
+
+plot_correlations(
+  corrs_partial,
+  axis_text   = 10,
+  matrix_text = 8,
+  node_size   = 24,
+  node_text_size  = 8,
+  label_text_size = 4
+  )
+```
+
+Partial correlations between all 18 original variables.
+:::
+
+### Simple correlations
+
+:::{#suppfig-s-corrs}
+```{r}
+#| label: s-corrs
+#| fig-width: 14
+#| fig-height: 9
+
+plot_correlations(
+  corrs_simple,
+  axis_text   = 10,
+  matrix_text = 8,
+  node_size   = 24,
+  node_text_size  = 8,
+  label_text_size = 4
+  )
+```
+
+Simple correlations between all 18 original variables.
+:::
+::::
+
+This analyses allowed us to remove redundant variables and select or create 
+7 essential variables for clustering: *Visual imagery* (VVIQ + OSIVQ-Object + Psi-Q),
+*Spatial imagery* (OSIVQ-Spatial + SRI), *Verbal strategies* (OSIVQ-Verbal),
+*Sensory imagery* (Psi-Q smell + taste + touch + sensations + feelings),
+*Raven + Digit span*, *Spatial span*, and *Verbal reasoning* (Similarities test).
+
+## Number of clusters
+
+We used Gaussian Mixture Models implemented in the package `mclust`. To determine
+the ideal number of clusters, we used the Bayesian Information Criterion (BIC)
+to test the fit of every model for every (reasonable) number of clusters.
+This analysis showed that a 3-cluster model was the most appropriate.
+
+:::{#suppfig-bic}
+```{r}
+#| label: p-bic
+#| fig-width: 8
+#| fig-height: 6
+
+plot_clusters_bic(
+  clustering,
+    txt_big  = 10,
+    txt_mid  = 9,
+    txt_smol = 8,
+    size = 0.5
+  )
+```
+
+Comparison of the goodness of fit of different mixture models used for clustering as a function of model type and number of components. A high BIC indicates a good model fit. The three-letter acronyms describe the components of the mixture models. The first letter describes the volume of the components, the second their shape and the last their orientation. E = equal, V = variable. Acronyms ending with ‘II’ indicate mixtures of spherical components, those ending with ‘I’ indicate mixtures of diagonal components and those without 'I' indicate mixtures of ellipsoidal components.
+:::
+
+## Clustering results
+
+```{css, echo=FALSE}
+.center-table table {
+  width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+}
+```
+
+:::{#supptbl-repartition .center-table}
+```{r}
+#| label: c-repartition
+
+df2 |> 
+  group_by(cluster, group) |> 
+  count() |> 
+  rename_with(str_to_title, everything()) |> 
+  knitr::kable()
+```
+
+Distribution of the two initial groups in the three clusters obtained.
+:::
+
+The three clusters, when crossed with the VVIQ classification, reveal four
+"sub-clusters" by dividing the mixed cluster between controls and aphants. We
+display the analyses for the cluster and sub-cluster classifications below.
+
+### Modelling variables
+
+::: {.column-page-inset}
+```{r}
+#| label: cluster-radar-plots
+#| fig-width: 10
+#| fig-height: 5
+
+plot_radars(
+  df_long, Cluster,  
+  txt_big  = 9,
+  txt_mid  = 8,
+  txt_smol = 7,
+  dot_size = 1.5,
+  lw       = 0.5,
+  y_off    = 57, # to center the y axis text
+  r_off = 6) +
+  plot_radars(
+    df_long, Subcluster, 
+    txt_big  = 9,
+    txt_mid  = 8,
+    txt_smol = 7,
+    dot_size = 1.5,
+    lw       = 0.5,
+    y_off    = 57, # to center the y axis text
+    l_off = 6)
+```
+:::
+
+
+::::{.panel-tabset .column-page-inset}
+#### Cluster models
+
+:::{.panel-tabset}
+##### Main effects
+
+```{r}
+models$cluster_models |> 
+  select(1:7) |> 
+  distinct() |> 
+  knitr::kable()
+```
+
+##### Pairwise comparisons
+
+```{r}
+models$cluster_models |> 
+  select(1, 8:11) |> 
+  knitr::kable()
+```
+:::
+
+#### Subcluster models
+
+:::{.panel-tabset}
+##### Main effects
+
+```{r}
+models$subcluster_models |> 
+  select(1:8) |> 
+  distinct() |> 
+  knitr::kable()
+```
+
+##### Pairwise comparisons
+
+```{r}
+models$subcluster_models |> 
+  select(1, 9:12) |> 
+  knitr::kable()
+```
+:::
+::::
 
 &nbsp;
 &nbsp;
