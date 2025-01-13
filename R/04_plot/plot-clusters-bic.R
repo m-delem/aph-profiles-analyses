@@ -1,12 +1,18 @@
 # if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(BiocManager, factoextra, see)
 
-plot_clusters_bic <- function(mclust_object) {
+plot_clusters_bic <- function(
+    mclust_object,
+    txt_big  = 7,
+    txt_mid  = 6,
+    txt_smol = 5,
+    size = 0.2
+    ) {
   p <- 
     fviz_mclust_bic(
       mclust_object, 
       shape   = "model",
-      size    = 0.2,
+      size    = size,
       palette = colorRampPalette(see::okabeito_colors())(14)
     ) + 
     labs(
@@ -15,18 +21,18 @@ plot_clusters_bic <- function(mclust_object) {
       shape  = "Model type"
     ) +
     theme(
-      plot.subtitle         = element_text(size = 7),
+      plot.subtitle         = element_text(size = txt_big),
       plot.margin           = margin(1, 1, 0, 1, "mm"),
       legend.position       = "bottom",
       legend.margin         = margin(0, 0, 1, 0, "mm"),
       legend.box.spacing    = unit(0, "mm"),
       legend.title.position = "top",
-      legend.title          = element_text(size = 7),
-      legend.text           = element_text(size = 6),
-      axis.title            = element_text(size = 7),
-      axis.text             = element_text(size = 5),
-      axis.line             = element_line(size = 0.2),
-      axis.ticks            = element_line(size = 0.2),
+      legend.title          = element_text(size = txt_big),
+      legend.text           = element_text(size = txt_mid),
+      axis.title            = element_text(size = txt_big),
+      axis.text             = element_text(size = txt_smol),
+      axis.line             = element_line(linewidth = size),
+      axis.ticks            = element_line(linewidth = size),
     )
   
   # reorder the layers to put the red line in the background

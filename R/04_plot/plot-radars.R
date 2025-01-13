@@ -113,8 +113,24 @@ plot_radars <- function(
     expression(~italic("Auditory imagery")))
   label <- replace(label, label == "WCST", expression(~italic("WCST")))
   
-  # Writing the formula for the "superb" plot ----------------------------------  
-  groups_str <- deparse(substitute(groups))
+  # Writing the formula for the "superb" plot ----------------------------------
+  # groups_str <- deparse(substitute(groups))
+  # groups_str <- as.character(substitute(groups))
+  
+  # if (is.character(groups)) {
+  #   groups_str <- groups
+  #   } else {
+  #   groups_str <- deparse(substitute(groups))
+  #   }
+  
+  # subs <- substitute(groups)
+  # groups_str <- if (is.character(subs)) subs else deparse(subs)
+  
+  groups_str <- as.character(rlang::ensym(groups))
+  # groups_str <- deparse(rlang::ensym(groups))
+  
+  # print(groups_str)
+
   if (!(groups_str %in% c("Group", "Cluster", "Subcluster"))) {
     stop("groups must be either 'Group', 'Cluster', or 'Subcluster'.")
   }
