@@ -16,11 +16,8 @@ crossref:
 supptbl-cap-location: top
 echo: false # do not show the code unless explicitly asked
 params:
-  save_figures: false
+  save_figures: true
 format: html
-# knitr: 
-#   opts_chunk: 
-#     dev: svg
 ---
 
 This document contains the entire data analysis process and an in-depth presentation 
@@ -277,7 +274,8 @@ sometimes saving heavy computations along the way. It saves the figures if this
 notebook was parametrised to do so with `params: save_figures: true`.
 This pipeline is designed to run smoothly for anyone using the `renv` 
 R environment from the project that has the raw JATOS data stored in the 
-`data/raw-data/` directory.
+`data/raw-data/` directory and the manually scored Similarities and Reading 
+comprehension tests in the `data/data-processed/data_scored_manually.xlsx` file.
 
 ```{r}
 #| label: pipeline
@@ -378,7 +376,7 @@ if (params$save_figures) {
 # VVIQ group analysis
 
 We first analysed the data in light of the VVIQ groups, examining differences 
-between aphantasics and controls. 
+between individuals with aphantasia and controls. 
 
 ## Main variables
 
@@ -411,7 +409,7 @@ plot_violins(
   )
 ```
 
-Scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been rescaled between 0 and 1 to be represented on the same scale. The coloured shapes represent the distribution of the scores in each group. The coloured dots represent the mean of each group, while the bars represent the standard deviations. The stars represent weight of evidence thresholds in favour of an effect of the Group: \\* = '*Substantial evidence*', \\** = 'Strong evidence', \\*** = 'Decisive evidence'.
+Scores of the two VVIQ groups on all the questionnaires and tasks. The scores have been rescaled between 0 and 1 to be represented on the same scale. The coloured shapes represent the distribution of the scores in each group. The coloured dots represent the mean of each group, while the bars represent the standard deviations. The stars represent weight of evidence thresholds in favour of an effect of the Group: \* = '*Substantial evidence*', \** = 'Strong evidence', \*** = 'Decisive evidence'.
 :::
 
 #### Radar plot
@@ -444,13 +442,24 @@ Scores of the two VVIQ groups on all the questionnaires and tasks. The scores ha
 
 models$group_models |>
   select(!Comparison) |> 
+  filter(!(Variable %in% c(
+    "Visual imagery",
+    "Auditory imagery",
+    "Sensory imagery",
+    "Spatial imagery",
+    "Verbal strategies",
+    "Raven +\nDigit Span",
+    "Non-verbal\nreasoning",
+    "Verbal reasoning",
+    "Spatial span std."
+  ))) |> 
   knitr::kable()
 ```
 
 Means and standard deviations of the scores of each VVIQ group for every variable. The weight of evidence for a main effect of Group, Age and Group $\times$ Age, the score differences, their 95% Credible Interval and weight of evidence in favour of a difference between the groups are reported for each variable.
 :::
 
-## Education, fields of study and occupation
+## Demographic variables
 
 :::{#supptbl-g-lives layout-ncol=2 .column-page-inset}
 ```{r}
@@ -467,16 +476,6 @@ lives$group |>
 ```{r}
 #| label: tbl-g-lives-edu
 #| tbl-cap: Distribution of education levels.
-
-show_lives <- function(lives_table, variable) {
-  lives_table |>
-    filter(Variable == variable) |> 
-    unnest(table) |> 
-    ungroup() |> 
-    select(!c(Variable, data, log_bf10)) |> 
-    rename(!!variable := value) |> 
-    knitr::kable()
-}
 
 show_lives(lives$group, "Education")
 ```
@@ -505,8 +504,8 @@ Complete summary of the education, fields of the study and occupation data from 
 
 ## Correlations
 
-We used partial correlations to identify the strongest unbiased links between 
-variables for variable reduction, while reducing the bias from spurious correlations.
+We used partial correlations to identify the strongest links between variables 
+for variable reduction while reducing the bias from potential spurious correlations.
 Standard Pearson correlations are also provided below as a reference for comparison.
 All *p*-values are Bonferroni-corrected.
 
@@ -559,6 +558,8 @@ This analyses allowed us to remove redundant variables and select or create
 *Spatial imagery* (OSIVQ-Spatial + SRI), *Verbal strategies* (OSIVQ-Verbal),
 *Sensory imagery* (Psi-Q smell + taste + touch + sensations + feelings),
 *Raven + Digit span*, *Spatial span*, and *Verbal reasoning* (Similarities test).
+*Auditory imagery* (Psi-Q Audition), *WCST* and *Reading comprehension* were 
+not used for clustering and kept as external variables to test the cluster model.
 
 ## Number of clusters
 
@@ -610,12 +611,13 @@ Distribution of the two initial groups in the three clusters obtained.
 :::
 
 The three clusters, when crossed with the VVIQ classification, reveal four
-"sub-clusters" by dividing the mixed cluster between controls and aphants. We
-display the analyses for the cluster and sub-cluster classifications below.
+"sub-clusters" by dividing the mixed cluster between controls and individuals 
+with aphantasia. We display the analyses for the cluster and sub-cluster 
+classifications below.
 
-### Modelling variables
+### Main variables
 
-::: {.column-page-inset}
+::: {#suppfig-cluster-radars .column-page-inset}
 ```{r}
 #| label: cluster-radar-plots
 #| fig-width: 10
@@ -640,8 +642,12 @@ plot_radars(
     y_off    = 57, # to center the y axis text
     l_off = 6)
 ```
+
+Mean scores (points) and standard errors (error bars) of the three clusters on 
+the seven variables used for clustering and the three test variables.
 :::
 
+### All variables
 
 ::::{.panel-tabset .column-page-inset}
 #### Cluster models
@@ -686,6 +692,90 @@ models$subcluster_models |>
 ```
 :::
 ::::
+
+### Demographic variables
+
+#### Clusters
+
+:::{#supptbl-c-lives layout-ncol=2 .column-page-inset}
+```{r}
+#| label: tbl-c-lives-bf
+#| tbl-cap: Weight of evidence in favour of an association between the variables and the clusters.
+
+lives$cluster |> 
+  select(1, 4) |> 
+  rename(`$log(BF_{10})$` = log_bf10) |> 
+  knitr::kable()
+```
+
+
+```{r}
+#| label: tbl-c-lives-edu
+#| tbl-cap: Distribution of education levels.
+
+show_lives(lives$cluster, "Education")
+```
+
+
+```{r}
+#| label: tbl-c-lives-field
+#| tbl-cap: Distribution of the fields of education.
+
+show_lives(lives$cluster, "Field")
+```
+
+
+```{r}
+#| label: tbl-c-lives-occupation
+#| tbl-cap: Distribution of occupational fields.
+
+show_lives(lives$cluster, "Occupation")
+```
+
+
+Complete summary of the education, fields of the study and occupation data from the sample, classified with the cluster model.
+:::
+
+#### Subclusters
+
+:::{#supptbl-s-lives layout-ncol=2 .column-page-inset}
+```{r}
+#| label: tbl-s-lives-bf
+#| tbl-cap: Weight of evidence in favour of an association between the variables and the clusters.
+
+lives$subcluster |> 
+  select(1, 4) |> 
+  rename(`$log(BF_{10})$` = log_bf10) |> 
+  knitr::kable()
+```
+
+
+```{r}
+#| label: tbl-s-lives-edu
+#| tbl-cap: Distribution of education levels.
+
+show_lives(lives$subcluster, "Education")
+```
+
+
+```{r}
+#| label: tbl-s-lives-field
+#| tbl-cap: Distribution of the fields of education.
+
+show_lives(lives$subcluster, "Field")
+```
+
+
+```{r}
+#| label: tbl-s-lives-occupation
+#| tbl-cap: Distribution of occupational fields.
+
+show_lives(lives$subcluster, "Occupation")
+```
+
+
+Complete summary of the education, fields of the study and occupation data from the sample, classified in sub-clusters with the cluster model and the VVIQ groups.
+:::
 
 &nbsp;
 &nbsp;

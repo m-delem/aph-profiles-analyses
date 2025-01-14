@@ -17,10 +17,6 @@ author:
 
 date-modified: last-modified
 
-bibliography:
-  - "bibliography/references.bib" 
-csl: "bibliography/apa.csl"
-
 execute:
   freeze: false
   warning: false
@@ -58,13 +54,5 @@ format:
     number-depth: 2
     filters:
       - add-code-files
-
-  # Word
-  docx: 
-    reference-doc: "docs/custom-reference-doc.docx"
-    echo: false
-    # extension to add a block with authors in .docx format
-    filters:
-      - authors-block
 
 

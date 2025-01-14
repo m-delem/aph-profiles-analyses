@@ -114,6 +114,10 @@ plot_radars <- function(
   label <- replace(label, label == "WCST", expression(~italic("WCST")))
   
   # Writing the formula for the "superb" plot ----------------------------------
+  
+  # Below are various previous attempts to allow the "groups" argument to be
+  # either a string or a symbol. The current version uses rlang::ensym(groups).
+  
   # groups_str <- deparse(substitute(groups))
   # groups_str <- as.character(substitute(groups))
   
@@ -126,10 +130,10 @@ plot_radars <- function(
   # subs <- substitute(groups)
   # groups_str <- if (is.character(subs)) subs else deparse(subs)
   
-  groups_str <- as.character(rlang::ensym(groups))
   # groups_str <- deparse(rlang::ensym(groups))
   
-  # print(groups_str)
+  # This is the version that finally worked:
+  groups_str <- as.character(rlang::ensym(groups))
 
   if (!(groups_str %in% c("Group", "Cluster", "Subcluster"))) {
     stop("groups must be either 'Group', 'Cluster', or 'Subcluster'.")
@@ -197,6 +201,7 @@ plot_radars <- function(
       # Once again, the italic worked, but this time ggtext broke the patchwork 
       # layouts, creating the error: 
       #   Error in grid.Call.graphics(C_setviewport, vp, TRUE)
+      # From what I read in a GH issue, it seems to be a ggtext bug.
       # Sad. I was close to the solution.
       # axis.text.x      = element_markdown(
       #   size    = txt_big, 

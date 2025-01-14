@@ -41,3 +41,14 @@ model_lives <- function(df, groups_var, type = "indepMulti") { # or "jointMulti"
   
   return(associations)
 }
+
+# Display the distribution of the sample on a variable for a classification
+show_lives <- function(lives_table, variable) {
+  lives_table |>
+    filter(Variable == variable) |> 
+    unnest(table) |> 
+    ungroup() |> 
+    select(!c(Variable, data, log_bf10)) |> 
+    rename(!!variable := value) |> 
+    knitr::kable()
+}
