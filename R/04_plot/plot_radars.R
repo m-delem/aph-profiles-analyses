@@ -2,14 +2,10 @@
 pacman::p_load(
   dplyr, 
   forcats, 
-  glue, 
   ggplot2, 
-  # ggtext, 
   patchwork,
-  see, 
   stringr, 
-  superb, 
-  withr
+  superb
   )
 
 plot_radars <- function(
@@ -138,7 +134,7 @@ plot_radars <- function(
   if (!(groups_str %in% c("Group", "Cluster", "Subcluster"))) {
     stop("groups must be either 'Group', 'Cluster', or 'Subcluster'.")
   }
-  formula    <- as.formula(glue("value ~ Variable + {groups_str}"))
+  formula    <- as.formula(glue::glue("value ~ Variable + {groups_str}"))
   
   # Choosing the palette based on the group selection --------------------------
   n_groups   <- length(unique(df_long |> pull({{ groups }})))
@@ -156,7 +152,7 @@ plot_radars <- function(
   
   # Plotting -------------------------------------------------------------------
   p <- (
-    superb(
+    superb::superb(
       formula        = formula,
       data           = df_to_plot,
       plotStyle      = "circularline",

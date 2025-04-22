@@ -134,7 +134,7 @@ recreated from the raw data, enhancing reproducibility.
 
 ```{r}
 #| label: add-import
-#| add-from: R/01_import/import-jatos-data.R
+#| add-from: R/01_import/import_jatos_data.R
 #| code-summary: Data import function
 #| echo: true
 
@@ -145,7 +145,7 @@ Four functions were created to manipulate the data in various ways.
 
 ```{r}
 #| label: add-scale-vars
-#| add-from: R/02_wrangle/scale-vars.R
+#| add-from: R/02_wrangle/scale_vars.R
 #| code-summary: Scale variables from their original range to 0-1
 #| echo: true
 
@@ -154,7 +154,7 @@ Four functions were created to manipulate the data in various ways.
 
 ```{r}
 #| label: add-scale-reduce-vars
-#| add-from: R/02_wrangle/scale-reduce-vars.R
+#| add-from: R/02_wrangle/scale_reduce_vars.R
 #| code-summary: "Scale variables and compute reduced variables (based on correlations)"
 #| echo: true
 
@@ -163,7 +163,7 @@ Four functions were created to manipulate the data in various ways.
 
 ```{r}
 #| label: add-merge
-#| add-from: R/02_wrangle/merge-clusters.R
+#| add-from: R/02_wrangle/merge_clusters.R
 #| code-summary: Add the clusters computed to the main dataframe
 #| echo: true
 
@@ -172,7 +172,7 @@ Four functions were created to manipulate the data in various ways.
 
 ```{r}
 #| label: add-longer
-#| add-from: R/02_wrangle/get-longer.R
+#| add-from: R/02_wrangle/get_longer.R
 #| code-summary: Pivot the table to a long format and use pretty names
 #| echo: true
 
@@ -183,7 +183,7 @@ Three functions were dedicated to modelling tasks.
 
 ```{r}
 #| label: add-correlate
-#| add-from: R/03_model/correlate-vars.R
+#| add-from: R/03_model/correlate_vars.R
 #| code-summary: Compute correlations or partial correlations on the original variables
 #| echo: true
 
@@ -192,7 +192,7 @@ Three functions were dedicated to modelling tasks.
 
 ```{r}
 #| label: add-model-groups
-#| add-from: R/03_model/model-groups.R
+#| add-from: R/03_model/model_groups.R
 #| code-summary: "Model all the variables with the groups, clusters or subclusters (+ age) as predictors"
 #| echo: true
 
@@ -201,7 +201,7 @@ Three functions were dedicated to modelling tasks.
 
 ```{r}
 #| label: add-model-lives
-#| add-from: R/03_model/model-lives.R
+#| add-from: R/03_model/model_lives.R
 #| code-summary: Assess association of education, field of study and occupation with Group, etc.
 #| echo: true
 
@@ -214,7 +214,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-violins
-#| add-from: R/04_plot/plot-violins.R
+#| add-from: R/04_plot/plot_violins.R
 #| code-summary: Plot group scores as violin-dot figures
 #| echo: true
 
@@ -223,7 +223,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-radars
-#| add-from: R/04_plot/plot-radars.R
+#| add-from: R/04_plot/plot_radars.R
 #| code-summary: Plot group, cluster or subcluster scores as radars
 #| echo: true
 
@@ -232,7 +232,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-correlation-plots
-#| add-from: R/04_plot/plot-correlations.R
+#| add-from: R/04_plot/plot_correlations.R
 #| code-summary: Plot correlation matrices and graphs
 #| echo: true
 
@@ -241,7 +241,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-bic
-#| add-from: R/04_plot/plot-clusters-bic.R
+#| add-from: R/04_plot/plot_clusters_bic.R
 #| code-summary: Plot BIC evaluation of GMMs for clustering
 #| echo: true
 
@@ -250,7 +250,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-save
-#| add-from: R/04_plot/save-plots.R
+#| add-from: R/04_plot/save_plot.R
 #| code-summary: Save plots in appropriate formats
 #| echo: true
 
@@ -259,7 +259,7 @@ generating $\LaTeX$ tables automatically for the manuscript.
 
 ```{r}
 #| label: add-latex
-#| add-from: R/04_plot/get-latex-table.R
+#| add-from: R/04_plot/get_latex_table.R
 #| code-summary: "Print $\\LaTeX$ tables for the manuscript"
 #| echo: true
 

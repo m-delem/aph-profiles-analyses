@@ -1,5 +1,4 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(glue, Hmisc)
+library(dplyr)
 
 get_latex_table <- function(
     models,
@@ -56,27 +55,27 @@ get_latex_table <- function(
     models$group_models |> 
       filter(Variable %in% vars) |> 
       select(!Group:Comparison) |> 
-      latex(
+      Hmisc::latex(
         booktabs = TRUE, rowname = NULL, file = "", title = "", 
-        insert.bottom = glue("\\label{{{label}}}"), ...
+        insert.bottom = glue::glue("\\label{{{label}}}"), ...
       )
     
   } else if (groups == "Cluster") {
     models$cluster_models |> 
       filter(Variable %in% vars) |> 
       select(Comparison:last_col()) |> 
-      latex(
+      Hmisc::latex(
         booktabs = TRUE, rowname = "", file = "", title = "", 
-        insert.bottom = glue("\\label{{{label}}}"), rgroup = vars, ...
+        insert.bottom = glue::glue("\\label{{{label}}}"), rgroup = vars, ...
       )
     
   } else if (groups == "Subcluster") {
     models$subcluster_models |> 
       filter(Variable %in% vars) |> 
       select(Comparison:last_col()) |> 
-      latex(
+      Hmisc::latex(
         booktabs = TRUE, rowname = "", file = "", title = "", 
-        insert.bottom = glue("\\label{{{label}}}"), rgroup = vars, ...
+        insert.bottom = glue::glue("\\label{{{label}}}"), rgroup = vars, ...
       )
     
   } else {

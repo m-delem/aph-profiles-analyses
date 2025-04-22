@@ -1,5 +1,4 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(BiocManager, factoextra, see)
+pacman::p_load(BiocManager)
 
 plot_clusters_bic <- function(
     mclust_object,
@@ -9,7 +8,7 @@ plot_clusters_bic <- function(
     size = 0.2
     ) {
   p <- 
-    fviz_mclust_bic(
+    factoextra::fviz_mclust_bic(
       mclust_object, 
       shape   = "model",
       size    = size,

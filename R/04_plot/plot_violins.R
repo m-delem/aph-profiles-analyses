@@ -1,15 +1,4 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(
-  dplyr, 
-  here,
-  forcats,
-  ggbeeswarm,
-  ggplot2, 
-  see,
-  stringr,
-  tibble,
-  withr
-)
+pacman::p_load(dplyr, ggplot2, stringr)
 
 # Plot the group scores on all variables as violins
 plot_violins <- function(
@@ -70,12 +59,12 @@ plot_violins <- function(
   
   # Defining the effects to label with stars -----------------------------------
   group_effects <-
-    tibble(
+    tibble::tibble(
       Variable = factor(c(
         "VVIQ","Psi-Q Vision",
         "Psi-Q Audition", "Psi-Q Smell", "Psi-Q Taste",
         "Psi-Q Touch", "Psi-Q Sensations", "Psi-Q Feelings",
-        "OSIVQ-Object")) |> fct_inorder(),
+        "OSIVQ-Object")) |> forcats::fct_inorder(),
       x_star = 1.5,
       y_star = 1.08,
       stars  = "***",
@@ -85,7 +74,7 @@ plot_violins <- function(
     )
   
   group_effect_verbal <- 
-    tibble(
+    tibble::tibble(
       Variable   = factor("OSIVQ-Verbal"),
       x_star     = 1.5,
       y_star     = 1.08,
@@ -148,8 +137,10 @@ plot_violins <- function(
     mutate(
       Variable = 
         Variable |> 
-        str_replace("Reading comprehension", "Reading\ncomprehension") |>
-        fct_relevel(
+        stringr::str_replace(
+          "Reading comprehension", "Reading\ncomprehension"
+        ) |>
+        forcats::fct_relevel(
           levels(group_effects$Variable), "OSIVQ-Spatial", "OSIVQ-Verbal",
           "Raven matrices", "SRI", "Spatial span", "Digit span",
           "Similarities test", "WCST", "Reading\ncomprehension"
@@ -157,14 +148,14 @@ plot_violins <- function(
     ) |> 
     # --------------------------------------------------------------
     ggplot(aes(y = value, x = Group, color = Group, fill = Group)) +
-    geom_violinhalf(
+    see::geom_violinhalf(
       flip  = c(1),
       alpha = alpha, 
       scale = "width", 
       color = "transparent",
       # show.legend = FALSE
     ) +
-    geom_quasirandom(
+    ggbeeswarm::geom_quasirandom(
       width = 0.15, 
       shape = 16,
       alpha = alpha, 
@@ -176,7 +167,7 @@ plot_violins <- function(
       color     = "grey80",
       linewidth = lw_big
     ) +
-    geom_pointrange2(
+    see::geom_pointrange2(
       aes(
         x     = Group, 
         y     = mean,
@@ -202,7 +193,7 @@ plot_violins <- function(
     # -------------------------------
     facet_wrap(~Variable, nrow = 2) +
     # -------------------------------
-    theme_modern() +
+    see::theme_modern() +
     theme(
       # whole plot
       plot.margin        = margin(0, 1, 0, 1, "mm"),

@@ -1,12 +1,9 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(
-  correlation,
   dplyr, 
-  here,
   ggplot2, 
   ggraph,
   patchwork,
-  see
+  stringr
 )
 
 # Plot a correlation matrix and a circular correlation graph
@@ -25,7 +22,7 @@ plot_correlations <- function(
     correlations |> 
     mutate(r = if_else(abs(r) < 0.01, 0, r)) |>
     summary(digits = 2) |>
-    visualisation_recipe(
+    correlation::visualisation_recipe(
       show_data  = "tiles", 
       tile       = list(colour = "black", linewidth = 0.05),
       text       = list(size = matrix_text, size.unit = "pt"),
@@ -39,7 +36,7 @@ plot_correlations <- function(
     scale_x_discrete(position = "top") +
     scale_y_discrete(position = "left") +
     labs(title = NULL) + 
-    theme_modern() + 
+    see::theme_modern() + 
     theme(
       legend.position = "none",
       axis.text.x     = element_text(size = axis_text, angle = 45, hjust = 0),
