@@ -50,51 +50,49 @@ your computer.
       anywhere you want on your computer.
 
 This project requires installing [Quarto](https://quarto.org/) on your computer, 
-and I'd recommend using it with [RStudio](https://posit.co/download/rstudio-desktop/).
+and I'd recommend using it with 
+[RStudio](https://posit.co/download/rstudio-desktop/).
 
-- Open the `open-this-file-first.Rproj` file. This should open RStudio and set the
-  directory you created as the working directory. This directory is an "R Project"
-  (in this case, a "Quarto project"). 
+- Open the `open-this-file-first.Rproj` file. This should open RStudio and set 
+  the directory you created as the working directory. This directory is an "R 
+  Project" (in this case, a "Quarto project"). 
+  
 - This project has its own "environment" thanks to the `renv` package, 
-  which means that the project is independent from your computer in terms of packages. 
-  What happens in this project, stays in this project. The packages installed 
-  on your computer will not be modified, but conversely they are not automatically 
-  available in the project either. This entails that the first step will be... 
-  To install the required packages in the project's directory (which is empty for now).
+  which means that the project is independent from your computer in terms of 
+  packages. What happens in this project, stays in this project. The packages 
+  installed on your computer will not be modified, but conversely they are not
+  automatically available in the project either. I added code in the `.Rprofile`
+  file that runs on start-up and restores the necessary packages in the 
+  project's directory, so you won't have to worry about this.
+  
+- Open the `analysis-report.qmd` file (you can see your files in RStudio's 
+  right panel). This is a Quarto file, which allows mixing plain text with 
+  pieces of code called "chunks" (and many, many other cool features). The 
+  present report is generated from this file.
+  
+- Press `Ctrl + Alt + R` (if you are on Windows), or click the "Run" drop-down 
+  on the top right of the script window, and "Run All". This will start running
+  all the chunks in the file.
 
-But worry not! The next steps are straightforward.
-
-- Open the `analysis-report.qmd` file (you can see your files in RStudio's right panel).
-  This is a Quarto file, which allows mixing plain text with pieces of code called "chunks"
-  (and many, many other cool features). The present report is generated from this file.
-- Press Ctrl + Alt + R (if you are on Windows), or click the "Run" drop-down on 
-  the top right of the script window, and "Run All". This will start running all
-  the chunks in the file.
-- The very first line of code checks if the packages in your project are up to
-  date (they are not) and runs `renv::restore()` if needed to install all the 
-  necessary packages. You should have a prompt in the console asking you if you 
-  want to do just that. Accept!
-
-Then all the chunks below will run in sequence. First all the packages will
-be downloaded and loaded automatically by `pacman`. Then computations will run, 
-Bayesian models should be saved in the repo and will be loaded quickly 
-to avoid recomputing, plots will be produced and displayed. 
-If you want to re-run the Bayesian models, simply rename the files in 
-`data/r-data-structures` and run everything again to get new models. 
-Note that Bayesian modelling is probabilistic, so there will be slight variations 
-between each run, but *stable models are stable*.
+Then all the chunks below will run in sequence. Bayesian models should be saved 
+in the repo and will be loaded quickly to avoid recomputing. Plots will be 
+produced and displayed. If you want to re-run the Bayesian models, simply rename 
+the files in `data/r-data-structures` and run everything again to get new 
+models. Note that Bayesian modelling is probabilistic, so there will be slight 
+variations between each run, but *stable models are stable*.
 
 Done! You have everything you need to check things out, to test new things 
-and play around if you want. There are probably more things to find in this data,
-but I've done my best. Thank you for your interest in this research, and most of
-all, for digging this far. This whole exploration has required a tremendous amount 
-of work and dedication, but I've often doubted that anyone would ***ever*** 
-read this document (let alone this drop-down tab with technical stuff),
-so I'm really, really grateful.
+and play around if you want. There are probably more things to find in this 
+data, but I've done my best. Thank you for your interest in this research, and 
+most of all, for digging this far. This whole exploration has required a 
+tremendous amount of work and dedication, but I've often doubted that anyone 
+would ***ever*** read this document (let alone this drop-down tab with technical 
+stuff), so I'm really, really grateful.
 :::
 
 The tab below displays all the (heavily commented) code necessary to replicate 
-these analyses. The raw R scripts with the functions can be found in the `R/` folder.
+these analyses. The raw R scripts with the functions can be found in the `R/` 
+folder.
 
 :::: {.callout-note collapse="true"}
 # Packages and pipeline
@@ -104,25 +102,15 @@ these analyses. The raw R scripts with the functions can be found in the `R/` fo
 #| echo: true
 #| code-fold: false
 
-if (!renv::status()$synchronized) renv::restore()
-# loading packages easily with pacman
-pacman::p_load(
-  conflicted, # resolve package conflicts
-  here,       # point to working directory
-  fs,         # work with file structures
-  ggplot2,    # plotting framework
-  mclust,     # model-based clustering
-  NbClust,    # number of clusters
-  patchwork,  # arrange multiple ggplots
-  purrr,      # iterate functions
-  sessioninfo # display session info
-)
+pacman::p_load(mclust, patchwork) # Arranging multiple ggplots
 
-# source all our custom functions
-dir_ls(here("R"), type = "file", recurse = TRUE) |> walk(source)
+# Source all our custom functions
+here::here("R") |> 
+  fs::dir_ls(type = "file", recurse = TRUE) |> 
+  purrr::walk(source)
 
-# resolve package conflicts
-conflicts_prefer(
+# Resolve package conflicts
+conflicted::conflicts_prefer(
   dplyr::filter(), 
   dplyr::select(),
   scales::rescale(), 
@@ -309,7 +297,10 @@ selected_vars <- c(
 )
 
 # determine the best model (GMM) and number of clusters for clustering with BIC
-bic <- df |> scale_reduce_vars() |> select(any_of(selected_vars)) |> mclustBIC()
+bic <- df |> 
+  scale_reduce_vars() |> 
+  select(any_of(selected_vars)) |> 
+  mclustBIC()
 
 # compute the clustering on the selected variables with the selected model
 clustering <- 
@@ -326,9 +317,9 @@ df_long <- df2 |> scale_vars() |> get_longer()
 
 # model all the variables with the groups, clusters and subclusters and save
 # them, or simply load them if they exist in the files 
-models_path <- here("data/r-data-structures/models.rds")
+models_path <- here::here("data/r-data-structures/models.rds")
 
-if (!file_exists(models_path)) {
+if (!fs::file_exists(models_path)) {
   group_models      <- df2 |> get_longer() |> model_groups(groups = Group)
   cluster_models    <- df_long |> model_groups(groups = Cluster)
   subcluster_models <- df_long |> model_groups(groups = Subcluster)
@@ -371,14 +362,32 @@ p_clusters <-
 
 # save the figures if this notebook is parametrised to do so
 if (params$save_figures) {
-  ggsave_double_col("figures/groups-violins.pdf", p_groups_violins, height = 88)
-  ggsave_single_col("figures/groups-radars.pdf",  p_groups_radars,  height = 88)
+  save_plot(
+    p_groups_violins, 
+    "figures/groups-violins.pdf", 
+    ncol = 2, height = 88)
+  save_plot(
+    p_groups_radars, 
+    "figures/groups-radars.pdf", 
+    ncol = 1, height = 88)
   
-  ggsave_double_col("figures/correlations-partial.pdf", p_partial, height = 120)
-  ggsave_double_col("figures/correlations-simple.pdf",  p_simple,  height = 120)
+  save_plot(
+    p_partial, 
+    "figures/correlations-partial.pdf", 
+    ncol = 2, height = 120)
+  save_plot(
+    p_simple, 
+    "figures/correlations-simple.pdf", 
+    ncol = 2,  height = 120)
   
-  ggsave_single_col("figures/clusters-bic.pdf",    p_bic,      height = 88)
-  ggsave_double_col("figures/clusters-radars.pdf", p_clusters, height = 90)
+  save_plot(
+    p_bic, 
+    "figures/clusters-bic.pdf", 
+    ncol = 1, height = 88)
+  save_plot(
+    p_clusters, 
+    "figures/clusters-radars.pdf", 
+    ncol = 2, height = 90)
 }
 ```
 ::::

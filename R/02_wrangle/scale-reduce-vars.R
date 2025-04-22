@@ -1,5 +1,4 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(dplyr)
+library(dplyr)
 
 # Reduce the number of variables to prepare for clustering
 scale_reduce_vars <- function(df, min = 0, max = 1){

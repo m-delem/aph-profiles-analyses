@@ -1,14 +1,13 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(
-  BayesFactor, # generalTestBF
-  bayestestR,  # bf_inclusion, bf_parameters
-  datawizard,  # rownames_as_column
+  BayesFactor,  # generalTestBF
+  bayestestR,   # bf_inclusion, bf_parameters
+  datawizard,   # rownames_as_column
   dplyr, 
   # effectsize, # eta
-  emmeans,     # pairs, emmeans
+  emmeans,      # pairs, emmeans
   glue,
   logspline,
-  rstanarm,    # stan_glm
+  rstanarm,     # stan_glm
   tidyr
 )
 

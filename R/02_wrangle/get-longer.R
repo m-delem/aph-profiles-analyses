@@ -1,4 +1,3 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(dplyr, tidyr, withr)
 
 # Transform the main data frame to long format

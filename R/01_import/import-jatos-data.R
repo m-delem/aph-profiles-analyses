@@ -1,18 +1,4 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(
-  dplyr, 
-  here,
-  forcats,
-  fs,
-  jsonlite,
-  lubridate, 
-  openxlsx,
-  purrr, 
-  readr,
-  readxl, 
-  stringr, 
-  tidyr
-)
+pacman::p_load(dplyr, here, stringr, tidyr)
 
 # Import, tidy and save JATOS data
 import_jatos_data <- function() {
@@ -20,7 +6,7 @@ import_jatos_data <- function() {
   # Retrieving metadata --------------------------------------------------------
   
   df_meta <- 
-    read_xlsx(here("data/data-raw/metadata.xlsx")) |> 
+    readxl::read_xlsx(here("data/data-raw/metadata.xlsx")) |> 
     mutate(
       Duration = Duration |> 
         format(
@@ -36,13 +22,13 @@ import_jatos_data <- function() {
   # Extracting and tidying raw data --------------------------------------------
   
   df <-
-    tibble(path = dir_ls(
+    tibble::tibble(path = fs::dir_ls(
       path = "data/data-raw", 
       regexp = ".txt", 
       recurse = TRUE
     )) |> 
     rowwise() |> 
-    mutate(data = list(read_json(here(path)))) |> 
+    mutate(data = list(jsonlite::read_json(here(path)))) |> 
     unnest_longer(data) |> 
     # splitting the path into columns
     separate_wider_delim(
@@ -191,7 +177,9 @@ import_jatos_data <- function() {
   
   # Retrieving manually scored data --------------------------------------------
   
-  df_scored_manually <- read_xlsx(here("data/data-processed/data_scored_manually.xlsx"))
+  df_scored_manually <- readxl::read_xlsx(
+    here("data/data-processed/data_scored_manually.xlsx")
+    )
   
   
   # Merginig all scores and classifications ------------------------------------
@@ -290,10 +278,10 @@ import_jatos_data <- function() {
     ) |>
     # Reordering field and occupation categories
     arrange(field_code) |> 
-    mutate(field = fct_reorder(field, field_code)) |>
+    mutate(field = forcats::fct_reorder(field, field_code)) |>
     arrange(occupation_code) |>
     mutate(
-      occupation = fct_reorder(occupation, occupation_code),
+      occupation = forcats::fct_reorder(occupation, occupation_code),
       field_code = factor(field_code, levels = seq(0, max(field_code))),
       occupation_code = factor(occupation_code)
     ) |>
@@ -321,7 +309,7 @@ import_jatos_data <- function() {
   # Exporting in various formats ------------------------------
   
   # Excel, all clean data
-  write.xlsx(
+  openxlsx::write.xlsx(
     list(
       "data_final"  = df_final,
       "similarities" = df_similarities,
@@ -337,7 +325,7 @@ import_jatos_data <- function() {
   )
   
   # CSV, main data only
-  write_csv(df_final, here("data/data-processed/data_tidied.csv"))
+  readr::write_csv(df_final, here("data/data-processed/data_tidied.csv"))
   
   # RDS, main data with correct variable types
   saveRDS(df_final, here("data/data-processed/data_tidied.rds"))

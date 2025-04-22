@@ -1,4 +1,3 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(dplyr, tidyr, withr)
 
 # Add the clustering and reduced variables to the main data frame

@@ -1,4 +1,3 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(BayesFactor, dplyr, tidyr)
 
 # Model the association between education, field and occupation with a variable

@@ -1,4 +1,3 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
 pacman::p_load(dplyr, scales)
 
 # Scale original quantitative variables to a defined range

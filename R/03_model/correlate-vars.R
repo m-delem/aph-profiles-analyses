@@ -1,5 +1,4 @@
-# if (!requireNamespace("pacman")) install.packages("pacman")
-pacman::p_load(correlation, dplyr, here)
+library(dplyr)
 
 # Correlate the original variables with a chosen method and correction
 correlate_vars <- function(
@@ -12,7 +11,7 @@ correlate_vars <- function(
     df |>
     scale_vars() |> 
     select(vviq:score_comprehension) |> 
-    correlation(
+    correlation::correlation(
       method   = method,
       partial  = partial,
       p_adjust = correction
