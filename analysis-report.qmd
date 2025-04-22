@@ -20,25 +20,34 @@ params:
 format: html
 ---
 
-This document contains the entire data analysis process and an in-depth presentation 
-of the results related to the article in the sub-title. 
-These analyses should be fully reproducible. See the tab below for the details on how to do so.
+This document contains the entire data analysis process and an in-depth 
+presentation of the results related to the article in the sub-title. 
+These analyses should be fully reproducible. See the tab below for the details 
+on how to do so.
 
 :::{.callout-tip collapse="true"}
 # How to reproduce the analyses
 
-You may have found this document either in the [GitHub repository](https://github.com/m-delem/aph-profiles-analyses/tree/main) 
-of this analysis project, or linked from GitHub in the [OSF repository](https://osf.io/7vsx6/) 
-of this study, which additionally contains all the experimental material to replicate the study.
+You may have found this document either in the 
+[GitHub repository](https://github.com/m-delem/aph-profiles-analyses/tree/main) 
+of this analysis project, or archived in the 
+[OSF repository](https://osf.io/7vsx6/) of this study, which additionally 
+contains all the experimental material to replicate the study.
 
-Either way, what you want to do is to have the complete GitHub repository as a
-folder on your computer.
+Either way, what you want to do is to have the complete project as a folder on 
+your computer.
 
-- If you use Git, clone the repo.
-- If you've never used Git, first, I'd recommend [you start using it](https://happygitwithr.com/), 
-  else go on the [repo's page](https://github.com/m-delem/aph-profiles-analyses/tree/main), 
-  click the green "Code" button and "Download ZIP". Extract the ZIP anywhere you
-  want on your computer.
+- If you use Git, clone the repo from GitHub.
+- If you've never used Git, first, I'd recommend 
+  [you start using it](https://happygitwithr.com/), else you have two options:
+  
+    - Go on the 
+      [repo's page](https://github.com/m-delem/aph-profiles-analyses/tree/main), 
+      click the green "Code" button and "Download ZIP". Extract the ZIP anywhere 
+      you want on your computer.
+    - Go on the [OSF files page](https://osf.io/7vsx6/files/osfstorage) of the 
+      study, download the "analysis-project.zip" file and extract the ZIP 
+      anywhere you want on your computer.
 
 This project requires installing [Quarto](https://quarto.org/) on your computer, 
 and I'd recommend using it with [RStudio](https://posit.co/download/rstudio-desktop/).
