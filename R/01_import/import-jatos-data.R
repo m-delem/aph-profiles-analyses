@@ -37,12 +37,12 @@ import_jatos_data <- function() {
   
   df <-
     tibble(path = dir_ls(
-      path = here("data/data-raw"), 
+      path = "data/data-raw", 
       regexp = ".txt", 
       recurse = TRUE
     )) |> 
     rowwise() |> 
-    mutate(data = list(read_json(path))) |> 
+    mutate(data = list(read_json(here(path)))) |> 
     unnest_longer(data) |> 
     # splitting the path into columns
     separate_wider_delim(
@@ -51,28 +51,22 @@ import_jatos_data <- function() {
       names = c(
         "nope_1", 
         "nope_2", 
-        "nope_3", 
-        "nope_4", 
-        "nope_5", 
-        "nope_6", 
-        "nope_7", 
-        "nope_8", 
         "subject_id", 
         "comp_id", 
-        "nope_9"
+        "nope_3"
       )
     ) |> 
     # simplifying participant column
     separate_wider_delim(
       subject_id, 
       "_", 
-      names = c("nope_10", "nope_11", "id")
+      names = c("nope_4", "nope_5", "id")
     ) |> 
     # simplifying component column
     separate_wider_delim(
       comp_id, 
       regex("[_-]"), 
-      names = c("nope_12", "nope_13", "comp_id")
+      names = c("nope_6", "nope_7", "comp_id")
     ) |> 
     # deleting useless columns
     select(!starts_with("nope"))

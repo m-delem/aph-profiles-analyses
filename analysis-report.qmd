@@ -553,7 +553,7 @@ Simple correlations between all 18 original variables.
 :::
 ::::
 
-This analyses allowed us to remove redundant variables and select or create 
+These analyses allowed us to remove redundant variables and select or create 
 7 essential variables for clustering: *Visual imagery* (VVIQ + OSIVQ-Object + Psi-Q),
 *Spatial imagery* (OSIVQ-Spatial + SRI), *Verbal strategies* (OSIVQ-Verbal),
 *Sensory imagery* (Psi-Q smell + taste + touch + sensations + feelings),
