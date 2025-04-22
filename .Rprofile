@@ -42,20 +42,3 @@ source("renv/activate.R")
     Sys.sleep(0.75)
   }
 }
-.Last <- function() {
-  if (interactive()) {
-    cat("\014")
-    rstudioapi::executeCommand("closeAllSourceDocs")
-    colours <- sample(c("green", "blue", "yellow", "cyan", "magenta"), 2)
-    print(glue::glue_col(
-      "\n\n",
-      "{red ",
-      "|---------------------------------------|\n",
-      "|-> Session closed. ",
-      "{", colours[1], " Until next time!} ",
-      "{", colours[2], " o/} |\n",
-      "|---------------------------------------|}\n"
-    ))
-    Sys.sleep(0.75)
-  }
-}
