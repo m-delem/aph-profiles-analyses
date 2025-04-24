@@ -1,41 +1,41 @@
-pacman::p_load(BayesFactor, dplyr, tidyr)
+pacman::p_load(dplyr)
 
 # Model the association between education, field and occupation with a variable
 model_lives <- function(df, groups_var, type = "indepMulti") { # or "jointMulti"
   associations <- 
     df |> 
-    pivot_longer(
+    tidyr::pivot_longer(
       c(education, field, occupation), 
       names_to = "Variable", 
       values_to = "value"
     ) |> 
     select({{ groups_var }}, Variable, value) |> 
     group_by(Variable) |> 
-    nest() |> 
+    tidyr::nest() |> 
     rowwise() |> 
     mutate(
       table = list(
         data |> 
           group_by({{ groups_var }}, value) |>
           count() |> 
-          pivot_wider(
+          tidyr::pivot_wider(
             names_from = {{ groups_var }},
             values_from = n
           ) |>
-          as_tibble() |> 
-          mutate(across(!c(value), ~replace_na(.x, 0)))
+          tibble::as_tibble() |> 
+          mutate(across(!c(value), ~tidyr::replace_na(., 0)))
       ),
       log_bf10 =
-        contingencyTableBF(
+        BayesFactor::contingencyTableBF(
           as.matrix(table[, names(table) != "value"]), 
           sampleType = type,
           fixedMargin = "cols"
         ) |> 
-        as_tibble() |> 
+        tibble::as_tibble() |> 
         pull(bf) |> 
         log() |> 
         round(2),
-      Variable = str_to_title(Variable)
+      Variable = stringr::str_to_title(Variable)
     )
   
   return(associations)
@@ -45,7 +45,7 @@ model_lives <- function(df, groups_var, type = "indepMulti") { # or "jointMulti"
 show_lives <- function(lives_table, variable) {
   lives_table |>
     filter(Variable == variable) |> 
-    unnest(table) |> 
+    tidyr::unnest(table) |> 
     ungroup() |> 
     select(!c(Variable, data, log_bf10)) |> 
     rename(!!variable := value) |> 

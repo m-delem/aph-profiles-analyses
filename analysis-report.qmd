@@ -1,6 +1,7 @@
 ---
 title: Data Analysis Report
-subtitle: Uncovering spatial and verbal cognitive profiles in aphantasia through unsupervised clustering
+subtitle: "Uncovering spatial and verbal cognitive profiles in aphantasia 
+  through unsupervised clustering"
 # setting for proper numbering of sections
 crossref: 
   chapters: true
@@ -281,14 +282,14 @@ comprehension tests in the `data/data-processed/data_scored_manually.xlsx` file.
 #| echo: true
 #| warning: false
 
-# load the data directly from the raw files
+# Load the data directly from the raw files
 df <- import_jatos_data()$data_final
 
-# compute simple and partial correlations
+# Compute simple and partial correlations
 corrs_simple  <- correlate_vars(df, partial = FALSE, correction = "bonferroni")
 corrs_partial <- correlate_vars(df, partial = TRUE,  correction = "bonferroni")
 
-# variables selected for clustering after the analysis of partial correlations
+# Variables selected for clustering after the analysis of partial correlations
 selected_vars <- c(
   "visual_imagery", "sensory_imagery", 
   "spatial_imagery", "verbal_strategies",
@@ -296,26 +297,26 @@ selected_vars <- c(
   "span_spatial"
 )
 
-# determine the best model (GMM) and number of clusters for clustering with BIC
+# Determine the best model (GMM) and number of clusters for clustering with BIC
 bic <- df |> 
   scale_reduce_vars() |> 
   select(any_of(selected_vars)) |> 
   mclustBIC()
 
-# compute the clustering on the selected variables with the selected model
+# Compute the clustering on the selected variables with the selected model
 clustering <- 
   df |> 
   scale_reduce_vars() |> 
   select(any_of(selected_vars)) |>
   Mclust(verbose = FALSE)
 
-# add the clusters and the reduced variables to the main dataset
+# Add the clusters and the reduced variables to the main dataset
 df2 <- merge_clusters(df_raw = df, df_red = scale_reduce_vars(df), clustering)
 
-# create a long format of this final dataset for modelling and plotting
+# Create a long format of this final dataset for modelling and plotting
 df_long <- df2 |> scale_vars() |> get_longer()
 
-# model all the variables with the groups, clusters and subclusters and save
+# Model all the variables with the groups, clusters and subclusters and save
 # them, or simply load them if they exist in the files 
 models_path <- here::here("data/r-data-structures/models.rds")
 
@@ -334,7 +335,7 @@ if (!fs::file_exists(models_path)) {
   
   } else models <- readRDS(models_path)
 
-# model the education, field of study and occupation with groups, etc.
+# Model the education, field of study and occupation with groups, etc.
 lives <- list(
   group      = model_lives(df2, group),
   cluster    = model_lives(df2, cluster),
@@ -343,24 +344,24 @@ lives <- list(
 
 # Produce the plots for all these outputs --------------------------------------
 
-# the group comparisons, as violins...
+# The group comparisons, as violins...
 p_groups_violins <- plot_violins(df_long, var_selection = "original")
 # ...and as radars
 p_groups_radars  <- plot_radars(df_long, Group,  var_selection = "original")
 
-# correlation matrices and graphs
+# Correlation matrices and graphs
 p_partial <- plot_correlations(corrs_partial)
 p_simple  <- plot_correlations(corrs_simple)
 
 # BIC values for all models and number of clusters tested
 p_bic <- plot_clusters_bic(clustering)
 
-# radars of the cluster and subcluster scores
+# Radars of the cluster and subcluster scores
 p_clusters <- 
   plot_radars(df_long, Cluster,    r_off = 6) +
   plot_radars(df_long, Subcluster, l_off = 6)
 
-# save the figures if this notebook is parametrised to do so
+# Save the figures if this notebook is parametrised to do so
 if (params$save_figures) {
   save_plot(
     p_groups_violins, 

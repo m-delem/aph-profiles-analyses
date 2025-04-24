@@ -1,0 +1,76 @@
+---
+title: "Uncovering spatial and verbal cognitive profiles in aphantasia through 
+  unsupervised clustering"
+abstract: "Mental images are a ubiquitous phenomenon for many people. In recent 
+  years, attention has focused on a condition defined by the absence of mental 
+  images - aphantasia. Individuals with aphantasia are found to perform as well 
+  as typical imagers in most areas. Interestingly, several studies have proposed 
+  that individuals with aphantasia might have a more 'semantic and abstract' 
+  mode of functioning. The present study aims to better understand the cognitive 
+  profile of individuals with aphantasia, by examining their performance 
+  regarding semantic and/or abstract processing. To that end, 45 participants 
+  with aphantasia and 51 controls completed questionnaires and behavioural tasks 
+  assessing sensory and spatial imagery, verbal strategies, verbal and 
+  non-verbal reasoning, and verbal and spatial working memory. Initial 
+  comparisons suggested very few differences between individuals with aphantasia 
+  and controls. However, an unsupervised clustering algorithm revealed three 
+  clusters focusing respectively on visual imagery, spatial imagery and verbal 
+  strategies, and two very distinct profiles of individuals with aphantasia 
+  among these clusters. The first profile had low visual imagery but maintained 
+  multisensory imagery, and had higher spatial imagery; the other had low 
+  imagery across all sensory modalities, and focused on verbal processing. This 
+  study shows that individuals with aphantasia should not be systematically 
+  classified based on visual imagery only, but characterised according to 
+  various aspects of their cognitive profile. This multifaceted approach could 
+  provide a balanced view of the benefits and drawbacks of mental images and 
+  help us to understand the mechanisms underlying the spectrum of individual 
+  differences in representational formats."
+authors: 
+  - name: Maël Delem
+    orcid: 0009-0005-8518-1991
+    email: mael.delem@univ-lyon2.fr
+    corresponding: true
+    affiliations:
+      - id: emc
+        name: "Laboratoire d’Étude des Mécanismes Cognitifs (EMC), 
+          Université Lumière Lyon 2"
+        city: Lyon
+        country: France
+        url: https://emc.univ-lyon2.fr
+  - name: Sema Turkben
+    affiliations:
+      - ref: emc
+  - name: Eddy Cavalli
+    orcid: 0000-0003-3944-1973
+    affiliations:
+      - ref: emc
+    
+  - name: Denis Cousineau
+    affiliations:
+      - id: uo
+        name: Université d'Ottawa
+        city: Ottawa
+        country: Canada
+  - name: Gaën Plancher
+    orcid: 0000-0002-0178-6207
+    affiliations:
+    - ref: emc
+    - id: iuf
+      name: Institut Universitaire de France (IUF)
+      city: Paris
+      country: France
+      url: https://www.iufrance.fr
+toc: false
+echo: false
+format: docx
+reference-doc: "custom-reference-doc.docx"
+bibliography: "../bibliography/references.bib" 
+csl: "../bibliography/apa.csl"
+filters:
+  - authors-block
+---
+
+**Keywords**: aphantasia, mental imagery, individual differences, 
+cognitive profiles, reasoning, working memory, unsupervised clustering
+
+

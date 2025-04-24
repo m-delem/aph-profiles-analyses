@@ -7,34 +7,34 @@ scale_vars <- function(df, min = 0, max = 1){
     df |> 
     mutate(
       across(
-        starts_with("age"),  ~ rescale(., c(min, max), c(min(age),max(age)))
+        starts_with("age"),  ~ scales::rescale(., c(min, max), c(min(age),max(age)))
       ),
       across(
-        contains("vviq"),    ~ rescale(., c(min, max), c(16,80))
+        contains("vviq"),    ~ scales::rescale(., c(min, max), c(16,80))
       ),
       across(
-        contains("osivq"),   ~ rescale(., c(min, max), c(15, 75))
+        contains("osivq"),   ~ scales::rescale(., c(min, max), c(15, 75))
       ),
       across(
-        contains("psiq"),    ~ rescale(., c(min, max), c(1, 10))
+        contains("psiq"),    ~ scales::rescale(., c(min, max), c(1, 10))
       ),
       across(
-        contains("raven"),   ~ rescale(., c(min, max), c(0, 36))
+        contains("raven"),   ~ scales::rescale(., c(min, max), c(0, 36))
       ),
       across(
-        contains("sri"),     ~ rescale(., c(min, max), c(0, 30))
+        contains("sri"),     ~ scales::rescale(., c(min, max), c(0, 30))
       ),
       across(
-        contains("span"),    ~ rescale(., c(min, max), c(0, max(.)))
+        contains("span"),    ~ scales::rescale(., c(min, max), c(0, max(.)))
       ),
       across(
-        contains("wcst"),    ~ rescale(., c(min, max), c(0, 100))
+        contains("wcst"),    ~ scales::rescale(., c(min, max), c(0, 100))
       ),
       across(
-        contains("similar"), ~ rescale(., c(min, max), c(0, 36))
+        contains("similar"), ~ scales::rescale(., c(min, max), c(0, 36))
       ),
       across(
-        contains("comprehension"), ~ rescale(., c(min, max), c(0, max(.) + 3))
+        contains("comprehension"), ~ scales::rescale(., c(min, max), c(0, max(.) + 3))
       ),
       across(any_of(
         c(
