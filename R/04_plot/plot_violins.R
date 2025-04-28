@@ -1,4 +1,4 @@
-pacman::p_load(dplyr, ggplot2, stringr)
+pacman::p_load(dplyr, ggplot2)
 
 # Plot the group scores on all variables as violins
 plot_violins <- function(

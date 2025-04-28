@@ -1,4 +1,4 @@
-pacman::p_load(dplyr, tidyr, withr)
+pacman::p_load(dplyr)
 
 # Transform the main data frame to long format
 get_longer <- function(df){
@@ -39,7 +39,7 @@ get_longer <- function(df){
   
   df_long <- 
     df |>
-    pivot_longer(
+    tidyr::pivot_longer(
       any_of(c(
         # original
         contains("vviq"),
@@ -64,10 +64,10 @@ get_longer <- function(df){
       values_to = "value"
     ) |> 
     mutate(
-      Variable = fct_inorder(Variable),
-      Variable = fct_recode(Variable, !!!vars)
+      Variable = forcats::fct_inorder(Variable),
+      Variable = forcats::fct_recode(Variable, !!!vars)
     ) |> 
-    rename_with(str_to_title, any_of(c(
+    rename_with(stringr::str_to_title, any_of(c(
       "age", "sex", "group", "cluster", "subcluster",
       "education", "field", "occupation"
     ))

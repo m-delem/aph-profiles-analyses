@@ -285,9 +285,34 @@ comprehension tests in the `data/data-processed/data_scored_manually.xlsx` file.
 # Load the data directly from the raw files
 df <- import_jatos_data()$data_final
 
-# Compute simple and partial correlations
+# Compute (or load) simple and partial correlations
 corrs_simple  <- correlate_vars(df, partial = FALSE, correction = "bonferroni")
 corrs_partial <- correlate_vars(df, partial = TRUE,  correction = "bonferroni")
+
+corrs_path <- here::here("data/r-data-structures/correlations.rds")
+
+if (!fs::file_exists(corrs_path)) {
+  corrs_simple <- correlate_vars(
+    df, 
+    partial = FALSE, 
+    correction = "bonferroni"
+  )
+  corrs_partial <- correlate_vars(
+    df, 
+    partial = TRUE,  
+    correction = "bonferroni"
+  )
+  correlations <- list(
+    simple  = corrs_simple,
+    partial = corrs_partial
+  )
+  
+  saveRDS(correlations, corrs_path)
+} else {
+  correlations <- readRDS(corrs_path)
+  corrs_simple  <- correlations$simple
+  corrs_partial <- correlations$partial
+}
 
 # Variables selected for clustering after the analysis of partial correlations
 selected_vars <- c(
@@ -332,8 +357,7 @@ if (!fs::file_exists(models_path)) {
   )
   
   saveRDS(models, models_path)
-  
-  } else models <- readRDS(models_path)
+} else models <- readRDS(models_path)
 
 # Model the education, field of study and occupation with groups, etc.
 lives <- list(
