@@ -1,23 +1,21 @@
-pacman::p_load(dplyr, tidyr, withr)
-
 # Add the clustering and reduced variables to the main data frame
 merge_clusters <- function(df_raw, df_red, clustering) {
   withr::local_options(list(warn = -1))
   
   new_cols <-
     df_red |>
-    mutate(
+    dplyr::mutate(
       id = df_raw$id,
       cluster = 
         clustering$classification |> 
-        case_match(1 ~ "B", 2 ~ "C", 3 ~ "A")
+        dplyr::case_match(1 ~ "B", 2 ~ "C", 3 ~ "A")
     ) |> 
-    rename(spatial_span = span_spatial)
+    dplyr::rename(spatial_span = span_spatial)
   
   df_new <-
-    left_join(df_raw, new_cols, by = "id") |> 
-    unite("subcluster", cluster, group, remove = FALSE) |> 
-    mutate(
+    dplyr::left_join(df_raw, new_cols, by = "id") |> 
+    tidyr::unite("subcluster", cluster, group, remove = FALSE) |> 
+    dplyr::mutate(
       cluster = factor(
         cluster,
         levels = c("A", "B", "C"),
@@ -29,7 +27,7 @@ merge_clusters <- function(df_raw, df_red, clustering) {
         labels = c("A (Aphant.)", "B-Aphant.", "B-Control", "C (Control)")
       )
     ) |> 
-    select(id, group, cluster, subcluster, age, everything())
+    dplyr::select(id, group, cluster, subcluster, age, tidyselect::everything())
   
   return(df_new)
 }

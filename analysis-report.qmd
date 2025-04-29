@@ -109,15 +109,6 @@ pacman::p_load(mclust, patchwork) # Arranging multiple ggplots
 here::here("R") |> 
   fs::dir_ls(type = "file", recurse = TRUE) |> 
   purrr::walk(source)
-
-# Resolve package conflicts
-conflicted::conflicts_prefer(
-  dplyr::filter(), 
-  dplyr::select(),
-  scales::rescale(), 
-  purrr::map(),
-  .quiet = TRUE
-  )
 ```
 
 Most of the steps of the data analysis were performed using functions defined in 
@@ -286,9 +277,6 @@ comprehension tests in the `data/data-processed/data_scored_manually.xlsx` file.
 df <- import_jatos_data()$data_final
 
 # Compute (or load) simple and partial correlations
-corrs_simple  <- correlate_vars(df, partial = FALSE, correction = "bonferroni")
-corrs_partial <- correlate_vars(df, partial = TRUE,  correction = "bonferroni")
-
 corrs_path <- here::here("data/r-data-structures/correlations.rds")
 
 if (!fs::file_exists(corrs_path)) {
@@ -325,15 +313,15 @@ selected_vars <- c(
 # Determine the best model (GMM) and number of clusters for clustering with BIC
 bic <- df |> 
   scale_reduce_vars() |> 
-  select(any_of(selected_vars)) |> 
-  mclustBIC()
+  dplyr::select(tidyselect::any_of(selected_vars)) |> 
+  mclust::mclustBIC()
 
 # Compute the clustering on the selected variables with the selected model
 clustering <- 
   df |> 
   scale_reduce_vars() |> 
-  select(any_of(selected_vars)) |>
-  Mclust(verbose = FALSE)
+  dplyr::select(tidyselect::any_of(selected_vars)) |>
+  mclust::Mclust(verbose = FALSE)
 
 # Add the clusters and the reduced variables to the main dataset
 df2 <- merge_clusters(df_raw = df, df_red = scale_reduce_vars(df), clustering)
@@ -485,8 +473,8 @@ Scores of the two VVIQ groups on all the questionnaires and tasks. The scores ha
 #| label: g-results
 
 models$group_models |>
-  select(!Comparison) |> 
-  filter(!(Variable %in% c(
+  dplyr::select(!Comparison) |> 
+  dplyr::filter(!(Variable %in% c(
     "Visual imagery",
     "Auditory imagery",
     "Sensory imagery",
@@ -511,8 +499,8 @@ Means and standard deviations of the scores of each VVIQ group for every variabl
 #| tbl-cap: Weight of evidence in favour of an association between the variables and the VVIQ groups.
 
 lives$group |> 
-  select(1, 4) |> 
-  rename(`$log(BF_{10})$` = log_bf10) |> 
+  dplyr::select(1, 4) |> 
+  dplyr::rename(`$log(BF_{10})$` = log_bf10) |> 
   knitr::kable()
 ```
 
@@ -645,9 +633,9 @@ Comparison of the goodness of fit of different mixture models used for clusterin
 #| label: c-repartition
 
 df2 |> 
-  group_by(cluster, group) |> 
-  count() |> 
-  rename_with(str_to_title, everything()) |> 
+  dplyr::group_by(cluster, group) |> 
+  dplyr::count() |> 
+  dplyr::rename_with(stringr::str_to_title, tidyselect::everything()) |> 
   knitr::kable()
 ```
 
@@ -701,8 +689,8 @@ the seven variables used for clustering and the three test variables.
 
 ```{r}
 models$cluster_models |> 
-  select(1:7) |> 
-  distinct() |> 
+  dplyr::select(1:7) |> 
+  dplyr::distinct() |> 
   knitr::kable()
 ```
 
@@ -710,7 +698,7 @@ models$cluster_models |>
 
 ```{r}
 models$cluster_models |> 
-  select(1, 8:11) |> 
+  dplyr::select(1, 8:11) |> 
   knitr::kable()
 ```
 :::
@@ -722,8 +710,8 @@ models$cluster_models |>
 
 ```{r}
 models$subcluster_models |> 
-  select(1:8) |> 
-  distinct() |> 
+  dplyr::select(1:8) |> 
+  dplyr::distinct() |> 
   knitr::kable()
 ```
 
@@ -731,7 +719,7 @@ models$subcluster_models |>
 
 ```{r}
 models$subcluster_models |> 
-  select(1, 9:12) |> 
+  dplyr::select(1, 9:12) |> 
   knitr::kable()
 ```
 :::
@@ -747,8 +735,8 @@ models$subcluster_models |>
 #| tbl-cap: Weight of evidence in favour of an association between the variables and the clusters.
 
 lives$cluster |> 
-  select(1, 4) |> 
-  rename(`$log(BF_{10})$` = log_bf10) |> 
+  dplyr::select(1, 4) |> 
+  dplyr::rename(`$log(BF_{10})$` = log_bf10) |> 
   knitr::kable()
 ```
 
@@ -788,8 +776,8 @@ Complete summary of the education, fields of the study and occupation data from 
 #| tbl-cap: Weight of evidence in favour of an association between the variables and the clusters.
 
 lives$subcluster |> 
-  select(1, 4) |> 
-  rename(`$log(BF_{10})$` = log_bf10) |> 
+  dplyr::select(1, 4) |> 
+  dplyr::rename(`$log(BF_{10})$` = log_bf10) |> 
   knitr::kable()
 ```
 
@@ -831,6 +819,6 @@ Complete summary of the education, fields of the study and occupation data from 
 ```{r}
 #| label: session-information
 
-sessioninfo::session_info(pkgs = "attached")
+sessioninfo::session_info() |> suppressMessages() |> suppressWarnings()
 ```
 :::

@@ -1,5 +1,3 @@
-pacman::p_load(dplyr, ggplot2)
-
 # Plot the group scores on all variables as violins
 plot_violins <- function(
     df_long, 
@@ -31,9 +29,9 @@ plot_violins <- function(
     # - x_line_end
     # - y_line
     list(
-      geom_text(
+      ggplot2::geom_text(
         data = df_effects,
-        aes(
+        ggplot2::aes(
           x     = x_star,
           y     = y_star,
           label = stars
@@ -42,9 +40,9 @@ plot_violins <- function(
         color       = "black",
         inherit.aes = FALSE
       ),
-      geom_segment(
+      ggplot2::geom_segment(
         data = df_effects,
-        aes(
+        ggplot2::aes(
           x    = x_line,
           xend = x_line_end,
           y    = y_line,
@@ -131,10 +129,10 @@ plot_violins <- function(
   # Main plot ------------------------------------------------------------------
   p <- 
     df_long |>
-    filter(Variable %in% vars) |>
-    group_by(Group, Variable) |>
-    reframe(value = value, mean = mean(value), sd = sd(value)) |> 
-    mutate(
+    dplyr::filter(Variable %in% vars) |>
+    dplyr::group_by(Group, Variable) |>
+    dplyr::reframe(value = value, mean = mean(value), sd = sd(value)) |> 
+    dplyr::mutate(
       Variable = 
         Variable |> 
         stringr::str_replace(
@@ -147,7 +145,7 @@ plot_violins <- function(
         )
     ) |> 
     # --------------------------------------------------------------
-    ggplot(aes(y = value, x = Group, color = Group, fill = Group)) +
+  ggplot2::ggplot(aes(y = value, x = Group, color = Group, fill = Group)) +
     see::geom_violinhalf(
       flip  = c(1),
       alpha = alpha, 
@@ -162,17 +160,17 @@ plot_violins <- function(
       size  = dot_big, 
       show.legend = FALSE
     ) +
-    geom_line(
+    ggplot2::geom_line(
       mapping   = aes(x = Group, y = mean, group = 1),
       color     = "grey80",
       linewidth = lw_big
     ) +
     see::geom_pointrange2(
-      aes(
+      ggplot2::aes(
         x     = Group, 
         y     = mean,
-        ymin  = if_else(mean - sd <= 0, 0, mean - sd),
-        ymax  = if_else(mean + sd >= 1, 1, mean + sd),
+        ymin  = ifelse(mean - sd <= 0, 0, mean - sd),
+        ymax  = ifelse(mean + sd >= 1, 1, mean + sd),
         group = Group
       ),
       size        = dot_big,
@@ -182,54 +180,58 @@ plot_violins <- function(
     add_significance(group_effects) +
     add_significance(group_effect_verbal) +
     # -------------------------------------
-    scale_y_continuous(
+    ggplot2::scale_y_continuous(
       expand = expansion(c(0.05, 0)), 
       limits = c(0, 1.15),
       breaks = seq(0, 1, .2)
     ) +
-    scale_color_manual(values = palette) +
-    scale_fill_manual(values  = palette) +
-    labs(y = "Standardised scores") +
+    ggplot2::scale_color_manual(values = palette) +
+    ggplot2::scale_fill_manual(values  = palette) +
+    ggplot2::labs(y = "Standardised scores") +
     # -------------------------------
-    facet_wrap(~Variable, nrow = 2) +
+    ggplot2::facet_wrap(~Variable, nrow = 2) +
     # -------------------------------
     see::theme_modern() +
-    theme(
+    ggplot2::theme(
       # whole plot
-      plot.margin        = margin(0, 1, 0, 1, "mm"),
+      plot.margin        = ggplot2::margin(0, 1, 0, 1, "mm"),
       # legend
       legend.position    = "top",
-      legend.title       = element_blank(),
-      legend.text        = element_text(size = txt_big),
-      legend.margin      = margin(0, 0, 0, 0, "mm"),
-      legend.box.margin  = margin(1, 0, 0, 0, "mm"),
-      legend.box.spacing = unit(1, "mm"),
+      legend.title       = ggplot2::element_blank(),
+      legend.text        = ggplot2::element_text(size = txt_big),
+      legend.margin      = ggplot2::margin(0, 0, 0, 0, "mm"),
+      legend.box.margin  = ggplot2::margin(1, 0, 0, 0, "mm"),
+      legend.box.spacing = grid::unit(1, "mm"),
       # y axis
-      axis.title.y       = element_text(
+      axis.title.y       = ggplot2::element_text(
         size   = txt_big, 
         margin = margin(0, 1.5, 0, 0, "mm")
       ),
-      axis.text.y        = element_text(size = txt_smol),
-      axis.ticks.y       = element_line(colour = "grey92", linewidth = lw_smol),
+      axis.text.y        = ggplot2::element_text(size = txt_smol),
+      axis.ticks.y       = ggplot2::element_line(
+        colour = "grey92", linewidth = lw_smol
+      ),
       # x axis
-      axis.title.x       = element_blank(),
-      axis.text.x        = element_blank(),
-      axis.ticks.x       = element_blank(), 
-      axis.line          = element_blank(),
+      axis.title.x       = ggplot2::element_blank(),
+      axis.text.x        = ggplot2::element_blank(),
+      axis.ticks.x       = ggplot2::element_blank(), 
+      axis.line          = ggplot2::element_blank(),
       # panel lines
-      panel.grid.major.x = element_blank(),
-      panel.grid.major.y = element_line(linewidth = lw_smol),
-      panel.grid.minor.y = element_line(linewidth = lw_smol),
+      panel.grid.major.x = ggplot2::element_blank(),
+      panel.grid.major.y = ggplot2::element_line(linewidth = lw_smol),
+      panel.grid.minor.y = ggplot2::element_line(linewidth = lw_smol),
       # facets
-      panel.border       = element_rect(
+      panel.border       = ggplot2::element_rect(
         color     = "grey92", 
         fill      = NA, 
         linewidth = lw_smol
       ),
-      panel.spacing.x    = unit(0, "mm"),
-      panel.spacing.y    = unit(3, "mm"),
-      strip.text         = element_text(size = txt_mid, face = "plain"),
-      strip.background   = element_rect(
+      panel.spacing.x    = grid::unit(0, "mm"),
+      panel.spacing.y    = grid::unit(3, "mm"),
+      strip.text         = ggplot2::element_text(
+        size = txt_mid, face = "plain"
+      ),
+      strip.background   = ggplot2::element_rect(
         color     = "grey92",
         fill      = "grey98",
         linewidth = lw_smol

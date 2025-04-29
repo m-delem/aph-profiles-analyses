@@ -1,10 +1,4 @@
-pacman::p_load(
-  dplyr, 
-  ggplot2, 
-  ggraph,
-  patchwork,
-  stringr
-)
+pacman::p_load(ggraph, patchwork)
 
 # Plot a correlation matrix and a circular correlation graph
 plot_correlations <- function(
@@ -20,7 +14,7 @@ plot_correlations <- function(
   # Matrix ---------------------------------------------------------------------
   correlation_matrix <-
     correlations |> 
-    mutate(r = if_else(abs(r) < 0.01, 0, r)) |>
+    dplyr::mutate(r = ifelse(abs(r) < 0.01, 0, r)) |>
     summary(digits = 2) |>
     correlation::visualisation_recipe(
       show_data  = "tiles", 
@@ -33,37 +27,41 @@ plot_correlations <- function(
       )
     ) |> 
     plot() +
-    scale_x_discrete(position = "top") +
-    scale_y_discrete(position = "left") +
-    labs(title = NULL) + 
+    ggplot2::scale_x_discrete(position = "top") +
+    ggplot2::scale_y_discrete(position = "left") +
+    ggplot2::labs(title = NULL) + 
     see::theme_modern() + 
-    theme(
+    ggplot2::theme(
       legend.position = "none",
-      axis.text.x     = element_text(size = axis_text, angle = 45, hjust = 0),
-      axis.text.y     = element_text(size = axis_text),
-      axis.line       = element_blank()
+      axis.text.x     = ggplot2::element_text(
+        size = axis_text, 
+        angle = 45, 
+        hjust = 0
+      ),
+      axis.text.y = ggplot2::element_text(size = axis_text),
+      axis.line   = ggplot2::element_blank()
     )
   
   # Graph ----------------------------------------------------------------------
   correlation_graph <-
     correlations |>
-    ggraph(
+    ggraph::ggraph(
       layout   = "linear",
       circular = TRUE
     ) +
-    geom_edge_arc(
+    ggraph::geom_edge_arc(
       strength = 0.2,
-      mapping  = aes(
+      mapping  = ggplot2::aes(
         label       = round(r, 2),
         filter      = (p < 0.05),
         edge_colour = r,
         edge_width  = r
       ),
-      label_size    = unit(label_text_size, "pt"),
+      label_size    = grid::unit(label_text_size, "pt"),
       check_overlap = TRUE
     ) +
     # Base black nodes ---------------------------------------------------------
-    geom_node_point(
+    ggraph::geom_node_point(
       shape  = shape, 
       size   = node_size, 
       stroke = 0, 
@@ -71,9 +69,11 @@ plot_correlations <- function(
     ) +
     # Coloured nodes -----------------------------------------------------------
     # Psi-Q's in dark blue
-    geom_node_point(
-      aes(
-        filter = (str_detect(name, "Psi") & !str_detect(name, "Audition"))
+    ggraph::geom_node_point(
+      mapping = ggplot2::aes(
+        filter = (
+          stringr::str_detect(name, "Psi") & 
+            !stringr::str_detect(name, "Audition"))
       ),
       shape  = shape,
       size   = node_size,
@@ -82,8 +82,10 @@ plot_correlations <- function(
       colour = "black"
     ) +
     # Visual imagery in blue
-    geom_node_point(
-      aes(filter = str_detect(name, "VVIQ|OSIVQ\nObject|Psi-Q\nVisual")),
+    ggraph::geom_node_point(
+      mapping = ggplot2::aes(
+        filter = stringr::str_detect(name, "VVIQ|OSIVQ\nObject|Psi-Q\nVisual")
+      ),
       shape  = shape,
       size   = node_size,
       fill   = "#56B4E9",
@@ -91,8 +93,10 @@ plot_correlations <- function(
       colour = "black"
     ) +
     # Spatial imagery in light orange
-    geom_node_point(
-      aes(filter = str_detect(name, "SRI|OSIVQ\nSpatial")),
+    ggraph::geom_node_point(
+      mapping = ggplot2::aes(
+        filter = stringr::str_detect(name, "SRI|OSIVQ\nSpatial")
+      ),
       shape  = shape,
       size   = node_size,
       fill   = "#E69F00",
@@ -100,8 +104,10 @@ plot_correlations <- function(
       colour = "black"
     ) +
     # Verbal strategies in green
-    geom_node_point(
-      aes(filter = str_detect(name, "OSIVQ\nVerbal")),
+    ggraph::geom_node_point(
+      mapping = ggplot2::aes(
+        filter = stringr::str_detect(name, "OSIVQ\nVerbal")
+      ),
       shape  = shape,
       size   = node_size,
       fill   = "#009E73",
@@ -109,8 +115,10 @@ plot_correlations <- function(
       colour = "black"
     ) +
     # Raven + Digit in pink
-    geom_node_point(
-      aes(filter = str_detect(name, "Digit\nspan|Raven\nMatrices")),
+    ggraph::geom_node_point(
+      mapping = ggplot2::aes(
+        filter = stringr::str_detect(name, "Digit\nspan|Raven\nMatrices")
+      ),
       shape  = shape,
       size   = node_size,
       fill   = "#CC79A7",
@@ -118,8 +126,10 @@ plot_correlations <- function(
       colour = "black"
     ) +
     # Spatial span in yellow
-    geom_node_point(
-      aes(filter = str_detect(name, "Spatial\nspan")),
+    ggraph::geom_node_point(
+      mapping = ggplot2::aes(
+        filter = stringr::str_detect(name, "Spatial\nspan")
+      ),
       shape  = shape,
       size   = node_size,
       fill   = "#999999",
@@ -127,8 +137,10 @@ plot_correlations <- function(
       colour = "black"
     ) +
     # Verbal reasoning in dark orange
-    geom_node_point(
-      aes(filter = str_detect(name, "Similarities")),
+    ggraph::geom_node_point(
+      mapping = ggplot2::aes(
+        filter = stringr::str_detect(name, "Similarities")
+      ),
       shape  = shape,
       size   = node_size,
       fill   = "#D55E00",
@@ -136,41 +148,41 @@ plot_correlations <- function(
       colour = "black"
     ) +
     # End of coloured nodes ----------------------------------------------------
-    geom_node_text(
-      mapping   = aes(label = name), 
+    ggraph::geom_node_text(
+      mapping   = ggplot2::aes(label = name), 
       colour    = "white", 
       fontface  = "bold",
       size      = node_text_size,
       size.unit = "pt"
     ) +
-    scale_edge_colour_gradient2(
+    ggraph::scale_edge_colour_gradient2(
       limits = c(-1, 1),
       low    = "firebrick2",
       mid    = "white",
       high   = "#009e73",
-      breaks = breaks_pretty(8)
+      breaks = scales::breaks_pretty(8)
     ) +
-    scale_edge_width(range = c(2, 3)) +
-    coord_fixed(clip = "off") +
-    guides(edge_width = "none") +
-    labs(title = NULL) +
-    theme(
-      panel.background = element_rect(fill = "transparent"),
+    ggraph::scale_edge_width(range = c(2, 3)) +
+    ggplot2::coord_fixed(clip = "off") +
+    ggplot2::guides(edge_width = "none", edge_colourbar = "none") +
+    ggplot2::labs(title = NULL) +
+    ggplot2::theme(
+      panel.background = ggplot2::element_rect(fill = "transparent"),
       legend.position  = "none"
     )
   
   # Patchwork manual layout -----------------------
   layout <- c(
-    area(t = 1, l = 1, b = 5, r = 3),
-    area(t = 2, l = 3, b = 5, r = 4)
+    patchwork::area(t = 1, l = 1, b = 5, r = 3),
+    patchwork::area(t = 2, l = 3, b = 5, r = 4)
   )
   
   # Final figure
   correlation_joint <-
     (correlation_matrix + correlation_graph) +
-    plot_layout(design = layout) &
-    theme(
-      plot.margin = margin(0, 1, 0, 0, "mm")
+    patchwork::plot_layout(design = layout) &
+    ggplot2::theme(
+      plot.margin = ggplot2::margin(0, 1, 0, 0, "mm")
       )
   
   return(correlation_joint)

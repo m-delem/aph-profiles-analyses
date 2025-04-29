@@ -2,11 +2,29 @@ source("renv/activate.R")
 
 .First <- function() {
   if (interactive()) {
-    suppressMessages(suppressWarnings({
-      if (!renv::status()$synchronized) renv::restore(prompt = FALSE)
-      cat("\014")
-    }))
     colours <- sample(c("green", "blue", "yellow", "cyan", "magenta"), 2)
+    
+    suppressMessages(suppressWarnings({
+      if (!renv::status()$synchronized) {
+        renv::restore(prompt = FALSE)
+        cat("\014")
+        print(glue::glue_col(
+          "{", colours[1], " |-> ",
+          "{", colours[2], " Some packages recorded in the lockfile were }\n",
+          "|   {", colours[2], " not synchronised and have been restored.}\n",
+          "|   {", colours[2], " Run `{red renv::status()}` to see if there ",
+          "are any}\n",
+          "|   {", colours[2], " other issues.}}\n"
+        ))
+      } else {
+        cat("\014")
+        print(glue::glue_col(
+          "{", colours[1], " |->} {", colours[2], 
+          " All packages are synchronised with the lockfile.}\n"
+        ))
+      }
+    }))
+    
     anew <- sample(c(
       "Let us cook.     ",
       "Born anew.       ",
@@ -16,10 +34,9 @@ source("renv/activate.R")
     ), 1)
     welcome_message <- paste0(
       "{", colours[1],
-      " |--------------------------------|\n",
-      " | Here we go... ",
-      "{", colours[2], " ", anew, "}|\n",
-      " |--------------------------------|}\n"
+      " ----------------------------------------------------\n",
+      " Here we go... ",
+      "{", colours[2], " ", anew, "}}\n"
     )
     print(glue::glue_col(welcome_message, .literal = TRUE))
   }

@@ -1,5 +1,3 @@
-pacman::p_load(dplyr)
-
 # Model the association between education, field and occupation with a variable
 model_lives <- function(df, groups_var, type = "indepMulti") { # or "jointMulti"
   associations <- 
@@ -9,21 +7,21 @@ model_lives <- function(df, groups_var, type = "indepMulti") { # or "jointMulti"
       names_to = "Variable", 
       values_to = "value"
     ) |> 
-    select({{ groups_var }}, Variable, value) |> 
-    group_by(Variable) |> 
+    dplyr::select({{ groups_var }}, Variable, value) |> 
+    dplyr::group_by(Variable) |> 
     tidyr::nest() |> 
-    rowwise() |> 
-    mutate(
+    dplyr::rowwise() |> 
+    dplyr::mutate(
       table = list(
         data |> 
-          group_by({{ groups_var }}, value) |>
-          count() |> 
+          dplyr::group_by({{ groups_var }}, value) |>
+          dplyr::count() |> 
           tidyr::pivot_wider(
             names_from = {{ groups_var }},
             values_from = n
           ) |>
           tibble::as_tibble() |> 
-          mutate(across(!c(value), ~tidyr::replace_na(., 0)))
+          dplyr::mutate(dplyr::across(!c(value), ~tidyr::replace_na(., 0)))
       ),
       log_bf10 =
         BayesFactor::contingencyTableBF(
@@ -32,7 +30,7 @@ model_lives <- function(df, groups_var, type = "indepMulti") { # or "jointMulti"
           fixedMargin = "cols"
         ) |> 
         tibble::as_tibble() |> 
-        pull(bf) |> 
+        dplyr::pull(bf) |> 
         log() |> 
         round(2),
       Variable = stringr::str_to_title(Variable)
@@ -44,10 +42,10 @@ model_lives <- function(df, groups_var, type = "indepMulti") { # or "jointMulti"
 # Display the distribution of the sample on a variable for a classification
 show_lives <- function(lives_table, variable) {
   lives_table |>
-    filter(Variable == variable) |> 
+    dplyr::filter(Variable == variable) |> 
     tidyr::unnest(table) |> 
-    ungroup() |> 
-    select(!c(Variable, data, log_bf10)) |> 
-    rename(!!variable := value) |> 
+    dplyr::ungroup() |> 
+    dplyr::select(!c(Variable, data, log_bf10)) |> 
+    dplyr::rename(!!variable := value) |> 
     knitr::kable()
 }

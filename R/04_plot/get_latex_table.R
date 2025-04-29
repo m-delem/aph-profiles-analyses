@@ -1,5 +1,3 @@
-library(dplyr)
-
 get_latex_table <- function(
     models,
     groups, # "Group", "Cluster" or "Subcluster"
@@ -53,8 +51,8 @@ get_latex_table <- function(
   
   if (groups == "Group") {
     models$group_models |> 
-      filter(Variable %in% vars) |> 
-      select(!Group:Comparison) |> 
+      dplyr::filter(Variable %in% vars) |> 
+      dplyr::select(!Group:Comparison) |> 
       Hmisc::latex(
         booktabs = TRUE, rowname = NULL, file = "", title = "", 
         insert.bottom = glue::glue("\\label{{{label}}}"), ...
@@ -62,8 +60,8 @@ get_latex_table <- function(
     
   } else if (groups == "Cluster") {
     models$cluster_models |> 
-      filter(Variable %in% vars) |> 
-      select(Comparison:last_col()) |> 
+      dplyr::filter(Variable %in% vars) |> 
+      dplyr::select(Comparison:tidyselect::last_col()) |> 
       Hmisc::latex(
         booktabs = TRUE, rowname = "", file = "", title = "", 
         insert.bottom = glue::glue("\\label{{{label}}}"), rgroup = vars, ...
@@ -71,15 +69,17 @@ get_latex_table <- function(
     
   } else if (groups == "Subcluster") {
     models$subcluster_models |> 
-      filter(Variable %in% vars) |> 
-      select(Comparison:last_col()) |> 
+      dplyr::filter(Variable %in% vars) |> 
+      dplyr::select(Comparison:tidyselect::last_col()) |> 
       Hmisc::latex(
         booktabs = TRUE, rowname = "", file = "", title = "", 
         insert.bottom = glue::glue("\\label{{{label}}}"), rgroup = vars, ...
       )
     
   } else {
-    stop("The 'groups' argument must be either 'Group', 'Cluster' or 'Subcluster'")
+    stop(
+      "The 'groups' argument must be either 'Group', 'Cluster' or 'Subcluster'"
+      )
   }
 }
 

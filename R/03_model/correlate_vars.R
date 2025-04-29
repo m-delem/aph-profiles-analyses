@@ -1,4 +1,4 @@
-library(dplyr)
+here::here("R/02_wrangle/scale_vars.R") |> source()
 
 # Correlate the original variables with a chosen method and correction
 correlate_vars <- function(
@@ -10,16 +10,16 @@ correlate_vars <- function(
   correlations <- 
     df |>
     scale_vars() |> 
-    select(vviq:score_comprehension) |> 
+    dplyr::select(vviq:score_comprehension) |> 
     correlation::correlation(
       method   = method,
       partial  = partial,
       p_adjust = correction
     ) |> 
-    mutate(
-      across(
+    dplyr::mutate(
+      dplyr::across(
         c(Parameter1, Parameter2),
-        ~case_match(
+        ~dplyr::case_match(
           .x,
           "vviq" ~ "VVIQ",
           "osivq_o" ~ "OSIVQ\nObject",

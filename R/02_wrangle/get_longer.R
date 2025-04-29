@@ -1,5 +1,3 @@
-pacman::p_load(dplyr)
-
 # Transform the main data frame to long format
 get_longer <- function(df){
   withr::local_options(list(warn = -1))
@@ -40,37 +38,39 @@ get_longer <- function(df){
   df_long <- 
     df |>
     tidyr::pivot_longer(
-      any_of(c(
+      tidyselect::any_of(c(
         # original
-        contains("vviq"),
-        contains("osivq"),
-        contains("psiq"),
-        contains("raven"),
-        contains("sri"),
-        matches("span_digit"),
-        matches("span_spatial"),
-        contains("similarities"),
+        tidyselect::contains("vviq"),
+        tidyselect::contains("osivq"),
+        tidyselect::contains("psiq"),
+        tidyselect::contains("raven"),
+        tidyselect::contains("sri"),
+        tidyselect::matches("span_digit"),
+        tidyselect::matches("span_spatial"),
+        tidyselect::contains("similarities"),
         # reduced
-        contains("imagery"),
-        contains("strategies"),
-        contains("intelligence"),
-        contains("reasoning"),
-        ends_with("spatial_span"),
+        tidyselect::contains("imagery"),
+        tidyselect::contains("strategies"),
+        tidyselect::contains("intelligence"),
+        tidyselect::contains("reasoning"),
+        tidyselect::ends_with("spatial_span"),
         # complex
-        contains("wcst"),
-        contains("comprehension")
+        tidyselect::contains("wcst"),
+        tidyselect::contains("comprehension")
       )),
       names_to = "Variable", 
       values_to = "value"
     ) |> 
-    mutate(
+    dplyr::mutate(
       Variable = forcats::fct_inorder(Variable),
       Variable = forcats::fct_recode(Variable, !!!vars)
     ) |> 
-    rename_with(stringr::str_to_title, any_of(c(
-      "age", "sex", "group", "cluster", "subcluster",
-      "education", "field", "occupation"
-    ))
+    dplyr::rename_with(
+      stringr::str_to_title, 
+      tidyselect::any_of(c(
+        "age", "sex", "group", "cluster", "subcluster",
+        "education", "field", "occupation"
+      ))
     )
   
   return(df_long)
